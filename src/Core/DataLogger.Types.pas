@@ -1,0 +1,209 @@
+{
+  *************************************
+  Created by Danilo Lucas
+  Github - https://github.com/dliocode
+  *************************************
+}
+
+unit DataLogger.Types;
+
+interface
+
+uses
+  DataLogger.Utils,
+  System.TypInfo, System.JSON, System.DateUtils, System.SysUtils, System.Generics.Collections, System.Classes;
+
+type
+  EDataLoggerException = class(Exception)
+  end;
+
+  TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal);
+  TLoggerTypes = set of TLoggerType;
+
+  TLoggerTypeHelper = record helper for TLoggerType
+  public
+    function ToString: string;
+  end;
+
+  TLoggerItem = record
+    Sequence: UInt64;
+    TimeStamp: TDateTime;
+    ThreadID: Integer;
+    &Type: TLoggerType;
+    Tag: string;
+    Message: string;
+    MessageJSON: string;
+
+    AppName: string;
+    AppPath: string;
+    AppVersion: TLoggerUtils.TAppVersion;
+    ComputerName: string;
+    Username: string;
+    OSVersion: string;
+    ProcessId: string;
+  end;
+
+  TLoggerLogFormat = class
+    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJsonObject;
+    class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
+    class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): string;
+    class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): TStream;
+    class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
+  end;
+
+  TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetryCount: Integer);
+
+const
+  LOG_SEQUENCE = '${sequence}';
+  LOG_TIMESTAMP = '${timestamp}';
+  LOG_THREADID = '${threadid}';
+  LOG_PROCESSID = '${processid}';
+  LOG_TYPE = '${type}';
+  LOG_TAG = '${tag}';
+  LOG_MESSAGE = '${message}';
+
+  LOG_APPNAME = '${appname}';
+  LOG_APPVERSION = '${appversion}';
+  LOG_APPPATH = '${apppath}';
+  LOG_COMPUTERNAME = '${computername}';
+  LOG_USERNAME = '${username}';
+  LOG_OSVERSION = '${osversion}';
+
+  DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_TYPE + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+
+implementation
+
+{ TLoggerTypeHelper }
+
+function TLoggerTypeHelper.ToString: string;
+begin
+  Result := GetEnumName(TypeInfo(TLoggerType), Integer(Self));
+end;
+
+{ TLoggerLogFormat }
+
+class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJsonObject;
+  procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
+  begin
+    if ALogFormat.Contains(ALogKey) then
+      Result.AddPair(AJSONKey, AJSONValue)
+    else
+    begin
+      AJSONValue.DisposeOf;
+    end;
+  end;
+
+var
+  I: Integer;
+  LJO: TJsonObject;
+begin
+  Result := TJsonObject.Create;
+
+  Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
+
+  _Add(LOG_THREADID, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
+  _Add(LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
+  _Add(LOG_THREADID, 'log_threadid', TJSONNumber.Create(AItem.ThreadID));
+  _Add(LOG_PROCESSID, 'log_processid', TJSONString.Create(AItem.ProcessId));
+  _Add(LOG_TYPE, 'log_type', TJSONString.Create(AItem.&Type.ToString));
+  _Add(LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
+
+  if not AItem.MessageJSON.Trim.IsEmpty then
+  begin
+    _Add(LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.MessageJSON.Trim));
+
+    try
+      LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
+      try
+        for I := 0 to Pred(LJO.Count) do
+          Result.AddPair('log_' + LJO.Pairs[I].JsonString.Value, LJO.Pairs[I].JsonValue.Value);
+      finally
+        LJO.DisposeOf;
+      end;
+    except
+    end;
+  end
+  else
+    _Add(LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.Message.Trim));
+
+  _Add(LOG_APPNAME, 'log_appname', TJSONString.Create(AItem.AppName));
+  _Add(LOG_APPPATH, 'log_appversion', TJSONString.Create(AItem.AppVersion.FileVersion));
+  _Add(LOG_APPPATH, 'log_apppath', TJSONString.Create(AItem.AppPath));
+  _Add(LOG_COMPUTERNAME, 'log_computername', TJSONString.Create(AItem.ComputerName));
+  _Add(LOG_USERNAME, 'log_username', TJSONString.Create(AItem.Username));
+  _Add(LOG_OSVERSION, 'log_osversion', TJSONString.Create(AItem.OSVersion));
+end;
+
+class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
+var
+  LJO: TJsonObject;
+begin
+  LJO := AsJsonObject(ALogFormat, AItem);
+  try
+    Result := LJO.ToString;
+  finally
+    LJO.DisposeOf;
+  end;
+end;
+
+class function TLoggerLogFormat.AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): string;
+var
+  LLog: string;
+  LJO: TJsonObject;
+  I: Integer;
+
+  function _Add(const AKey: string; const AValue: string): string;
+  begin
+    Result := LLog.Replace(AKey, AValue);
+  end;
+
+begin
+  LLog := ALogFormat;
+
+  LLog := _Add(LOG_SEQUENCE, AItem.Sequence.ToString);
+  LLog := _Add(LOG_TIMESTAMP, FormatDateTime(AFormatSettings, AItem.TimeStamp));
+  LLog := _Add(LOG_THREADID, AItem.ThreadID.ToString);
+  LLog := _Add(LOG_PROCESSID, AItem.ProcessId);
+  LLog := _Add(LOG_TYPE, AItem.&Type.ToString);
+  LLog := _Add(LOG_TAG, AItem.Tag.Trim);
+
+  if not AItem.MessageJSON.Trim.IsEmpty then
+  begin
+    LLog := _Add(LOG_MESSAGE, AItem.MessageJSON.Trim);
+
+    try
+      LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
+      try
+        for I := 0 to Pred(LJO.Count) do
+          LLog := _Add(Format('${%s}', [LJO.Pairs[I].JsonString.Value]), LJO.Pairs[I].JsonValue.Value);
+      finally
+        LJO.DisposeOf;
+      end;
+    except
+    end;
+  end
+  else
+    LLog := _Add(LOG_MESSAGE, AItem.Message.Trim);
+
+  LLog := _Add(LOG_APPNAME, AItem.AppName);
+  LLog := _Add(LOG_APPPATH, AItem.AppPath);
+  LLog := _Add(LOG_APPVERSION, AItem.AppVersion.FileVersion);
+  LLog := _Add(LOG_COMPUTERNAME, AItem.ComputerName);
+  LLog := _Add(LOG_USERNAME, AItem.Username);
+  LLog := _Add(LOG_OSVERSION, AItem.OSVersion);
+
+  Result := LLog;
+end;
+
+class function TLoggerLogFormat.AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): TStream;
+begin
+  Result := TStringStream.Create(AsString(ALogFormat, AItem, AFormatSettings), TEncoding.UTF8);
+  Result.Seek(0, soFromBeginning);
+end;
+
+class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
+begin
+  Result := TStringStream.Create(AsJsonObjectToString(ALogFormat, AItem), TEncoding.UTF8);
+end;
+
+end.
