@@ -25,7 +25,7 @@ O primeiro destina-se apenas a ser um log compartilhado conveniente para ser usa
 
 Um _provider_ serve essencialmente para armazenar seus logs. Cada instância de um TDataLogger pode ter vários _providers_ configurados.
 
-Aqui temos uma lista de todos os _providers_ disponpiveis:
+Aqui temos uma lista de todos os _providers_ disponíveis:
 
 - Console 
 - ElasticSearch 
