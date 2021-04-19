@@ -27,23 +27,22 @@ Um _provider_ serve essencialmente para armazenar seus logs. Cada instância de 
 
 Aqui temos uma lista de todos os _providers_ disponpiveis:
 
-Console 
-ElasticSearch 
-Email
-EventLog
-Events
-FileText
-ListBox
-ListView
-Logstach
-Memo
-OutputDebugString
-Redis
-Rest
-Slack
-SysLog
-Telegram
-
+- Console 
+- ElasticSearch 
+- Email
+- EventLog
+- Events
+- FileText
+- ListBox
+- ListView
+- Logstach
+- Memo
+- OutputDebugString
+- Redis
+- Rest
+- Slack
+- SysLog
+- Telegram
 
 ### Exemplos
 
