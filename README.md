@@ -44,7 +44,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 - SysLog
 - Telegram
 
-### Exemplos
+## Exemplos
 
 ### Uso Padrão
 
