@@ -79,6 +79,9 @@ type
   private
     FDataLogger: TDataLogger;
     class var FInstance: TLogger;
+
+    class function New: TLogger;
+    class destructor UnInitialize;
   public
     class function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     class function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
@@ -105,9 +108,6 @@ type
     class function SetFormatSettings(const AFormatSettings: string): TDataLogger;
     class function SetLogException(const AException: TOnLogException): TDataLogger;
     class function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
-
-    class function New: TLogger;
-    class destructor UnInitialize;
 
     constructor Create;
     destructor Destroy; override;
