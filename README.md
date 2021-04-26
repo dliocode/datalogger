@@ -1,6 +1,6 @@
 # DataLogger
 
-DataLogger foi projetado para ser uma biblioteca simples com suporte a vários _providers_.
+DataLogger foi projetado para ser uma biblioteca simples de logger com suporte a vários _providers_.
 
 ### Doação
 
