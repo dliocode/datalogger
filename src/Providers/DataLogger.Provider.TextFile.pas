@@ -5,7 +5,7 @@
   *************************************
 }
 
-unit DataLogger.Provider.FileText;
+unit DataLogger.Provider.TextFile;
 
 interface
 
@@ -14,7 +14,7 @@ uses
   System.IOUtils, System.SysUtils;
 
 type
-  TProviderFileText = class(TDataLoggerProvider)
+  TProviderTextFile = class(TDataLoggerProvider)
   private
     FLogDir: string;
     FPrefixFileName: string;
@@ -31,9 +31,9 @@ type
 
 implementation
 
-{ TProviderFileText }
+{ TProviderTextFile }
 
-constructor TProviderFileText.Create(const ALogDir: string; const APrefixFileName: string; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False);
+constructor TProviderTextFile.Create(const ALogDir: string; const APrefixFileName: string; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False);
 begin
   inherited Create;
 
@@ -44,7 +44,7 @@ begin
   FCleanIsRun := False;
 end;
 
-constructor TProviderFileText.Create;
+constructor TProviderTextFile.Create;
 var
   LLogDir: string;
   LPrefixFileName: string;
@@ -55,12 +55,12 @@ begin
   Create(LLogDir, LPrefixFileName);
 end;
 
-destructor TProviderFileText.Destroy;
+destructor TProviderTextFile.Destroy;
 begin
   inherited;
 end;
 
-procedure TProviderFileText.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);
 var
   LRetryCount: Integer;
   LFileName: string;

@@ -32,7 +32,6 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 - Email
 - EventLog
 - Events
-- FileText
 - ListBox
 - ListView
 - Logstach
@@ -43,6 +42,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 - Slack
 - SysLog
 - Telegram
+- TextFile
 
 ## Exemplos
 

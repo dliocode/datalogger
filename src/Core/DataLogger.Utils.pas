@@ -5,7 +5,9 @@
   *************************************
 }
 unit DataLogger.Utils;
+
 interface
+
 uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
@@ -17,12 +19,13 @@ uses
   Macapi.Helpers, Macapi.CoreFoundation, Macapi.ObjectiveC, Macapi.ObjCRuntime,
 {$ENDIF}
 {$IFDEF IOS}
-  IOSApi.Foundation, iOSapi.Helpers,
+  IOSApi.Foundation, IOSApi.Helpers,
 {$ENDIF}
 {$IF DEFINED(ANDROID)}
   Androidapi.Helpers, Androidapi.JNI.Os, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
   System.IOUtils, System.SysUtils;
+
 type
   TLoggerUtils = class
   type
@@ -47,7 +50,9 @@ type
     class function ProcessId: Integer;
     class function Username: string;
   end;
+
 implementation
+
 { TLoggerUtils }
 class function TLoggerUtils.AppName: string;
 {$IF DEFINED(ANDROID)}
@@ -61,10 +66,12 @@ begin
 end;
 {$ELSEIF DEFINED(IOS)}
 
+
 begin
   Result := TNSString.Wrap(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle, KCFBundleIdentifierKey)).UTF8String;
 end;
 {$ELSE}
+
 
 var
   LAppPathFull: string;
@@ -77,12 +84,14 @@ begin
 end;
 {$ENDIF}
 
+
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
   Result := TPath.GetDocumentsPath;
 end;
 {$ELSE}
+
 
 var
   LAppPathFull: string;
@@ -95,6 +104,7 @@ begin
 end;
 {$ENDIF}
 
+
 class function TLoggerUtils.AppVersion: TAppVersion;
 {$IF DEFINED(ANDROID)}
 var
@@ -105,6 +115,7 @@ begin
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
 end;
 {$ELSEIF DEFINED(IOS)}
+
 
 var
   AppKey: Pointer;
@@ -120,6 +131,7 @@ begin
   end;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 
 var
   LAppPathFull: string;
@@ -166,10 +178,12 @@ begin
 end;
 {$ELSE}
 
+
 begin
   Result := Default (TAppVersion);
 end;
 {$ENDIF}
+
 
 class function TLoggerUtils.ComputerName: string;
 {$IF DEFINED(ANDROID)}
@@ -179,10 +193,12 @@ begin
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
 {$ELSEIF DEFINED(IOS)}
+
 begin
   Result := '';
 end;
 {$ELSEIF DEFINED(LINUX)}
+
 
 var
   LName: utsname;
@@ -191,6 +207,7 @@ begin
   Result := string(AnsiString(LName.nodename));
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 
 var
   Buf: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
@@ -204,15 +221,18 @@ begin
 end;
 {$ELSE}
 
+
 begin
   Result := EmptyStr;
 end;
 {$ENDIF}
 
+
 class function TLoggerUtils.Os: string;
 begin
   Result := TOSVersion.toString;
 end;
+
 class function TLoggerUtils.ProcessId: Integer;
 begin
 {$IF DEFINED(MSWINDOWS)}
@@ -223,9 +243,10 @@ begin
   Result := 0;
 {$ENDIF}
 end;
-//{$IFDEF MACOS}
-//function NSUserName: Pointer; cdecl; external '/System/Library/Frameworks/Foundation.framework/Foundation' name '_NSUserName';
-//{$ENDIF}
+
+// {$IFDEF MACOS}
+// function NSUserName: Pointer; cdecl; external '/System/Library/Frameworks/Foundation.framework/Foundation' name '_NSUserName';
+// {$ENDIF}
 //
 class function TLoggerUtils.Username: string;
 {$IF DEFINED(MSWINDOWS)}
@@ -239,14 +260,16 @@ begin
   else
     Result := EmptyStr;
 end;
-//{$IFDEF MACOS}
-//begin
-//  Result := TNSString.Wrap(NSUserName).UTF8String;
-//end;
+// {$IFDEF MACOS}
+// begin
+// Result := TNSString.Wrap(NSUserName).UTF8String;
+// end;
 {$ELSE}
+
 
 begin
   Result := '';
 end;
 {$ENDIF}
+
 end.
