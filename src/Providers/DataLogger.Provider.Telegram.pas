@@ -14,11 +14,9 @@ interface
 uses
   DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
   idURI,
-  System.SysUtils;
+  System.SysUtils, System.StrUtils;
 
 type
-  TChannelType = (tctPublic, tctPrivate);
-
   TProviderTelegram = class(TProviderRESTHTTPClient)
   private
     FBotToken: string;
@@ -34,8 +32,9 @@ implementation
 { TProviderTelegram }
 
 const
-  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s&parse_mode=markdown';
+  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates';
+  TELGRAM_API_MARKDOWN = '&parse_mode=markdown';
 
 constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Integer);
 begin
@@ -51,6 +50,7 @@ var
   LItem: TLoggerItem;
   LLogItemREST: TLogItemREST;
   LMessage: string;
+  LURLMarkdown: string;
 begin
   LItemREST := [];
 
@@ -65,28 +65,34 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
+    LURLMarkdown := '';
     LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatSettings);
 
-    case LItem.&Type of
-      All:
-        ;
-      Trace:
-        ;
-      Debug:
-        ;
-      Info:
-        ;
-      Success:
-        ;
-      Warn:
-        ;
-      Error, Fatal:
-        LMessage := '*' + LMessage.Trim + '*';
+    if not MatchText(LMessage.Trim, ['_', '*']) then
+    begin
+      LURLMarkdown := TELGRAM_API_MARKDOWN;
+
+      case LItem.&Type of
+        All:
+          ;
+        Trace:
+          ;
+        Debug:
+          ;
+        Info:
+          ;
+        Success:
+          ;
+        Warn:
+          ;
+        Error, Fatal:
+          LMessage := '*' + LMessage.Trim + '*';
+      end;
     end;
 
     LLogItemREST.Stream := nil;
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG, [FBotToken, FChatId, LMessage]));
+    LLogItemREST.URL := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG + LURLMarkdown, [FBotToken, FChatId, LMessage]));
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
