@@ -19,9 +19,7 @@ type
   TLoggerTypes = DataLogger.Types.TLoggerTypes;
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
-
   Exception = System.SysUtils.Exception;
-  TFormatSettings = System.SysUtils.TFormatSettings;
 
   TDataLogger = class sealed(TThread)
   strict private
@@ -44,7 +42,6 @@ type
   public
     function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
     function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
-
     function SetLogFormat(const ALogFormat: string): TDataLogger;
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
@@ -54,18 +51,25 @@ type
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
 
     function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Debug(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Debug(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Debug(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Info(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Info(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Info(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Success(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Success(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Success(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Warn(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Warn(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Warn(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Error(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Error(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Error(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function SlineBreak: TDataLogger;
 
@@ -79,23 +83,29 @@ type
   private
     FDataLogger: TDataLogger;
     class var FInstance: TLogger;
-
     class function New: TLogger;
     class destructor UnInitialize;
   public
     class function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Debug(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Debug(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Debug(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Info(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Info(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Info(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Success(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Success(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Success(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Warn(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Warn(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Warn(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Error(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Error(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Error(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function Fatal(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    class function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     class function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     class function SlineBreak: TDataLogger;
 
@@ -112,6 +122,9 @@ type
     constructor Create;
     destructor Destroy; override;
   end;
+
+  { Alias TLogger }
+  L = TLogger;
 
 implementation
 
@@ -130,12 +143,10 @@ begin
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
   FList := TList<TLoggerItem>.Create;
-
   FProviders := [];
   FLogLevel := TLoggerType.All;
   FDisableLogType := [];
   FOnlyLogType := [TLoggerType.All];
-
   FSequence := 0;
 end;
 
@@ -144,9 +155,7 @@ begin
   Terminate;
   FEvent.SetEvent;
   WaitFor;
-
   CloseProvider;
-
   FList.DisposeOf;
   FEvent.DisposeOf;
   FCriticalSection.DisposeOf;
@@ -243,6 +252,11 @@ begin
   Result := AddCache(TLoggerType.Trace, AMessage, ATag);
 end;
 
+function TDataLogger.Trace(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Trace, Format(AMessage, AArgs), ATag);
+end;
+
 function TDataLogger.Trace(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Trace, AMessage, ATag);
@@ -251,6 +265,11 @@ end;
 function TDataLogger.Debug(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Debug, AMessage, ATag);
+end;
+
+function TDataLogger.Debug(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Debug, Format(AMessage, AArgs), ATag);
 end;
 
 function TDataLogger.Debug(const AMessage: TJsonObject; const ATag: string): TDataLogger;
@@ -263,6 +282,11 @@ begin
   Result := AddCache(TLoggerType.Info, AMessage, ATag);
 end;
 
+function TDataLogger.Info(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Info, Format(AMessage, AArgs), ATag);
+end;
+
 function TDataLogger.Info(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Info, AMessage, ATag);
@@ -271,6 +295,11 @@ end;
 function TDataLogger.Success(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Success, AMessage, ATag);
+end;
+
+function TDataLogger.Success(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Success, Format(AMessage, AArgs), ATag);
 end;
 
 function TDataLogger.Success(const AMessage: TJsonObject; const ATag: string): TDataLogger;
@@ -283,6 +312,11 @@ begin
   Result := AddCache(TLoggerType.Warn, AMessage, ATag);
 end;
 
+function TDataLogger.Warn(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Warn, Format(AMessage, AArgs), ATag);
+end;
+
 function TDataLogger.Warn(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Warn, AMessage, ATag);
@@ -293,6 +327,11 @@ begin
   Result := AddCache(TLoggerType.Error, AMessage, ATag);
 end;
 
+function TDataLogger.Error(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Error, Format(AMessage, AArgs), ATag);
+end;
+
 function TDataLogger.Error(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Error, AMessage, ATag);
@@ -301,6 +340,11 @@ end;
 function TDataLogger.Fatal(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Fatal, AMessage, ATag);
+end;
+
+function TDataLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Fatal, Format(AMessage, AArgs), ATag);
 end;
 
 function TDataLogger.Fatal(const AMessage: TJsonObject; const ATag: string): TDataLogger;
@@ -326,7 +370,6 @@ var
   LLogItem: TLoggerItem;
 begin
   Result := Self;
-
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
@@ -343,7 +386,6 @@ begin
   DefineSequence;
 
   LLogItem := Default (TLoggerItem);
-
   LLogItem.Sequence := FSequence;
   LLogItem.TimeStamp := Now;
   LLogItem.ThreadID := TThread.Current.ThreadID;
@@ -351,7 +393,6 @@ begin
   LLogItem.Tag := ATag;
   LLogItem.Message := AMessageString;
   LLogItem.MessageJSON := AMessageJSON;
-
   LLogItem.AppName := TLoggerUtils.AppName;
   LLogItem.AppPath := TLoggerUtils.AppPath;
   LLogItem.AppVersion := TLoggerUtils.AppVersion;
@@ -392,7 +433,6 @@ begin
   finally
     FCriticalSection.Leave;
   end;
-
   Result := LLogCacheArray;
 end;
 
@@ -441,7 +481,6 @@ begin
 end;
 
 { TLogger }
-
 class function TLogger.New: TLogger;
 begin
   if not Assigned(FInstance) then
@@ -520,6 +559,11 @@ begin
   Result := New.FDataLogger.Trace(AMessage, ATag);
 end;
 
+class function TLogger.Trace(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Trace(AMessage, AArgs, ATag);
+end;
+
 class function TLogger.Trace(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := New.FDataLogger.Trace(AMessage, ATag);
@@ -528,6 +572,11 @@ end;
 class function TLogger.Debug(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := New.FDataLogger.Debug(AMessage, ATag);
+end;
+
+class function TLogger.Debug(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Debug(AMessage, AArgs, ATag);
 end;
 
 class function TLogger.Debug(const AMessage: TJsonObject; const ATag: string): TDataLogger;
@@ -540,6 +589,11 @@ begin
   Result := New.FDataLogger.Info(AMessage, ATag);
 end;
 
+class function TLogger.Info(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Info(AMessage, AArgs, ATag);
+end;
+
 class function TLogger.Info(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := New.FDataLogger.Info(AMessage, ATag);
@@ -548,6 +602,11 @@ end;
 class function TLogger.Success(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := New.FDataLogger.Success(AMessage, ATag);
+end;
+
+class function TLogger.Success(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Success(AMessage, AArgs, ATag);
 end;
 
 class function TLogger.Success(const AMessage: TJsonObject; const ATag: string): TDataLogger;
@@ -560,6 +619,11 @@ begin
   Result := New.FDataLogger.Warn(AMessage, ATag);
 end;
 
+class function TLogger.Warn(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Warn(AMessage, AArgs, ATag);
+end;
+
 class function TLogger.Warn(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := New.FDataLogger.Warn(AMessage, ATag);
@@ -570,6 +634,11 @@ begin
   Result := New.FDataLogger.Error(AMessage, ATag);
 end;
 
+class function TLogger.Error(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Error(AMessage, AArgs, ATag);
+end;
+
 class function TLogger.Error(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := New.FDataLogger.Error(AMessage, ATag);
@@ -578,6 +647,11 @@ end;
 class function TLogger.Fatal(const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := New.FDataLogger.Fatal(AMessage, ATag);
+end;
+
+class function TLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := New.FDataLogger.Fatal(AMessage, AArgs, ATag);
 end;
 
 class function TLogger.Fatal(const AMessage: TJsonObject; const ATag: string): TDataLogger;

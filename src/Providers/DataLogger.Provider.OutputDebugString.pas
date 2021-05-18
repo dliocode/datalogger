@@ -13,7 +13,7 @@ uses
   DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
-{$ELSE}
+{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
   FMX.Types,
 {$ENDIF}
   System.SysUtils;
@@ -47,6 +47,9 @@ var
   LItem: TLoggerItem;
   LLog: string;
 begin
+{$IF DEFINED(LINUX)}
+  Exit;
+{$ENDIF}
   if Length(ACache) = 0 then
     Exit;
 
@@ -66,7 +69,7 @@ begin
       try
 {$IF DEFINED(MSWINDOWS)}
         OutputDebugString(PChar(LLog));
-{$ELSE}
+{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
         FMX.Types.Log.d(LLog);
 {$ENDIF}
         Break;

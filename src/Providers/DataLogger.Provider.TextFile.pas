@@ -10,7 +10,7 @@ unit DataLogger.Provider.TextFile;
 interface
 
 uses
-  DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
+  DataLogger.Provider, DataLogger.Types,
   System.IOUtils, System.SysUtils;
 
 type
@@ -24,8 +24,7 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const ALogDir: string; const APrefixFileName: string; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False); overload;
-    constructor Create; overload;
+    constructor Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False);
     destructor Destroy; override;
   end;
 
@@ -33,7 +32,7 @@ implementation
 
 { TProviderTextFile }
 
-constructor TProviderTextFile.Create(const ALogDir: string; const APrefixFileName: string; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False);
+constructor TProviderTextFile.Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False);
 begin
   inherited Create;
 
@@ -42,17 +41,6 @@ begin
   FExtension := AExtension;
   FCleanOnStart := ACleanOnStart;
   FCleanIsRun := False;
-end;
-
-constructor TProviderTextFile.Create;
-var
-  LLogDir: string;
-  LPrefixFileName: string;
-begin
-  LLogDir := TLoggerUtils.AppPath;
-  LPrefixFileName := TLoggerUtils.AppName;
-
-  Create(LLogDir, LPrefixFileName);
 end;
 
 destructor TProviderTextFile.Destroy;
@@ -71,25 +59,26 @@ begin
   if Length(ACache) = 0 then
     Exit;
 
-  if not TDirectory.Exists(FLogDir) then
-    if not CreateDir(FLogDir) then
-      TDirectory.CreateDirectory(FLogDir);
+  if not FLogDir.Trim.IsEmpty then
+    if not TDirectory.Exists(FLogDir) then
+      if not CreateDir(FLogDir) then
+        TDirectory.CreateDirectory(FLogDir);
 
-  LFileName := Format('%s.%s', [FLogDir + TPath.DirectorySeparatorChar + FPrefixFileName + FormatDateTime('yyyy-mm-dd', Now()), FExtension]);
+  LFileName := Format('%s.%s', [TPath.Combine(FLogDir, FPrefixFileName) + FormatDateTime('yyyy-mm-dd', Date), FExtension]);
 
   AssignFile(LTextFile, LFileName);
 
   if TFile.Exists(LFileName) then
   begin
-    if FCleanOnStart and not FCleanIsRun then
+    if not FCleanOnStart and FCleanIsRun then
+      Append(LTextFile)
+    else
     begin
       TFile.Delete(LFileName);
       FCleanIsRun := True;
 
       Rewrite(LTextFile);
-    end
-    else
-      Append(LTextFile)
+    end;
   end
   else
     Rewrite(LTextFile);

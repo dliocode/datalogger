@@ -13,7 +13,7 @@ uses
   Winapi.Windows,
 {$ENDIF}
 {$IF DEFINED(LINUX)}
-  Posix.Unistd,
+  Posix.SysUtsname, Posix.Unistd,
 {$ENDIF}
 {$IFDEF MACOS}
   Macapi.Helpers, Macapi.CoreFoundation, Macapi.ObjectiveC, Macapi.ObjCRuntime,

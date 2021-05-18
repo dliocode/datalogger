@@ -34,8 +34,10 @@ implementation
 { TProviderEventLog }
 
 constructor TProviderEventLog.Create(const AName: string = '');
+{$IF DEFINED(MSWINDOWS)}
 var
   LName: string;
+{$ENDIF}
 begin
   inherited Create;
 
