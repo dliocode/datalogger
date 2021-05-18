@@ -64,7 +64,12 @@ begin
       if not CreateDir(FLogDir) then
         TDirectory.CreateDirectory(FLogDir);
 
-  LFileName := Format('%s.%s', [TPath.Combine(FLogDir, FPrefixFileName) + FormatDateTime('yyyy-mm-dd', Date), FExtension]);
+  if Trim(FLogDir).IsEmpty then
+    LFileName := TPath.Combine(FLogDir, FPrefixFileName) + FormatDateTime('yyyy-mm-dd', Date)
+  else
+    LFileName := TPath.Combine(IncludeTrailingPathDelimiter(FLogDir), FPrefixFileName) + FormatDateTime('yyyy-mm-dd', Date);
+
+  LFileName := Format('%s.%s', [LFileName, FExtension]);
 
   AssignFile(LTextFile, LFileName);
 
