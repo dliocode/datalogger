@@ -69,7 +69,7 @@ constructor TDataLoggerProvider.Create;
 begin
   inherited Create(True);
 
-  SetLogFormat(DEFAULT_LOG_FORMAT);
+  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
   SetMaxRetry(3);
 end;
 

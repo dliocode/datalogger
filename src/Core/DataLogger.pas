@@ -20,6 +20,7 @@ type
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
   Exception = System.SysUtils.Exception;
+  TLoggerFormat = DataLogger.Types.TLoggerFormat;
 
   TDataLogger = class sealed(TThread)
   strict private
@@ -79,54 +80,26 @@ type
     class function Builder: TDataLogger;
   end;
 
-  TLogger = class
-  private
-    FDataLogger: TDataLogger;
-    class var FInstance: TLogger;
-    class function New: TLogger;
-    class destructor UnInitialize;
-  public
-    class function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Debug(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Debug(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Debug(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Info(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Info(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Info(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Success(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Success(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Success(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Warn(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Warn(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Warn(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Error(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Error(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Error(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function Fatal(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    class function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    class function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    class function SlineBreak: TDataLogger;
-
-    class function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
-    class function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
-    class function SetLogFormat(const ALogFormat: string): TDataLogger;
-    class function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-    class function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
-    class function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-    class function SetFormatSettings(const AFormatSettings: string): TDataLogger;
-    class function SetLogException(const AException: TOnLogException): TDataLogger;
-    class function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
-
-    constructor Create;
-    destructor Destroy; override;
-  end;
-
-  { Alias TLogger }
-  L = TLogger;
+function Logger: TDataLogger;
+function TLogger: TDataLogger; deprecated 'Use Logger instead - This function will be removed in future versions';
 
 implementation
+
+var
+  FLoggerDefault: TDataLogger;
+
+function Logger: TDataLogger;
+begin
+  if not Assigned(FLoggerDefault) then
+    FLoggerDefault := TDataLogger.Builder;
+
+  Result := FLoggerDefault;
+end;
+
+function TLogger: TDataLogger;
+begin
+  Result := Logger;
+end;
 
 { TDataLogger }
 
@@ -480,188 +453,11 @@ begin
   end;
 end;
 
-{ TLogger }
-class function TLogger.New: TLogger;
-begin
-  if not Assigned(FInstance) then
-    FInstance := TLogger.Create;
+initialization
 
-  Result := FInstance;
-end;
+finalization
 
-class destructor TLogger.UnInitialize;
-begin
-  if Assigned(FInstance) then
-    FInstance.DisposeOf;
-end;
-
-constructor TLogger.Create;
-begin
-  if Assigned(FInstance) then
-    raise Exception.Create('TLogger is already created!');
-
-  FDataLogger := TDataLogger.Builder;
-end;
-
-destructor TLogger.Destroy;
-begin
-  FDataLogger.DisposeOf;
-  inherited;
-end;
-
-class function TLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
-begin
-  Result := New.FDataLogger.AddProvider(AProvider);
-end;
-
-class function TLogger.SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
-begin
-  Result := New.FDataLogger.SetProvider(AProviders);
-end;
-
-class function TLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
-begin
-  Result := New.FDataLogger.SetLogFormat(ALogFormat);
-end;
-
-class function TLogger.SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-begin
-  Result := New.FDataLogger.SetLogLevel(ALogLevel);
-end;
-
-class function TLogger.SetFormatSettings(const AFormatSettings: string): TDataLogger;
-begin
-  Result := New.FDataLogger.SetFormatSettings(AFormatSettings);
-end;
-
-class function TLogger.SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
-begin
-  Result := New.FDataLogger.SetOnlyLogType(ALogType);
-end;
-
-class function TLogger.SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-begin
-  Result := New.FDataLogger.SetDisableLogType(ALogType);
-end;
-
-class function TLogger.SetLogException(const AException: TOnLogException): TDataLogger;
-begin
-  Result := New.FDataLogger.SetLogException(AException);
-end;
-
-class function TLogger.SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
-begin
-  Result := New.FDataLogger.SetMaxRetry(AMaxRetry);
-end;
-
-class function TLogger.Trace(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Trace(AMessage, ATag);
-end;
-
-class function TLogger.Trace(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Trace(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Trace(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Trace(AMessage, ATag);
-end;
-
-class function TLogger.Debug(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Debug(AMessage, ATag);
-end;
-
-class function TLogger.Debug(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Debug(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Debug(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Debug(AMessage, ATag);
-end;
-
-class function TLogger.Info(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Info(AMessage, ATag);
-end;
-
-class function TLogger.Info(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Info(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Info(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Info(AMessage, ATag);
-end;
-
-class function TLogger.Success(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Success(AMessage, ATag);
-end;
-
-class function TLogger.Success(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Success(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Success(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Success(AMessage, ATag);
-end;
-
-class function TLogger.Warn(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Warn(AMessage, ATag);
-end;
-
-class function TLogger.Warn(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Warn(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Warn(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Warn(AMessage, ATag);
-end;
-
-class function TLogger.Error(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Error(AMessage, ATag);
-end;
-
-class function TLogger.Error(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Error(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Error(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Error(AMessage, ATag);
-end;
-
-class function TLogger.Fatal(const AMessage: string; const ATag: string = ''): TDataLogger;
-begin
-  Result := New.FDataLogger.Fatal(AMessage, ATag);
-end;
-
-class function TLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Fatal(AMessage, AArgs, ATag);
-end;
-
-class function TLogger.Fatal(const AMessage: TJsonObject; const ATag: string): TDataLogger;
-begin
-  Result := New.FDataLogger.Fatal(AMessage, ATag);
-end;
-
-class function TLogger.SlineBreak: TDataLogger;
-begin
-  Result := New.FDataLogger.SlineBreak;
-end;
+if Assigned(FLoggerDefault) then
+  FLoggerDefault.DisposeOf;
 
 end.

@@ -53,23 +53,25 @@ type
 
   TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetryCount: Integer);
 
-const
-  LOG_SEQUENCE = '${sequence}';
-  LOG_TIMESTAMP = '${timestamp}';
-  LOG_THREADID = '${threadid}';
-  LOG_PROCESSID = '${processid}';
-  LOG_TYPE = '${type}';
-  LOG_TAG = '${tag}';
-  LOG_MESSAGE = '${message}';
+  TLoggerFormat = record
+  const
+    LOG_SEQUENCE = '${sequence}';
+    LOG_TIMESTAMP = '${timestamp}';
+    LOG_THREADID = '${threadid}';
+    LOG_PROCESSID = '${processid}';
+    LOG_TYPE = '${type}';
+    LOG_TAG = '${tag}';
+    LOG_MESSAGE = '${message}';
 
-  LOG_APPNAME = '${appname}';
-  LOG_APPVERSION = '${appversion}';
-  LOG_APPPATH = '${apppath}';
-  LOG_COMPUTERNAME = '${computername}';
-  LOG_USERNAME = '${username}';
-  LOG_OSVERSION = '${osversion}';
+    LOG_APPNAME = '${appname}';
+    LOG_APPVERSION = '${appversion}';
+    LOG_APPPATH = '${apppath}';
+    LOG_COMPUTERNAME = '${computername}';
+    LOG_USERNAME = '${username}';
+    LOG_OSVERSION = '${osversion}';
 
-  DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_TYPE + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+    DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_TYPE + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+  end;
 
 implementation
 
@@ -101,16 +103,16 @@ begin
 
   Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
 
-  _Add(LOG_THREADID, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
-  _Add(LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
-  _Add(LOG_THREADID, 'log_threadid', TJSONNumber.Create(AItem.ThreadID));
-  _Add(LOG_PROCESSID, 'log_processid', TJSONString.Create(AItem.ProcessId));
-  _Add(LOG_TYPE, 'log_type', TJSONString.Create(AItem.&Type.ToString));
-  _Add(LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
+  _Add(TLoggerFormat.LOG_THREADID, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
+  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
+  _Add(TLoggerFormat.LOG_THREADID, 'log_threadid', TJSONNumber.Create(AItem.ThreadID));
+  _Add(TLoggerFormat.LOG_PROCESSID, 'log_processid', TJSONString.Create(AItem.ProcessId));
+  _Add(TLoggerFormat.LOG_TYPE, 'log_type', TJSONString.Create(AItem.&Type.ToString));
+  _Add(TLoggerFormat.LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
 
   if not AItem.MessageJSON.Trim.IsEmpty then
   begin
-    _Add(LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.MessageJSON.Trim));
+    _Add(TLoggerFormat.LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.MessageJSON.Trim));
 
     try
       LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
@@ -124,14 +126,14 @@ begin
     end;
   end
   else
-    _Add(LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.Message.Trim));
+    _Add(TLoggerFormat.LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.Message.Trim));
 
-  _Add(LOG_APPNAME, 'log_appname', TJSONString.Create(AItem.AppName));
-  _Add(LOG_APPPATH, 'log_appversion', TJSONString.Create(AItem.AppVersion.FileVersion));
-  _Add(LOG_APPPATH, 'log_apppath', TJSONString.Create(AItem.AppPath));
-  _Add(LOG_COMPUTERNAME, 'log_computername', TJSONString.Create(AItem.ComputerName));
-  _Add(LOG_USERNAME, 'log_username', TJSONString.Create(AItem.Username));
-  _Add(LOG_OSVERSION, 'log_osversion', TJSONString.Create(AItem.OSVersion));
+  _Add(TLoggerFormat.LOG_APPNAME, 'log_appname', TJSONString.Create(AItem.AppName));
+  _Add(TLoggerFormat.LOG_APPPATH, 'log_appversion', TJSONString.Create(AItem.AppVersion.FileVersion));
+  _Add(TLoggerFormat.LOG_APPPATH, 'log_apppath', TJSONString.Create(AItem.AppPath));
+  _Add(TLoggerFormat.LOG_COMPUTERNAME, 'log_computername', TJSONString.Create(AItem.ComputerName));
+  _Add(TLoggerFormat.LOG_USERNAME, 'log_username', TJSONString.Create(AItem.Username));
+  _Add(TLoggerFormat.LOG_OSVERSION, 'log_osversion', TJSONString.Create(AItem.OSVersion));
 end;
 
 class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
@@ -160,16 +162,16 @@ var
 begin
   LLog := ALogFormat;
 
-  LLog := _Add(LOG_SEQUENCE, AItem.Sequence.ToString);
-  LLog := _Add(LOG_TIMESTAMP, FormatDateTime(AFormatSettings, AItem.TimeStamp));
-  LLog := _Add(LOG_THREADID, AItem.ThreadID.ToString);
-  LLog := _Add(LOG_PROCESSID, AItem.ProcessId);
-  LLog := _Add(LOG_TYPE, AItem.&Type.ToString);
-  LLog := _Add(LOG_TAG, AItem.Tag.Trim);
+  LLog := _Add(TLoggerFormat.LOG_SEQUENCE, AItem.Sequence.ToString);
+  LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatSettings, AItem.TimeStamp));
+  LLog := _Add(TLoggerFormat.LOG_THREADID, AItem.ThreadID.ToString);
+  LLog := _Add(TLoggerFormat.LOG_PROCESSID, AItem.ProcessId);
+  LLog := _Add(TLoggerFormat.LOG_TYPE, AItem.&Type.ToString);
+  LLog := _Add(TLoggerFormat.LOG_TAG, AItem.Tag.Trim);
 
   if not AItem.MessageJSON.Trim.IsEmpty then
   begin
-    LLog := _Add(LOG_MESSAGE, AItem.MessageJSON.Trim);
+    LLog := _Add(TLoggerFormat.LOG_MESSAGE, AItem.MessageJSON.Trim);
 
     try
       LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
@@ -183,14 +185,14 @@ begin
     end;
   end
   else
-    LLog := _Add(LOG_MESSAGE, AItem.Message.Trim);
+    LLog := _Add(TLoggerFormat.LOG_MESSAGE, AItem.Message.Trim);
 
-  LLog := _Add(LOG_APPNAME, AItem.AppName);
-  LLog := _Add(LOG_APPPATH, AItem.AppPath);
-  LLog := _Add(LOG_APPVERSION, AItem.AppVersion.FileVersion);
-  LLog := _Add(LOG_COMPUTERNAME, AItem.ComputerName);
-  LLog := _Add(LOG_USERNAME, AItem.Username);
-  LLog := _Add(LOG_OSVERSION, AItem.OSVersion);
+  LLog := _Add(TLoggerFormat.LOG_APPNAME, AItem.AppName);
+  LLog := _Add(TLoggerFormat.LOG_APPPATH, AItem.AppPath);
+  LLog := _Add(TLoggerFormat.LOG_APPVERSION, AItem.AppVersion.FileVersion);
+  LLog := _Add(TLoggerFormat.LOG_COMPUTERNAME, AItem.ComputerName);
+  LLog := _Add(TLoggerFormat.LOG_USERNAME, AItem.Username);
+  LLog := _Add(TLoggerFormat.LOG_OSVERSION, AItem.OSVersion);
 
   Result := LLog;
 end;

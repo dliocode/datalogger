@@ -10,11 +10,11 @@ unit DataLogger.Provider.ElasticSearch;
 interface
 
 uses
-  DataLogger.Provider.REST.Indy, DataLogger.Types,
+  DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
   System.SysUtils;
 
 type
-  TProviderElasticSearch = class(TProviderRESTIndy)
+  TProviderElasticSearch = class(TProviderRESTHTTPClient)
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
