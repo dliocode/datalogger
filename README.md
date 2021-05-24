@@ -118,13 +118,13 @@ uses
   DataLogger.Provider.Console;
 
 begin
-  TLogger.AddProvider(TProviderConsole.Create);
+  Logger.AddProvider(TProviderConsole.Create);
 
   // Quero exibir: [ Data e Hora ] [ Tipo ] [ Tag ] - Mensagem
 
-  TLogger.SetLogFormat(Format('[ %s ] [ %s ] [ %s ] - %s ',[TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_TYPE, TLoggerFormat.LOG_TAG, TLoggerFormat.LOG_MESSAGE]));
+  Logger.SetLogFormat(Format('[ %s ] [ %s ] [ %s ] - %s ',[TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_TYPE, TLoggerFormat.LOG_TAG, TLoggerFormat.LOG_MESSAGE]));
 
-  TLogger.Info('Minha mensagem no Log','CLASS_PRINCIPAL');
+  Logger.Info('Minha mensagem no Log','CLASS_PRINCIPAL');
   
   // output: [ 2021-05-19 08:15:59:600 ] [ Info ] [ CLASS_PRINCIPAL ] - Minha mensagem no Log
 
