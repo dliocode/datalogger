@@ -20,11 +20,11 @@ type
   TProviderTelegram = class(TProviderRESTHTTPClient)
   private
     FBotToken: string;
-    FChatId: Integer;
+    FChatId: Double;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const ABotToken: string; const AChatId: Integer); reintroduce;
+    constructor Create(const ABotToken: string; const AChatId: Double); reintroduce;
   end;
 
 implementation
@@ -32,11 +32,11 @@ implementation
 { TProviderTelegram }
 
 const
-  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%d&text=%s';
+  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%f&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates';
   TELGRAM_API_MARKDOWN = '&parse_mode=markdown';
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Integer);
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double);
 begin
   FBotToken := ABotToken;
   FChatId := AChatId;
