@@ -20,11 +20,12 @@ type
   TProviderTelegram = class(TProviderRESTHTTPClient)
   private
     FBotToken: string;
-    FChatId: Double;
+    FChatId: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const ABotToken: string; const AChatId: Double); reintroduce;
+    constructor Create(const ABotToken: string; const AChatId: string); reintroduce; overload;
+    constructor Create(const ABotToken: string; const AChatId: Double); reintroduce; overload; deprecated 'ChatId type is string - This function will be removed in future versions';
   end;
 
 implementation
@@ -32,16 +33,21 @@ implementation
 { TProviderTelegram }
 
 const
-  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%f&text=%s';
+  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates';
   TELGRAM_API_MARKDOWN = '&parse_mode=markdown';
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double);
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string);
 begin
   FBotToken := ABotToken;
   FChatId := AChatId;
 
   inherited Create('', 'application/json');
+end;
+
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double);
+begin
+  Create(ABotToken, FloatToStr(AChatId));
 end;
 
 procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);
