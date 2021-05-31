@@ -75,15 +75,15 @@ begin
 
   if TFile.Exists(LFileName) then
   begin
-    if not FCleanOnStart and FCleanIsRun then
-      Append(LTextFile)
-    else
+    if FCleanOnStart and not FCleanIsRun then
     begin
       TFile.Delete(LFileName);
       FCleanIsRun := True;
 
       Rewrite(LTextFile);
-    end;
+    end
+    else
+      Append(LTextFile);
   end
   else
     Rewrite(LTextFile);
