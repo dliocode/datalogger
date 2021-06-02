@@ -106,7 +106,7 @@ begin
           if not TFile.Exists(LFileName) then
             Rewrite(LTextFile);
 
-          Writeln(LTextFile, LLog);
+          Writeln(LTextFile, UTF8Encode(LLog));
 
           Break;
         except

@@ -343,6 +343,7 @@ var
   LLogItem: TLoggerItem;
 begin
   Result := Self;
+
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
@@ -356,26 +357,26 @@ begin
     if Ord(FLogLevel) > Ord(AType) then
       Exit;
 
-  DefineSequence;
-
-  LLogItem := Default (TLoggerItem);
-  LLogItem.Sequence := FSequence;
-  LLogItem.TimeStamp := Now;
-  LLogItem.ThreadID := TThread.Current.ThreadID;
-  LLogItem.&Type := AType;
-  LLogItem.Tag := ATag;
-  LLogItem.Message := AMessageString;
-  LLogItem.MessageJSON := AMessageJSON;
-  LLogItem.AppName := TLoggerUtils.AppName;
-  LLogItem.AppPath := TLoggerUtils.AppPath;
-  LLogItem.AppVersion := TLoggerUtils.AppVersion;
-  LLogItem.ComputerName := TLoggerUtils.ComputerName;
-  LLogItem.Username := TLoggerUtils.Username;
-  LLogItem.OSVersion := TLoggerUtils.OS;
-  LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
-
   FCriticalSection.Enter;
   try
+    DefineSequence;
+
+    LLogItem := Default (TLoggerItem);
+    LLogItem.Sequence := FSequence;
+    LLogItem.TimeStamp := Now;
+    LLogItem.ThreadID := TThread.Current.ThreadID;
+    LLogItem.&Type := AType;
+    LLogItem.Tag := ATag;
+    LLogItem.Message := AMessageString;
+    LLogItem.MessageJSON := AMessageJSON;
+    LLogItem.AppName := TLoggerUtils.AppName;
+    LLogItem.AppPath := TLoggerUtils.AppPath;
+    LLogItem.AppVersion := TLoggerUtils.AppVersion;
+    LLogItem.ComputerName := TLoggerUtils.ComputerName;
+    LLogItem.Username := TLoggerUtils.Username;
+    LLogItem.OSVersion := TLoggerUtils.OS;
+    LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
+
     FList.Add(LLogItem);
   finally
     FCriticalSection.Leave;
