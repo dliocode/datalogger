@@ -427,29 +427,32 @@ begin
   while not(Terminated) do
   begin
     LWait := FEvent.WaitFor(INFINITE);
-    FEvent.ResetEvent;
 
-    case LWait of
-      wrSignaled:
-        begin
-          FCriticalSection.Enter;
-          try
-            LCache := ExtractCache;
-          finally
-            FCriticalSection.Leave;
+    try
+      case LWait of
+        wrSignaled:
+          begin
+            FCriticalSection.Enter;
+            try
+              LCache := ExtractCache;
+            finally
+              FCriticalSection.Leave;
+            end;
+
+            if Length(LCache) = 0 then
+              Exit;
+
+            TParallel.For(Low(FProviders), High(FProviders),
+              procedure(Index: Integer)
+              begin
+                FProviders[Index].AddCache(LCache);
+              end);
           end;
-
-          if Length(LCache) = 0 then
-            Exit;
-
-          TParallel.For(Low(FProviders), High(FProviders),
-            procedure(Index: Integer)
-            begin
-              FProviders[Index].AddCache(LCache);
-            end);
-        end;
-    else
-      Continue;
+      else
+        Continue;
+      end;
+    finally
+      FEvent.ResetEvent;
     end;
   end;
 end;
