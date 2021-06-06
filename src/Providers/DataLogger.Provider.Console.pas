@@ -72,7 +72,7 @@ begin
       Continue;
     end;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatSettings);
+    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
 
     LRetryCount := 0;
 

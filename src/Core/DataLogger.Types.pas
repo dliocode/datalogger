@@ -46,8 +46,8 @@ type
   TLoggerLogFormat = class
     class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJsonObject;
     class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
-    class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): string;
-    class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): TStream;
+    class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
+    class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
     class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
   end;
 
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-class function TLoggerLogFormat.AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): string;
+class function TLoggerLogFormat.AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
 var
   LLog: string;
   LJO: TJsonObject;
@@ -163,7 +163,7 @@ begin
   LLog := ALogFormat;
 
   LLog := _Add(TLoggerFormat.LOG_SEQUENCE, AItem.Sequence.ToString);
-  LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatSettings, AItem.TimeStamp));
+  LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatTimestamp, AItem.TimeStamp));
   LLog := _Add(TLoggerFormat.LOG_THREADID, AItem.ThreadID.ToString);
   LLog := _Add(TLoggerFormat.LOG_PROCESSID, AItem.ProcessId);
   LLog := _Add(TLoggerFormat.LOG_TYPE, AItem.&Type.ToString);
@@ -197,9 +197,9 @@ begin
   Result := LLog;
 end;
 
-class function TLoggerLogFormat.AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string): TStream;
+class function TLoggerLogFormat.AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
 begin
-  Result := TStringStream.Create(AsString(ALogFormat, AItem, AFormatSettings), TEncoding.UTF8);
+  Result := TStringStream.Create(AsString(ALogFormat, AItem, AFormatTimestamp), TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);
 end;
 

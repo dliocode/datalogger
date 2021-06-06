@@ -132,6 +132,32 @@ begin
 end.
 ```
 
+#### Como mudar o formato do Timestamp
+* Formato padrão: `yyyy-mm-dd hh:mm:ss:zzz`
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Provider.Console;
+
+begin
+  Logger.AddProvider(TProviderConsole.Create);
+
+  // Quero exibir: [ Data e Hora ] [ Tipo ] [ Tag ] - Mensagem
+
+  Logger.SetLogFormat(Format('[ %s ] [ %s ] [ %s ] - %s ',[TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_TYPE, TLoggerFormat.LOG_TAG, TLoggerFormat.LOG_MESSAGE]));
+
+  // Definindo o formato do Timestamp
+  Logger.SetFormatTimestamp('dd/mm/yyyy hh:mm:ss');
+
+  Logger.Info('Minha mensagem no Log','CLASS_PRINCIPAL');
+
+  // output: [ 19/05/2021 08:15:59 ] [ Info ] [ CLASS_PRINCIPAL ] - Minha mensagem no Log
+
+  Readln;
+end.
+```
+
 #### Tipos de Tag para criar o formato do log
 * Comum 
 

@@ -19,7 +19,7 @@ type
     FEvent: TEvent;
     FList: TList<TLoggerItem>;
     FLogFormat: string;
-    FFormatSettings: string;
+    FFormatTimestamp: string;
     FLogLevel: TLoggerType;
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
@@ -35,7 +35,7 @@ type
 
     function ValidationBeforeSave(const ALogItem: TLoggerItem): Boolean;
     function GetLogFormat: string;
-    function GetFormatSettings: string;
+    function GetFormatTimestamp: string;
     function GetLogLevel: TLoggerType;
     function GetDisableLevel: TLoggerTypes;
     function GetOnlyLogType: TLoggerTypes;
@@ -47,7 +47,7 @@ type
     constructor Create;
   public
     function SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
-    function SetFormatSettings(const AFormatSettings: string): TDataLoggerProvider;
+    function SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLoggerProvider;
     function SetDisableLogType(const ALogType: TLoggerTypes): TDataLoggerProvider;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLoggerProvider;
@@ -83,7 +83,7 @@ begin
   FDisableLogType := [];
   FOnlyLogType := [TLoggerType.All];
 
-  FFormatSettings := 'yyyy-mm-dd hh:nn:ss:zzz';
+  FFormatTimestamp := 'yyyy-mm-dd hh:nn:ss:zzz';
 
   FreeOnTerminate := False;
   Start;
@@ -132,11 +132,11 @@ begin
   FLogFormat := ALogFormat;
 end;
 
-function TDataLoggerProvider.SetFormatSettings(const AFormatSettings: string): TDataLoggerProvider;
+function TDataLoggerProvider.SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
 begin
   Result := Self;
 
-  FFormatSettings := AFormatSettings;
+  FFormatTimestamp := AFormatTimestamp;
 end;
 
 function TDataLoggerProvider.SetLogLevel(const ALogLevel: TLoggerType): TDataLoggerProvider;
@@ -191,9 +191,9 @@ begin
   Result := FLogFormat;
 end;
 
-function TDataLoggerProvider.GetFormatSettings: string;
+function TDataLoggerProvider.GetFormatTimestamp: string;
 begin
-  Result := FFormatSettings;
+  Result := FFormatTimestamp;
 end;
 
 function TDataLoggerProvider.GetLogLevel: TLoggerType;

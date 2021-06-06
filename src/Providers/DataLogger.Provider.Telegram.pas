@@ -72,7 +72,7 @@ begin
       Continue;
 
     LURLMarkdown := '';
-    LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatSettings);
+    LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
 
     if not MatchText(LMessage.Trim, ['_', '*']) then
     begin

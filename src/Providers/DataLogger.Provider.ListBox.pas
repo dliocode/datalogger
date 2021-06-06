@@ -73,7 +73,7 @@ begin
     if LItem.&Type = TLoggerType.All then
       LLog := ''
     else
-      LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatSettings);
+      LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
 
     LRetryCount := 0;
 

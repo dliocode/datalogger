@@ -60,7 +60,7 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatSettings);
+    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
 
     LSysLogMessage := TIdSysLogMessage.Create(nil);
     try

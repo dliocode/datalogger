@@ -16,7 +16,7 @@ uses
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
 
-  TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatSettings: string);
+  TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
 
   TEventsConfig = class
   private
@@ -78,7 +78,7 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
   procedure _Execute(const AEvent: TExecuteEvents; const AItem: TLoggerItem);
   begin
     if Assigned(AEvent) then
-      AEvent(GetLogFormat, AItem, GetFormatSettings);
+      AEvent(GetLogFormat, AItem, GetFormatTimestamp);
   end;
 
 var

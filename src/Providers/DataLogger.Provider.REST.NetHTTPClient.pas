@@ -94,7 +94,7 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatSettings);
+    LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatTimestamp);
     LLogItemREST.LogItem := LItem;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
