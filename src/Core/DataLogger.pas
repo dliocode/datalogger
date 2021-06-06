@@ -19,8 +19,8 @@ type
   TLoggerTypes = DataLogger.Types.TLoggerTypes;
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
-  Exception = System.SysUtils.Exception;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
+  Exception = System.SysUtils.Exception;
 
   TDataLogger = class sealed(TThread)
   strict private
@@ -407,6 +407,7 @@ begin
   finally
     FCriticalSection.Leave;
   end;
+
   Result := LLogCacheArray;
 end;
 
@@ -429,27 +430,23 @@ begin
     LWait := FEvent.WaitFor(INFINITE);
 
     try
-      case LWait of
-        wrSignaled:
+      if LWait = wrSignaled then
+      begin
+        FCriticalSection.Enter;
+        try
+          LCache := ExtractCache;
+        finally
+          FCriticalSection.Leave;
+        end;
+
+        if Length(LCache) = 0 then
+          Exit;
+
+        TParallel.For(Low(FProviders), High(FProviders),
+          procedure(Index: Integer)
           begin
-            FCriticalSection.Enter;
-            try
-              LCache := ExtractCache;
-            finally
-              FCriticalSection.Leave;
-            end;
-
-            if Length(LCache) = 0 then
-              Exit;
-
-            TParallel.For(Low(FProviders), High(FProviders),
-              procedure(Index: Integer)
-              begin
-                FProviders[Index].AddCache(LCache);
-              end);
-          end;
-      else
-        Continue;
+            FProviders[Index].AddCache(LCache);
+          end);
       end;
     finally
       FEvent.ResetEvent;

@@ -108,21 +108,20 @@ begin
   while not(Terminated) do
   begin
     LWait := FEvent.WaitFor(INFINITE);
-    FEvent.ResetEvent;
 
-    case LWait of
-      wrSignaled:
-        begin
-          FCriticalSection.Enter;
-          try
-            LCache := ExtractCache;
-            Save(LCache);
-          finally
-            FCriticalSection.Leave;
-          end;
-        end
-    else
-      Continue;
+    try
+      if LWait = wrSignaled then
+      begin
+        FCriticalSection.Enter;
+        try
+          LCache := ExtractCache;
+          Save(LCache);
+        finally
+          FCriticalSection.Leave;
+        end;
+      end;
+    finally
+      FEvent.ResetEvent;
     end;
   end;
 end;
