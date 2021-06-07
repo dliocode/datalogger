@@ -422,7 +422,7 @@ var
   LWait: TWaitResult;
   LCache: TArray<TLoggerItem>;
 begin
-  while not(Terminated) do
+  while not Terminated do
   begin
     LWait := FEvent.WaitFor(INFINITE);
 

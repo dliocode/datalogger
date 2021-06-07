@@ -105,23 +105,24 @@ var
   LWait: TWaitResult;
   LCache: TArray<TLoggerItem>;
 begin
-  while not(Terminated) do
+  while not Terminated do
   begin
     LWait := FEvent.WaitFor(INFINITE);
+    FEvent.ResetEvent;
 
-    try
-      if LWait = wrSignaled then
-      begin
-        FCriticalSection.Enter;
-        try
-          LCache := ExtractCache;
-          Save(LCache);
-        finally
-          FCriticalSection.Leave;
-        end;
+    if LWait = wrSignaled then
+    begin
+      FCriticalSection.Enter;
+      try
+        LCache := ExtractCache;
+      finally
+        FCriticalSection.Leave;
       end;
-    finally
-      FEvent.ResetEvent;
+
+      if Length(LCache) = 0 then
+        Exit;
+
+      Save(LCache);
     end;
   end;
 end;
