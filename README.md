@@ -46,7 +46,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | Memo | DataLogger.Provider.Memo |
 | OutputDebugString | DataLogger.Provider.OutputDebugString |
 | Redis | DataLogger.Provider.Redis |
-| Rest | DataLogger.Provider.REST.HTTPClient **ou** DataLogger.Provider.REST.Indy **ou** DataLogger.Provider.REST.NetHTTPClient  |
+| Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient  |
 | Slack | DataLogger.Provider.Slack |
 | SysLog | DataLogger.Provider.SysLog |
 | Telegram | DataLogger.Provider.Telegram |
