@@ -12,7 +12,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   System.SysUtils, System.Classes, System.Threading,
-  IdHTTP, IdSSLOpenSSL, IdSSLOpenSSLHeaders;
+  IdHTTP;
 
 type
   TLogItemREST = record

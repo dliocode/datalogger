@@ -120,7 +120,7 @@ begin
       end;
 
       if Length(LCache) = 0 then
-        Exit;
+        Continue;
 
       Save(LCache);
     end;

@@ -12,7 +12,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   System.SysUtils, System.Classes, System.Threading,
-  System.Net.Mime, System.Net.HttpClientComponent, System.Net.HttpClient;
+  System.Net.HttpClientComponent, System.Net.HttpClient;
 
 type
   TLogItemREST = record

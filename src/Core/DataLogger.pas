@@ -437,7 +437,7 @@ begin
         end;
 
         if Length(LCache) = 0 then
-          Exit;
+          Continue;
 
         TParallel.for(Low(FProviders), High(FProviders),
           procedure(Index: Integer)
