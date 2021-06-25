@@ -18,10 +18,7 @@
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
 
-### Doação
-
-Se este projeto o ajudar a reduzir o tempo de desenvolvimento, você pode me dar uma xícara de café :) <a href="https://www.paypal.com/donate?hosted_button_id=2T7W4PL7YGJZW" target="_blank" rel="noopener noreferrer"><img width="150" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
-
+Support: developer.dlio@gmail.com
 
 ## Instalação
 
