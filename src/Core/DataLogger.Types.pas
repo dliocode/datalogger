@@ -116,12 +116,14 @@ begin
 
     try
       LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
-      try
-        for I := 0 to Pred(LJO.Count) do
-          Result.AddPair('log_' + LJO.Pairs[I].JsonString.Value, LJO.Pairs[I].JsonValue.Value);
-      finally
-        LJO.DisposeOf;
-      end;
+
+      if Assigned(LJO) then
+        try
+          for I := 0 to Pred(LJO.Count) do
+            Result.AddPair('log_' + LJO.Pairs[I].JsonString.Value, LJO.Pairs[I].JsonValue.Value);
+        finally
+          LJO.DisposeOf;
+        end;
     except
     end;
   end
@@ -175,12 +177,14 @@ begin
 
     try
       LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
-      try
-        for I := 0 to Pred(LJO.Count) do
-          LLog := _Add(Format('${%s}', [LJO.Pairs[I].JsonString.Value]), LJO.Pairs[I].JsonValue.Value);
-      finally
-        LJO.DisposeOf;
-      end;
+
+      if Assigned(LJO) then
+        try
+          for I := 0 to Pred(LJO.Count) do
+            LLog := _Add(Format('${%s}', [LJO.Pairs[I].JsonString.Value]), LJO.Pairs[I].JsonValue.Value);
+        finally
+          LJO.DisposeOf;
+        end;
     except
     end;
   end

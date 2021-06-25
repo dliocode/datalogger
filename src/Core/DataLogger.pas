@@ -77,7 +77,7 @@ type
   end;
 
 function Logger: TDataLogger;
-function TLogger: TDataLogger; deprecated 'Use Logger instead - This function will be removed in future versions';
+function TLogger: TDataLogger; deprecated 'Use Logger - This function will be removed in future versions';
 
 implementation
 
@@ -358,7 +358,7 @@ begin
   try
     DefineSequence;
 
-    LLogItem := Default (TLoggerItem);
+    LLogItem := Default(TLoggerItem);
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;
@@ -425,28 +425,25 @@ begin
   while not Terminated do
   begin
     LWait := FEvent.WaitFor(INFINITE);
+    FEvent.ResetEvent;
 
-    try
-      if LWait = wrSignaled then
-      begin
-        FCriticalSection.Enter;
-        try
-          LCache := ExtractCache;
-        finally
-          FCriticalSection.Leave;
-        end;
-
-        if Length(LCache) = 0 then
-          Continue;
-
-        TParallel.for(Low(FProviders), High(FProviders),
-          procedure(Index: Integer)
-          begin
-            FProviders[Index].AddCache(LCache);
-          end);
+    if LWait = wrSignaled then
+    begin
+      FCriticalSection.Enter;
+      try
+        LCache := ExtractCache;
+      finally
+        FCriticalSection.Leave;
       end;
-    finally
-      FEvent.ResetEvent;
+
+      if Length(LCache) = 0 then
+        Continue;
+
+      TParallel.for(Low(FProviders), High(FProviders),
+        procedure(Index: Integer)
+        begin
+          FProviders[Index].AddCache(LCache);
+        end);
     end;
   end;
 end;
