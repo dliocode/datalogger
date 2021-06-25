@@ -356,7 +356,8 @@ begin
 
   FCriticalSection.Enter;
   try
-    DefineSequence;
+    if not (AType = TLoggerType.All) then
+      DefineSequence;
 
     LLogItem := Default(TLoggerItem);
     LLogItem.Sequence := FSequence;
