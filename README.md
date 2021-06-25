@@ -1,11 +1,24 @@
+<p align="center">
+  <a href="https://user-images.githubusercontent.com/54585337/123354958-0f374800-d53b-11eb-8a2b-9c7041cfff47.png">
+    <img alt="datalogger" src="https://user-images.githubusercontent.com/54585337/123354958-0f374800-d53b-11eb-8a2b-9c7041cfff47.png">
+  </a>  
+</p>
+<br>
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/stars/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/forks/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/contributors/dliocode/datalogger?color=orange&style=flat-square">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=red&category=lines">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=green&category=code">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=yellow&category=files">
+</p>
+
 # DataLogger
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
 
-### Doação
-
-Se este projeto o ajudar a reduzir o tempo de desenvolvimento, você pode me dar uma xícara de café :) <a href="https://www.paypal.com/donate?hosted_button_id=2T7W4PL7YGJZW" target="_blank" rel="noopener noreferrer"><img width="150" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
-
+Support: developer.dlio@gmail.com
 
 ## Instalação
 
