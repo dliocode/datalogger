@@ -1,3 +1,19 @@
+<p align="center">
+  <a href="https://user-images.githubusercontent.com/54585337/123354958-0f374800-d53b-11eb-8a2b-9c7041cfff47.png">
+    <img alt="datalogger" src="https://user-images.githubusercontent.com/54585337/123354958-0f374800-d53b-11eb-8a2b-9c7041cfff47.png">
+  </a>  
+</p>
+<br>
+<p align="center">
+  <img src="https://img.shields.io/github/v/release/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/stars/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/forks/dliocode/datalogger?style=flat-square">
+  <img src="https://img.shields.io/github/contributors/dliocode/datalogger?color=orange&style=flat-square">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=red&category=lines">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=green&category=code">
+  <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=yellow&category=files">
+</p>
+
 # DataLogger
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
