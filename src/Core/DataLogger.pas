@@ -71,6 +71,8 @@ type
     function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function SlineBreak: TDataLogger;
+
+    constructor Create; reintroduce;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
     class function Builder: TDataLogger;
@@ -101,10 +103,15 @@ end;
 
 class function TDataLogger.Builder: TDataLogger;
 begin
-  Result := TDataLogger.Create(True);
-  Result.FreeOnTerminate := False;
-  Result.Start;
-  Result.NameThreadForDebugging(Self.ClassName);
+  Result := TDataLogger.Create;
+end;
+
+constructor TDataLogger.Create;
+begin
+  inherited Create(True);
+  FreeOnTerminate := False;
+  Start;
+  NameThreadForDebugging(Self.ClassName);
 end;
 
 procedure TDataLogger.AfterConstruction;
