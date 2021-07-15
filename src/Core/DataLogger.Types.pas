@@ -101,10 +101,10 @@ var
 begin
   Result := TJsonObject.Create;
 
-  Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
+  Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
 
   _Add(TLoggerFormat.LOG_THREADID, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
-  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp)));
+  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
   _Add(TLoggerFormat.LOG_THREADID, 'log_threadid', TJSONNumber.Create(AItem.ThreadID));
   _Add(TLoggerFormat.LOG_PROCESSID, 'log_processid', TJSONString.Create(AItem.ProcessId));
   _Add(TLoggerFormat.LOG_TYPE, 'log_type', TJSONString.Create(AItem.&Type.ToString));
