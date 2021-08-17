@@ -70,7 +70,7 @@ begin
   inherited Create(True);
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
-  SetMaxRetry(3);
+  SetMaxRetry(4);
 end;
 
 procedure TDataLoggerProvider.AfterConstruction;
@@ -112,12 +112,7 @@ begin
 
     if LWait = wrSignaled then
     begin
-      FCriticalSection.Enter;
-      try
-        LCache := ExtractCache;
-      finally
-        FCriticalSection.Leave;
-      end;
+      LCache := ExtractCache;
 
       if Length(LCache) = 0 then
         Continue;
@@ -136,7 +131,6 @@ end;
 function TDataLoggerProvider.SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
 begin
   Result := Self;
-
   FFormatTimestamp := AFormatTimestamp;
 end;
 
@@ -229,10 +223,10 @@ var
 begin
   Result := Self;
 
-  LItems := AValues;
-
   FCriticalSection.Enter;
   try
+    LItems := AValues;
+
     for LItem in LItems do
       FList.Add(LItem);
   finally

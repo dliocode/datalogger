@@ -42,6 +42,7 @@ type
   public
     function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
     function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+
     function SetLogFormat(const ALogFormat: string): TDataLogger;
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
@@ -49,6 +50,7 @@ type
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+
     function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
@@ -131,6 +133,7 @@ begin
   Terminate;
   FEvent.SetEvent;
   WaitFor;
+
   CloseProvider;
   FList.DisposeOf;
   FEvent.DisposeOf;
@@ -156,7 +159,7 @@ begin
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
-  TParallel.for(Low(FProviders), High(FProviders),
+  TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
       FProviders[Index].SetLogFormat(ALogFormat);
@@ -170,7 +173,7 @@ begin
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
-  TParallel.for(Low(FProviders), High(FProviders),
+  TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
       FProviders[Index].SetFormatTimestamp(AFormatTimestamp);
@@ -202,7 +205,7 @@ begin
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
-  TParallel.for(Low(FProviders), High(FProviders),
+  TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
       FProviders[Index].SetLogException(AException);
@@ -216,7 +219,7 @@ begin
   if Length(FProviders) = 0 then
     raise EDataLoggerException.Create('Provider not defined!');
 
-  TParallel.for(Low(FProviders), High(FProviders),
+  TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
       FProviders[Index].SetMaxRetry(AMaxRetry);
@@ -348,21 +351,21 @@ var
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
-
-  if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
-    Exit;
-
-  if not(TLoggerType.All in FOnlyLogType) and not(AType in FOnlyLogType) then
-    Exit;
-
-  if not(AType in FOnlyLogType) then
-    if Ord(FLogLevel) > Ord(AType) then
-      Exit;
-
   FCriticalSection.Enter;
   try
+    if Length(FProviders) = 0 then
+      raise EDataLoggerException.Create('Provider not defined!');
+
+    if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
+      Exit;
+
+    if not(TLoggerType.All in FOnlyLogType) and not(AType in FOnlyLogType) then
+      Exit;
+
+    if not(AType in FOnlyLogType) then
+      if Ord(FLogLevel) > Ord(AType) then
+        Exit;
+
     if not (AType = TLoggerType.All) then
       DefineSequence;
 
@@ -437,12 +440,7 @@ begin
 
     if LWait = wrSignaled then
     begin
-      FCriticalSection.Enter;
-      try
-        LCache := ExtractCache;
-      finally
-        FCriticalSection.Leave;
-      end;
+      LCache := ExtractCache;
 
       if Length(LCache) = 0 then
         Continue;
