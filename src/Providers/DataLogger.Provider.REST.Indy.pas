@@ -93,7 +93,11 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatTimestamp);
+    if Trim(LowerCase(FContentType)) = 'application/json' then
+      LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(GetLogFormat, LItem)
+    else
+      LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatTimestamp);
+
     LLogItemREST.LogItem := LItem;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);

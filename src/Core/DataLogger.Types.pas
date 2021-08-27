@@ -90,14 +90,14 @@ class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AIt
     if ALogFormat.Contains(ALogKey) then
       Result.AddPair(AJSONKey, AJSONValue)
     else
-    begin
       AJSONValue.DisposeOf;
-    end;
   end;
 
 var
   I: Integer;
   LJO: TJsonObject;
+  LKey: string;
+  LValue: TJsonValue;
 begin
   Result := TJsonObject.Create;
 
@@ -120,7 +120,15 @@ begin
       if Assigned(LJO) then
         try
           for I := 0 to Pred(LJO.Count) do
-            Result.AddPair('log_' + LJO.Pairs[I].JsonString.Value, LJO.Pairs[I].JsonValue.Value);
+          begin
+            LKey := Format('${%s}',[LJO.Pairs[I].JsonString.Value]);
+
+            if ALogFormat.Contains(LKey) then
+            begin
+              LValue := LJO.Pairs[I].JsonValue.Clone as TJSONValue;
+              Result.AddPair(LJO.Pairs[I].JsonString.Value, LValue);
+            end;
+          end;
         finally
           LJO.DisposeOf;
         end;
