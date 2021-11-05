@@ -80,7 +80,7 @@ begin
 
     repeat
       try
-        if not Assigned(FListView.Owner) then
+        if (csDestroying in FListView.ComponentState) then
           Exit;
 
         FListView.Items.BeginUpdate;
@@ -88,7 +88,7 @@ begin
           TThread.Synchronize(nil,
             procedure
             begin
-              if not Assigned(FListView.Owner) then
+              if (csDestroying in FListView.ComponentState) then
                 Exit;
 
               FListView.Items.Add.Caption := LLog;
@@ -99,7 +99,7 @@ begin
             TThread.Synchronize(nil,
               procedure
               begin
-                if not Assigned(FListView.Owner) then
+                if (csDestroying in FListView.ComponentState) then
                   Exit;
 
                 LLines := FListView.Items.Count;
@@ -111,17 +111,19 @@ begin
               end);
           end;
         finally
-          if Assigned(FListView.Owner) then
+          if not(csDestroying in FListView.ComponentState) then
+          begin
             FListView.Items.EndUpdate;
 
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              if not Assigned(FListView.Owner) then
-                Exit;
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                if (csDestroying in FListView.ComponentState) then
+                  Exit;
 
-              FListView.Scroll(0, FListView.Items.Count);
-            end);
+                FListView.Scroll(0, FListView.Items.Count);
+              end);
+          end;
         end;
 
         Break;

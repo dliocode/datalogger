@@ -79,7 +79,7 @@ begin
 
     repeat
       try
-        if not Assigned(FMemo.Owner) then
+        if (csDestroying in FMemo.ComponentState) then
           Exit;
 
         FMemo.Lines.BeginUpdate;
@@ -87,7 +87,7 @@ begin
           TThread.Synchronize(nil,
             procedure
             begin
-              if not Assigned(FMemo.Owner) then
+              if (csDestroying in FMemo.ComponentState) then
                 Exit;
 
               FMemo.Lines.Add(LLog);
@@ -98,7 +98,7 @@ begin
             TThread.Synchronize(nil,
               procedure
               begin
-                if not Assigned(FMemo.Owner) then
+                if (csDestroying in FMemo.ComponentState) then
                   Exit;
 
                 LLines := FMemo.Lines.Count;
@@ -110,17 +110,19 @@ begin
               end);
           end;
         finally
-          if Assigned(FMemo.Owner) then
+          if not(csDestroying in FMemo.ComponentState) then
+          begin
             FMemo.Lines.EndUpdate;
 
-          TThread.Synchronize(nil,
-            procedure
-            begin
-              if not Assigned(FMemo.Owner) then
-                Exit;
+            TThread.Synchronize(nil,
+              procedure
+              begin
+                if (csDestroying in FMemo.ComponentState) then
+                  Exit;
 
-              SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
-            end);
+                SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
+              end);
+          end;
         end;
 
         Break;

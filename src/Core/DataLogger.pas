@@ -42,15 +42,6 @@ type
   public
     function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
     function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
-
-    function SetLogFormat(const ALogFormat: string): TDataLogger;
-    function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-    function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
-    function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-    function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
-    function SetLogException(const AException: TOnLogException): TDataLogger;
-    function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
-
     function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
@@ -73,7 +64,14 @@ type
     function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function SlineBreak: TDataLogger;
-
+    function SetLogFormat(const ALogFormat: string): TDataLogger;
+    function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
+    function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
+    function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
+    function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
+    function SetLogException(const AException: TOnLogException): TDataLogger;
+    function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+    function Clear: TDataLogger;
     constructor Create; reintroduce;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
@@ -92,7 +90,6 @@ function Logger: TDataLogger;
 begin
   if not Assigned(FLoggerDefault) then
     FLoggerDefault := TDataLogger.Builder;
-
   Result := FLoggerDefault;
 end;
 
@@ -112,7 +109,6 @@ constructor TDataLogger.Create;
 begin
   inherited Create(True);
   FreeOnTerminate := False;
-  Start;
   NameThreadForDebugging(Self.ClassName);
 end;
 
@@ -126,6 +122,7 @@ begin
   FDisableLogType := [];
   FOnlyLogType := [TLoggerType.All];
   FSequence := 0;
+  Start;
 end;
 
 procedure TDataLogger.BeforeDestruction;
@@ -133,7 +130,6 @@ begin
   Terminate;
   FEvent.SetEvent;
   WaitFor;
-
   CloseProvider;
   FList.DisposeOf;
   FEvent.DisposeOf;
@@ -150,80 +146,6 @@ function TDataLogger.SetProvider(const AProviders: TArray<TDataLoggerProvider>):
 begin
   Result := Self;
   FProviders := AProviders;
-end;
-
-function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
-begin
-  Result := Self;
-
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
-
-  TParallel.For(Low(FProviders), High(FProviders),
-    procedure(Index: Integer)
-    begin
-      FProviders[Index].SetLogFormat(ALogFormat);
-    end);
-end;
-
-function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
-begin
-  Result := Self;
-
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
-
-  TParallel.For(Low(FProviders), High(FProviders),
-    procedure(Index: Integer)
-    begin
-      FProviders[Index].SetFormatTimestamp(AFormatTimestamp);
-    end);
-end;
-
-function TDataLogger.SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-begin
-  Result := Self;
-  FLogLevel := ALogLevel;
-end;
-
-function TDataLogger.SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-begin
-  Result := Self;
-  FDisableLogType := ALogType;
-end;
-
-function TDataLogger.SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
-begin
-  Result := Self;
-  FOnlyLogType := ALogType;
-end;
-
-function TDataLogger.SetLogException(const AException: TOnLogException): TDataLogger;
-begin
-  Result := Self;
-
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
-
-  TParallel.For(Low(FProviders), High(FProviders),
-    procedure(Index: Integer)
-    begin
-      FProviders[Index].SetLogException(AException);
-    end);
-end;
-
-function TDataLogger.SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
-begin
-  Result := Self;
-
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
-
-  TParallel.For(Low(FProviders), High(FProviders),
-    procedure(Index: Integer)
-    begin
-      FProviders[Index].SetMaxRetry(AMaxRetry);
-    end);
 end;
 
 function TDataLogger.Trace(const AMessage: string; const ATag: string = ''): TDataLogger;
@@ -336,13 +258,106 @@ begin
   Result := AddCache(TLoggerType.All, '', '');
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger;
+function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
+begin
+  Result := Self;
 
+  if Length(FProviders) = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+
+  TParallel.For(Low(FProviders), High(FProviders),
+    procedure(Index: Integer)
+    begin
+      FProviders[Index].SetLogFormat(ALogFormat);
+    end);
+end;
+
+function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
+begin
+  Result := Self;
+
+  if Length(FProviders) = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+
+  TParallel.For(Low(FProviders), High(FProviders),
+    procedure(Index: Integer)
+    begin
+      FProviders[Index].SetFormatTimestamp(AFormatTimestamp);
+    end);
+end;
+
+function TDataLogger.SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
+begin
+  Result := Self;
+  FLogLevel := ALogLevel;
+end;
+
+function TDataLogger.SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
+begin
+  Result := Self;
+  FDisableLogType := ALogType;
+end;
+
+function TDataLogger.SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
+begin
+  Result := Self;
+  FOnlyLogType := ALogType;
+end;
+
+function TDataLogger.SetLogException(const AException: TOnLogException): TDataLogger;
+begin
+  Result := Self;
+
+  if Length(FProviders) = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+
+  TParallel.For(Low(FProviders), High(FProviders),
+    procedure(Index: Integer)
+    begin
+      FProviders[Index].SetLogException(AException);
+    end);
+end;
+
+function TDataLogger.SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+begin
+  Result := Self;
+
+  if Length(FProviders) = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+
+  TParallel.For(Low(FProviders), High(FProviders),
+    procedure(Index: Integer)
+    begin
+      FProviders[Index].SetMaxRetry(AMaxRetry);
+    end);
+end;
+
+function TDataLogger.Clear: TDataLogger;
+begin
+  Result := Self;
+
+  if Length(FProviders) = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+
+  FCriticalSection.Enter;
+  try
+    FList.Clear;
+  finally
+    FCriticalSection.Leave;
+  end;
+
+  TParallel.For(Low(FProviders), High(FProviders),
+    procedure(Index: Integer)
+    begin
+      FProviders[Index].Clear;
+    end);
+end;
+
+function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger;
   procedure DefineSequence;
   begin
     if FSequence = 18446744073709551615 then
       FSequence := 0;
-
     Inc(FSequence);
   end;
 
@@ -366,7 +381,7 @@ begin
       if Ord(FLogLevel) > Ord(AType) then
         Exit;
 
-    if not (AType = TLoggerType.All) then
+    if not(AType = TLoggerType.All) then
       DefineSequence;
 
     LLogItem := Default(TLoggerItem);
@@ -384,13 +399,11 @@ begin
     LLogItem.Username := TLoggerUtils.Username;
     LLogItem.OSVersion := TLoggerUtils.OS;
     LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
-
     FList.Add(LLogItem);
   finally
     FCriticalSection.Leave;
+    FEvent.SetEvent;
   end;
-
-  FEvent.SetEvent;
 end;
 
 function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger;
@@ -415,13 +428,12 @@ begin
   finally
     FCriticalSection.Leave;
   end;
-
   Result := LLogCacheArray;
 end;
 
 procedure TDataLogger.CloseProvider;
 begin
-  TParallel.for(Low(FProviders), High(FProviders),
+  TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
       FProviders[Index].DisposeOf;
@@ -445,7 +457,7 @@ begin
       if Length(LCache) = 0 then
         Continue;
 
-      TParallel.for(Low(FProviders), High(FProviders),
+      TParallel.For(Low(FProviders), High(FProviders),
         procedure(Index: Integer)
         begin
           FProviders[Index].AddCache(LCache);

@@ -53,6 +53,7 @@ type
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLoggerProvider;
     function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
+    function Clear: TDataLoggerProvider;
 
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
@@ -162,6 +163,18 @@ function TDataLoggerProvider.SetMaxRetry(const AMaxRetry: Integer): TDataLoggerP
 begin
   Result := Self;
   FMaxRetry := AMaxRetry;
+end;
+
+function TDataLoggerProvider.Clear: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  FCriticalSection.Enter;
+  try
+    FList.Clear;
+  finally
+    FCriticalSection.Leave;
+  end;
 end;
 
 function TDataLoggerProvider.ValidationBeforeSave(const ALogItem: TLoggerItem): Boolean;

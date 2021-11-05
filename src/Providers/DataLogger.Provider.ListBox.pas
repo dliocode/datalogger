@@ -79,14 +79,14 @@ begin
 
     repeat
       try
-        if not Assigned(FListBox.Owner) then
+        if (csDestroying in FListBox.ComponentState) then
           Exit;
 
         try
           TThread.Synchronize(nil,
             procedure
             begin
-              if not Assigned(FListBox.Owner) then
+              if (csDestroying in FListBox.ComponentState) then
                 Exit;
 
               FListBox.Items.BeginUpdate;
@@ -98,7 +98,7 @@ begin
             TThread.Synchronize(nil,
               procedure
               begin
-                if not Assigned(FListBox.Owner) then
+                if (csDestroying in FListBox.ComponentState) then
                   Exit;
 
                 LLines := FListBox.Items.Count;
@@ -110,14 +110,14 @@ begin
               end);
           end;
         finally
-          if Assigned(FListBox.Owner) then
+          if not(csDestroying in FListBox.ComponentState) then
           begin
             FListBox.Items.EndUpdate;
 
             TThread.Synchronize(nil,
               procedure
               begin
-                if not Assigned(FListBox.Owner) then
+                if (csDestroying in FListBox.ComponentState) then
                   Exit;
 
                 FListBox.ItemIndex := FListBox.Items.Count - 1;
