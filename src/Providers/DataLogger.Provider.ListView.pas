@@ -38,7 +38,6 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-
 constructor TProviderListView.Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0);
 begin
   inherited Create;
@@ -48,7 +47,6 @@ begin
 end;
 
 {$ENDIF}
-
 
 destructor TProviderListView.Destroy;
 begin
@@ -146,8 +144,6 @@ begin
   end;
 end;
 {$ELSE}
-
-
 begin
 end;
 {$ENDIF}

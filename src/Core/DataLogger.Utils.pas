@@ -12,18 +12,23 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
+
 {$IF DEFINED(LINUX)}
   Posix.SysUtsname, Posix.Unistd,
 {$ENDIF}
+
 {$IFDEF MACOS}
   Macapi.Helpers, Macapi.CoreFoundation, Macapi.ObjectiveC, Macapi.ObjCRuntime,
 {$ENDIF}
+
 {$IFDEF IOS}
   IOSApi.Foundation, IOSApi.Helpers,
 {$ENDIF}
+
 {$IF DEFINED(ANDROID)}
   Androidapi.Helpers, Androidapi.JNI.Os, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
+
   System.IOUtils, System.SysUtils;
 
 type
@@ -65,14 +70,10 @@ begin
   Result := JStringToString(LPackageManager.getPackageInfo(LPackageName, 0).applicationInfo.loadLabel(LPackageManager).toString);
 end;
 {$ELSEIF DEFINED(IOS)}
-
-
 begin
   Result := TNSString.Wrap(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle, KCFBundleIdentifierKey)).UTF8String;
 end;
 {$ELSE}
-
-
 var
   LAppPathFull: string;
 begin
@@ -84,15 +85,12 @@ begin
 end;
 {$ENDIF}
 
-
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
   Result := TPath.GetDocumentsPath;
 end;
 {$ELSE}
-
-
 var
   LAppPathFull: string;
 begin
@@ -104,7 +102,6 @@ begin
 end;
 {$ENDIF}
 
-
 class function TLoggerUtils.AppVersion: TAppVersion;
 {$IF DEFINED(ANDROID)}
 var
@@ -115,8 +112,6 @@ begin
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
 end;
 {$ELSEIF DEFINED(IOS)}
-
-
 var
   AppKey: Pointer;
   AppBundle: NSBundle;
@@ -131,8 +126,6 @@ begin
   end;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
-
-
 var
   LAppPathFull: string;
   LInfoSize: DWORD;
@@ -147,43 +140,51 @@ begin
     LAppPathFull := GetModuleName(0)
   else
     LAppPathFull := ParamStr(0);
+
   LInfoSize := GetFileVersionInfoSize(pWideChar(LAppPathFull), LDummy);
   if LInfoSize = 0 then
     Exit;
+
   SetLength(LInfo, LInfoSize);
   GetFileVersionInfo(pWideChar(LAppPathFull), 0, LInfoSize, LInfo);
   VerQueryValue(LInfo, '\VarFileInfo\Translation', LP, LLen);
+
   if Assigned(LP) then
   begin
     LKey := Format('\StringFileInfo\%4.4x%4.4x', [LoWord(Longint(LP^)), HiWord(Longint(LP^))]);
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'Comments'])), Pointer(LBuffer), LInfoSize) then
       Result.Comments := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'CompanyName'])), Pointer(LBuffer), LInfoSize) then
       Result.CompanyName := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'FileDescription'])), Pointer(LBuffer), LInfoSize) then
       Result.FileDescription := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'FileVersion'])), Pointer(LBuffer), LInfoSize) then
       Result.FileVersion := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'InternalName'])), Pointer(LBuffer), LInfoSize) then
       Result.InternalName := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'LegalCopyright'])), Pointer(LBuffer), LInfoSize) then
       Result.LegalCopyright := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'OriginalFilename'])), Pointer(LBuffer), LInfoSize) then
       Result.OriginalFilename := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'ProductName'])), Pointer(LBuffer), LInfoSize) then
       Result.ProductName := LBuffer;
+
     if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'ProductVersion'])), Pointer(LBuffer), LInfoSize) then
       Result.ProductVersion := LBuffer;
   end;
 end;
 {$ELSE}
-
-
 begin
   Result := Default (TAppVersion);
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.ComputerName: string;
 {$IF DEFINED(ANDROID)}
@@ -193,13 +194,10 @@ begin
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
 {$ELSEIF DEFINED(IOS)}
-
 begin
   Result := '';
 end;
 {$ELSEIF DEFINED(LINUX)}
-
-
 var
   LName: utsname;
 begin
@@ -207,8 +205,6 @@ begin
   Result := string(AnsiString(LName.nodename));
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
-
-
 var
   Buf: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
   Len: cardinal;
@@ -220,13 +216,10 @@ begin
     Result := EmptyStr;
 end;
 {$ELSE}
-
-
 begin
   Result := EmptyStr;
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.Os: string;
 begin
@@ -265,8 +258,6 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
-
-
 begin
   Result := '';
 end;

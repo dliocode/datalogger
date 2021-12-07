@@ -42,6 +42,7 @@ type
   public
     function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
     function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+
     function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
@@ -64,6 +65,7 @@ type
     function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function SlineBreak: TDataLogger;
+
     function SetLogFormat(const ALogFormat: string): TDataLogger;
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
@@ -71,10 +73,13 @@ type
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+
     function Clear: TDataLogger;
+
     constructor Create; reintroduce;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
+
     class function Builder: TDataLogger;
   end;
 
@@ -117,11 +122,13 @@ begin
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
   FList := TList<TLoggerItem>.Create;
+
   FProviders := [];
   FLogLevel := TLoggerType.All;
   FDisableLogType := [];
   FOnlyLogType := [TLoggerType.All];
   FSequence := 0;
+
   Start;
 end;
 
@@ -130,10 +137,12 @@ begin
   Terminate;
   FEvent.SetEvent;
   WaitFor;
+
   CloseProvider;
-  FList.DisposeOf;
-  FEvent.DisposeOf;
-  FCriticalSection.DisposeOf;
+
+  FList.Free;
+  FEvent.Free;
+  FCriticalSection.Free;
 end;
 
 function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
@@ -358,6 +367,7 @@ function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: st
   begin
     if FSequence = 18446744073709551615 then
       FSequence := 0;
+
     Inc(FSequence);
   end;
 
@@ -436,7 +446,7 @@ begin
   TParallel.For(Low(FProviders), High(FProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].DisposeOf;
+      FProviders[Index].Free;
     end);
 end;
 
@@ -471,6 +481,6 @@ initialization
 finalization
 
 if Assigned(FLoggerDefault) then
-  FLoggerDefault.DisposeOf;
+  FLoggerDefault.Free;
 
 end.

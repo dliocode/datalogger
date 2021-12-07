@@ -71,7 +71,7 @@ begin
   inherited Create(True);
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
-  SetMaxRetry(4);
+  SetMaxRetry(5);
 end;
 
 procedure TDataLoggerProvider.AfterConstruction;
@@ -96,9 +96,9 @@ begin
   FEvent.SetEvent;
   WaitFor;
 
-  FList.DisposeOf;
-  FEvent.DisposeOf;
-  FCriticalSection.DisposeOf;
+  FList.Free;
+  FEvent.Free;
+  FCriticalSection.Free;
 end;
 
 procedure TDataLoggerProvider.Execute;

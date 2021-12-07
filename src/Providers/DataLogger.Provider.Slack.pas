@@ -85,7 +85,7 @@ begin
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
     finally
-      LJO.DisposeOf;
+      LJO.Free;
     end;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);

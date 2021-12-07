@@ -38,7 +38,6 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-
 constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0);
 begin
   inherited Create;
@@ -46,8 +45,8 @@ begin
   FMemo := AMemo;
   FMaxLogLines := AMaxLogLines;
 end;
-{$ENDIF}
 
+{$ENDIF}
 
 destructor TProviderMemo.Destroy;
 begin
@@ -146,8 +145,6 @@ begin
 end;
 
 {$ELSE}
-
-
 begin
 end;
 {$ENDIF}

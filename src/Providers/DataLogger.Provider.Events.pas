@@ -152,7 +152,7 @@ end;
 class destructor TEventsConfig.UnInitialize;
 begin
   if Assigned(FInstance) then
-    FInstance.DisposeOf;
+    FInstance.Free;
 end;
 
 constructor TEventsConfig.Create;

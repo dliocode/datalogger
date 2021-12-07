@@ -1,0 +1,11 @@
+{
+	"name": "Model1",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "./",
+	"projects": [],
+	"dependencies": {
+		"https://github.com/danieleteti/delphiredisclient": "^v2.1"
+	}
+}

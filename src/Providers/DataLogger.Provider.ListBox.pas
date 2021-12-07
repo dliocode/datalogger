@@ -38,7 +38,6 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-
 constructor TProviderListBox.Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
 begin
   inherited Create;
@@ -46,8 +45,8 @@ begin
   FListBox := AListBox;
   FMaxLogLines := AMaxLogLines;
 end;
-{$ENDIF}
 
+{$ENDIF}
 
 destructor TProviderListBox.Destroy;
 begin
@@ -145,8 +144,6 @@ begin
   end;
 end;
 {$ELSE}
-
-
 begin
 end;
 {$ENDIF}

@@ -40,7 +40,7 @@ end;
 
 destructor TProviderSysLog.Destroy;
 begin
-  FSysLog.DisposeOf;
+  FSysLog.Free;
   inherited;
 end;
 
@@ -127,7 +127,7 @@ begin
         end;
       until False;
     finally
-      LSysLogMessage.DisposeOf;
+      LSysLogMessage.Free;
     end;
   end;
 end;

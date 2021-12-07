@@ -162,7 +162,7 @@ begin
     LHTTP.ReadTimeout := 3000;
     LHTTP.Request.AcceptCharSet := 'utf-8';
     LHTTP.Request.AcceptEncoding := 'utf-8';
-    LHTTP.Request.UserAgent := 'LoggerRest';
+    LHTTP.Request.UserAgent := 'DataLoggerRest';
     LHTTP.Request.ContentType := FContentType;
     LHTTP.Request.Accept := FContentType;
 
@@ -213,13 +213,13 @@ begin
       end;
     until False;
   finally
-    LHTTP.DisposeOf;
+    LHTTP.Free;
 
     if Assigned(FSaveFinally) then
       FSaveFinally(AItemREST.LogItem, LResponseContent);
 
     if Assigned(AItemREST.Stream) then
-      AItemREST.Stream.DisposeOf;
+      AItemREST.Stream.Free;
   end;
 end;
 

@@ -90,7 +90,7 @@ class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AIt
     if ALogFormat.Contains(ALogKey) then
       Result.AddPair(AJSONKey, AJSONValue)
     else
-      AJSONValue.DisposeOf;
+      AJSONValue.Free;
   end;
 
 var
@@ -130,7 +130,7 @@ begin
             end;
           end;
         finally
-          LJO.DisposeOf;
+          LJO.Free;
         end;
     except
     end;
@@ -154,7 +154,7 @@ begin
   try
     Result := LJO.ToString;
   finally
-    LJO.DisposeOf;
+    LJO.Free;
   end;
 end;
 
@@ -191,7 +191,7 @@ begin
           for I := 0 to Pred(LJO.Count) do
             LLog := _Add(Format('${%s}', [LJO.Pairs[I].JsonString.Value]), LJO.Pairs[I].JsonValue.Value);
         finally
-          LJO.DisposeOf;
+          LJO.Free;
         end;
     except
     end;

@@ -52,7 +52,7 @@ end;
 destructor TProviderEventLog.Destroy;
 begin
 {$IF DEFINED(MSWINDOWS)}
-  FEventLogger.DisposeOf;
+  FEventLogger.Free;
 {$ENDIF}
 end;
 
@@ -121,8 +121,6 @@ begin
   end;
 end;
 {$ELSE}
-
-
 begin
 end;
 {$ENDIF}

@@ -72,6 +72,7 @@ begin
 {$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
         FMX.Types.Log.d(LLog);
 {$ENDIF}
+
         Break;
       except
         on E: Exception do

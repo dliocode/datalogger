@@ -163,8 +163,6 @@ type
   end;
 
 {$IF DEFINED(MSWINDOWS)}
-
-
 var
   ConOut: THandle;
   BufInfo: TConsoleScreenBufferInfo;
@@ -177,8 +175,6 @@ begin
   SetConsoleTextAttribute(ConOut, BufInfo.wAttributes);
 end;
 {$ELSEIF DEFINED(LINUX)}
-
-
 var
   LColor: Integer;
 begin
@@ -192,8 +188,6 @@ begin
   Write(#27'[0m');
 end;
 {$ELSE}
-
-
 begin
   Writeln(ALog);
 end;
