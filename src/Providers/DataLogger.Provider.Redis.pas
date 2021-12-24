@@ -72,7 +72,7 @@ begin
 
     LRetryCount := 0;
 
-    repeat
+    while True do
       try
         if not FConnected then
         begin
@@ -88,8 +88,14 @@ begin
         begin
           if FConnected then
           begin
-            FRedisClient.Disconnect;
-            FConnected := False;
+            try
+              try
+                FRedisClient.Disconnect;
+              except
+              end;
+            finally
+              FConnected := False;
+            end;
           end;
 
           Inc(LRetryCount);
@@ -104,10 +110,12 @@ begin
             Break;
         end;
       end;
-    until False;
   end;
 
-  FRedisClient.LTRIM(LKey, -FMaxSize, -1);
+  try
+    FRedisClient.LTRIM(LKey, -FMaxSize, -1);
+  except
+  end;
 end;
 
 end.

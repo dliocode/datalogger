@@ -76,7 +76,7 @@ begin
 
     LRetryCount := 0;
 
-    repeat
+    while True do
       try
         if not FUseColorInConsole then
           Writeln(LLog)
@@ -99,7 +99,6 @@ begin
             Break;
         end;
       end;
-    until False;
   end;
 end;
 

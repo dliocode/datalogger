@@ -17,7 +17,7 @@ type
   TDataLoggerProvider = class(TThread)
   private
     FEvent: TEvent;
-    FList: TList<TLoggerItem>;
+    FListLoggerItem: TList<TLoggerItem>;
     FLogFormat: string;
     FFormatTimestamp: string;
     FLogLevel: TLoggerType;
@@ -25,11 +25,9 @@ type
     FOnlyLogType: TLoggerTypes;
     FLogException: TOnLogException;
     FMaxRetry: Integer;
-
+    FCriticalSection: TCriticalSection;
     function ExtractCache: TArray<TLoggerItem>;
   protected
-    FCriticalSection: TCriticalSection;
-
     procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
 
@@ -41,6 +39,7 @@ type
     function GetOnlyLogType: TLoggerTypes;
     function GetLogException: TOnLogException;
     function GetMaxRetry: Integer;
+    function CriticalSection: TCriticalSection;
 
     property LogException: TOnLogException read GetLogException;
 
@@ -54,6 +53,7 @@ type
     function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
     function Clear: TDataLoggerProvider;
+    function NotifyEvent: TDataLoggerProvider;
 
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
@@ -69,24 +69,23 @@ implementation
 constructor TDataLoggerProvider.Create;
 begin
   inherited Create(True);
-
-  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
-  SetMaxRetry(5);
+  FreeOnTerminate := False;
 end;
 
 procedure TDataLoggerProvider.AfterConstruction;
 begin
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
-  FList := TList<TLoggerItem>.Create;
+  FListLoggerItem := TList<TLoggerItem>.Create;
 
-  FLogLevel := TLoggerType.All;
-  FDisableLogType := [];
-  FOnlyLogType := [TLoggerType.All];
+  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
+  SetFormatTimestamp('yyyy-mm-dd hh:nn:ss:zzz');
+  SetLogLevel(TLoggerType.All);
+  SetDisableLogType([]);
+  SetOnlyLogType([TLoggerType.All]);
+  SetLogException(nil);
+  SetMaxRetry(5);
 
-  FFormatTimestamp := 'yyyy-mm-dd hh:nn:ss:zzz';
-
-  FreeOnTerminate := False;
   Start;
 end;
 
@@ -96,7 +95,7 @@ begin
   FEvent.SetEvent;
   WaitFor;
 
-  FList.Free;
+  FListLoggerItem.Free;
   FEvent.Free;
   FCriticalSection.Free;
 end;
@@ -169,11 +168,24 @@ function TDataLoggerProvider.Clear: TDataLoggerProvider;
 begin
   Result := Self;
 
-  FCriticalSection.Enter;
+  FCriticalSection.Acquire;
   try
-    FList.Clear;
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Leave;
+    FCriticalSection.Release;
+  end;
+end;
+
+function TDataLoggerProvider.NotifyEvent: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  FCriticalSection.Acquire;
+  try
+    FEvent.SetEvent;
+  finally
+    FCriticalSection.Release;
   end;
 end;
 
@@ -229,6 +241,11 @@ begin
   Result := FMaxRetry;
 end;
 
+function TDataLoggerProvider.CriticalSection: TCriticalSection;
+begin
+  Result := FCriticalSection;
+end;
+
 function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;
 var
   LItems: TArray<TLoggerItem>;
@@ -236,17 +253,16 @@ var
 begin
   Result := Self;
 
-  FCriticalSection.Enter;
+  FCriticalSection.Acquire;
   try
     LItems := AValues;
 
     for LItem in LItems do
-      FList.Add(LItem);
+      FListLoggerItem.Add(LItem);
   finally
-    FCriticalSection.Leave;
+    FEvent.SetEvent;
+    FCriticalSection.Release;
   end;
-
-  FEvent.SetEvent;
 end;
 
 function TDataLoggerProvider.AddCache(const AValue: TLoggerItem): TDataLoggerProvider;
@@ -258,13 +274,14 @@ function TDataLoggerProvider.ExtractCache: TArray<TLoggerItem>;
 var
   LCache: TArray<TLoggerItem>;
 begin
-  FCriticalSection.Enter;
+  FCriticalSection.Acquire;
   try
-    LCache := FList.ToArray;
-    FList.Clear;
-    FList.TrimExcess;
+    LCache := FListLoggerItem.ToArray;
+
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Leave;
+    FCriticalSection.Release;
   end;
 
   Result := LCache;

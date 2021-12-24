@@ -28,7 +28,6 @@ type
     FOnWarn: TExecuteEvents;
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
-
     procedure Init;
     class var FInstance: TEventsConfig;
   protected
@@ -85,6 +84,9 @@ var
   LRetryCount: Integer;
   LItem: TLoggerItem;
 begin
+  if not Assigned(FConfig) then
+    raise EDataLoggerException.Create('Config not defined!');
+
   if Length(ACache) = 0 then
     Exit;
 
@@ -98,7 +100,7 @@ begin
 
     LRetryCount := 0;
 
-    repeat
+    while True do
       try
         case LItem.&Type of
           TLoggerType.Trace:
@@ -134,8 +136,7 @@ begin
           if LRetryCount >= GetMaxRetry then
             Break;
         end;
-      end;
-    until False;
+      end
   end;
 end;
 

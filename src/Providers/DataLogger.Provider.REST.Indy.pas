@@ -152,7 +152,10 @@ begin
 
     LHTTP := TIdHTTP.Create(nil);
   except
-    Exit;
+    if Assigned(AItemREST.Stream) then
+      AItemREST.Stream.Free;
+
+    Exit
   end;
 
   try
@@ -178,7 +181,7 @@ begin
     if LURL.Trim.IsEmpty then
       raise EDataLoggerException.Create('URL is empty!');
 
-    repeat
+    while True do
       try
         if Self.Terminated then
           Exit;
@@ -211,7 +214,6 @@ begin
             Break;
         end;
       end;
-    until False;
   finally
     LHTTP.Free;
 

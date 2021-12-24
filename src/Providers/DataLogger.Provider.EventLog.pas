@@ -43,9 +43,11 @@ begin
 
 {$IF DEFINED(MSWINDOWS)}
   if AName.Trim.IsEmpty then
-    LName := TLoggerUtils.AppName;
+    LName := TLoggerUtils.AppName
+  else
+    LName := AName;
 
-  FEventLogger := TEventLogger.Create(AName);
+  FEventLogger := TEventLogger.Create(LName);
 {$ENDIF}
 end;
 
@@ -80,16 +82,12 @@ begin
     case LItem.&Type of
       TLoggerType.Debug:
         LEventType := EVENTLOG_INFORMATION_TYPE;
-
       TLoggerType.Info:
         LEventType := EVENTLOG_INFORMATION_TYPE;
-
       TLoggerType.Warn:
         LEventType := EVENTLOG_WARNING_TYPE;
-
       TLoggerType.Error:
         LEventType := EVENTLOG_ERROR_TYPE;
-
       TLoggerType.Success:
         LEventType := EVENTLOG_SUCCESS;
     else
@@ -98,7 +96,7 @@ begin
 
     LRetryCount := 0;
 
-    repeat
+    while True do
       try
         FEventLogger.LogMessage(LLog, LEventType, 0, 0);
         Break;
@@ -117,7 +115,6 @@ begin
             Break;
         end;
       end;
-    until False;
   end;
 end;
 {$ELSE}

@@ -5,40 +5,49 @@
   *************************************
 }
 
-unit DataLogger.Provider.OutputDebugString;
+unit DataLogger.Provider.Memory;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(MSWINDOWS)}
-  Winapi.Windows,
-{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
-  FMX.Types,
-{$ENDIF}
-  System.SysUtils;
+  System.SysUtils, System.Classes;
 
 type
-  TProviderOutputDebugString = class(TDataLoggerProvider)
+  TProviderMemory = class(TDataLoggerProvider)
+  private
+    FStringList: TStringList;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    function AsString: string;
+
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
 
-{ TProviderOutputDebugString }
+{ TProviderMemory }
 
-procedure TProviderOutputDebugString.Save(const ACache: TArray<TLoggerItem>);
+constructor TProviderMemory.Create;
+begin
+  inherited Create;
+  FStringList := TStringList.Create;
+end;
+
+destructor TProviderMemory.Destroy;
+begin
+  FStringList.Free;
+  inherited;
+end;
+
+procedure TProviderMemory.Save(const ACache: TArray<TLoggerItem>);
 var
   LRetryCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
 begin
-{$IF DEFINED(LINUX)}
-  Exit;
-{$ENDIF}
-
   if Length(ACache) = 0 then
     Exit;
 
@@ -56,11 +65,7 @@ begin
 
     while True do
       try
-{$IF DEFINED(MSWINDOWS)}
-        OutputDebugString(PChar(LLog));
-{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
-        FMX.Types.Log.d(LLog);
-{$ENDIF}
+        FStringList.Add(LLog);
 
         Break;
       except
@@ -78,6 +83,16 @@ begin
             Break;
         end;
       end;
+  end;
+end;
+
+function TProviderMemory.AsString: string;
+begin
+  CriticalSection.Acquire;
+  try
+    Result := FStringList.Text;
+  finally
+    CriticalSection.Release;
   end;
 end;
 

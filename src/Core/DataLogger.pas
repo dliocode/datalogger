@@ -20,14 +20,13 @@ type
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
-  Exception = System.SysUtils.Exception;
 
   TDataLogger = class sealed(TThread)
   strict private
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
-    FList: TList<TLoggerItem>;
-    FProviders: TArray<TDataLoggerProvider>;
+    FListLoggerItem: TList<TLoggerItem>;
+    FListProviders: TObjectList<TDataLoggerProvider>;
     FLogLevel: TLoggerType;
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
@@ -37,6 +36,8 @@ type
     function AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
     procedure CloseProvider;
+    procedure CheckProviders;
+    function GetProviders: TArray<TDataLoggerProvider>;
   protected
     procedure Execute; override;
   public
@@ -67,9 +68,11 @@ type
     function SlineBreak: TDataLogger;
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
+
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
     function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
+
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
@@ -121,12 +124,13 @@ procedure TDataLogger.AfterConstruction;
 begin
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
-  FList := TList<TLoggerItem>.Create;
+  FListLoggerItem := TList<TLoggerItem>.Create;
+  FListProviders := TObjectList<TDataLoggerProvider>.Create;
 
-  FProviders := [];
-  FLogLevel := TLoggerType.All;
-  FDisableLogType := [];
-  FOnlyLogType := [TLoggerType.All];
+  SetLogLevel(TLoggerType.All);
+  SetDisableLogType([]);
+  SetOnlyLogType([TLoggerType.All]);
+
   FSequence := 0;
 
   Start;
@@ -134,13 +138,16 @@ end;
 
 procedure TDataLogger.BeforeDestruction;
 begin
+  SetDisableLogType([TLoggerType.All]);
+
   Terminate;
   FEvent.SetEvent;
   WaitFor;
 
   CloseProvider;
 
-  FList.Free;
+  FListProviders.Free;
+  FListLoggerItem.Free;
   FEvent.Free;
   FCriticalSection.Free;
 end;
@@ -148,13 +155,31 @@ end;
 function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
 begin
   Result := Self;
-  FProviders := Concat(FProviders, [AProvider]);
+
+  FCriticalSection.Acquire;
+  try
+    FListProviders.Add(AProvider);
+  finally
+    FCriticalSection.Release;
+  end;
 end;
 
 function TDataLogger.SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+var
+  LItem: TDataLoggerProvider;
 begin
   Result := Self;
-  FProviders := AProviders;
+
+  FCriticalSection.Acquire;
+  try
+    FListProviders.Clear;
+    FListProviders.TrimExcess;
+  finally
+    FCriticalSection.Release;
+  end;
+
+  for LItem in AProviders do
+    AddProvider(LItem);
 end;
 
 function TDataLogger.Trace(const AMessage: string; const ATag: string = ''): TDataLogger;
@@ -268,30 +293,36 @@ begin
 end;
 
 function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
-  TParallel.For(Low(FProviders), High(FProviders),
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].SetLogFormat(ALogFormat);
+      LProviders[Index].SetLogFormat(ALogFormat);
     end);
 end;
 
 function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
-  TParallel.For(Low(FProviders), High(FProviders),
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].SetFormatTimestamp(AFormatTimestamp);
+      LProviders[Index].SetFormatTimestamp(AFormatTimestamp);
     end);
 end;
 
@@ -314,51 +345,61 @@ begin
 end;
 
 function TDataLogger.SetLogException(const AException: TOnLogException): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
-  TParallel.For(Low(FProviders), High(FProviders),
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].SetLogException(AException);
+      LProviders[Index].SetLogException(AException);
     end);
 end;
 
 function TDataLogger.SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
-  TParallel.For(Low(FProviders), High(FProviders),
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].SetMaxRetry(AMaxRetry);
+      LProviders[Index].SetMaxRetry(AMaxRetry);
     end);
 end;
 
 function TDataLogger.Clear: TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   Result := Self;
 
-  if Length(FProviders) = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
-  FCriticalSection.Enter;
+  LProviders := GetProviders;
+
+  FCriticalSection.Acquire;
   try
-    FList.Clear;
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Leave;
+    FCriticalSection.Release;
   end;
 
-  TParallel.For(Low(FProviders), High(FProviders),
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].Clear;
+      LProviders[Index].Clear;
     end);
 end;
 
@@ -376,11 +417,10 @@ var
 begin
   Result := Self;
 
-  FCriticalSection.Enter;
-  try
-    if Length(FProviders) = 0 then
-      raise EDataLoggerException.Create('Provider not defined!');
+  CheckProviders;
 
+  FCriticalSection.Acquire;
+  try
     if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
       Exit;
 
@@ -394,7 +434,7 @@ begin
     if not(AType = TLoggerType.All) then
       DefineSequence;
 
-    LLogItem := Default(TLoggerItem);
+    LLogItem := Default (TLoggerItem);
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;
@@ -409,9 +449,10 @@ begin
     LLogItem.Username := TLoggerUtils.Username;
     LLogItem.OSVersion := TLoggerUtils.OS;
     LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
-    FList.Add(LLogItem);
+
+    FListLoggerItem.Add(LLogItem);
   finally
-    FCriticalSection.Leave;
+    FCriticalSection.Release;
     FEvent.SetEvent;
   end;
 end;
@@ -428,32 +469,70 @@ end;
 
 function TDataLogger.ExtractCache: TArray<TLoggerItem>;
 var
-  LLogCacheArray: TArray<TLoggerItem>;
+  LCache: TArray<TLoggerItem>;
 begin
-  FCriticalSection.Enter;
+  FCriticalSection.Acquire;
   try
-    LLogCacheArray := FList.ToArray;
-    FList.Clear;
-    FList.TrimExcess;
+    LCache := FListLoggerItem.ToArray;
+
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Leave;
+    FCriticalSection.Release;
   end;
-  Result := LLogCacheArray;
+
+  Result := LCache;
 end;
 
 procedure TDataLogger.CloseProvider;
+var
+  LProviders: TArray<TDataLoggerProvider>;
 begin
-  TParallel.For(Low(FProviders), High(FProviders),
+  CheckProviders;
+
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      FProviders[Index].Free;
+      LProviders[Index].NotifyEvent;
     end);
+end;
+
+procedure TDataLogger.CheckProviders;
+var
+  LCount: Integer;
+begin
+  FCriticalSection.Acquire;
+  try
+    LCount := FListProviders.Count;
+  finally
+    FCriticalSection.Release;
+  end;
+
+  if LCount = 0 then
+    raise EDataLoggerException.Create('Provider not defined!');
+end;
+
+function TDataLogger.GetProviders: TArray<TDataLoggerProvider>;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  FCriticalSection.Acquire;
+  try
+    LProviders := FListProviders.ToArray;
+  finally
+    FCriticalSection.Release;
+  end;
+
+  Result := LProviders;
 end;
 
 procedure TDataLogger.Execute;
 var
   LWait: TWaitResult;
   LCache: TArray<TLoggerItem>;
+  LProviders: TArray<TDataLoggerProvider>;
 begin
   while not Terminated do
   begin
@@ -467,10 +546,12 @@ begin
       if Length(LCache) = 0 then
         Continue;
 
-      TParallel.For(Low(FProviders), High(FProviders),
+      LProviders := GetProviders;
+
+      TParallel.For(Low(LProviders), High(LProviders),
         procedure(Index: Integer)
         begin
-          FProviders[Index].AddCache(LCache);
+          LProviders[Index].AddCache(LCache);
         end);
     end;
   end;

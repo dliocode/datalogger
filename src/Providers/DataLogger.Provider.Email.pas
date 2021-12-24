@@ -79,7 +79,7 @@ begin
 
   LRetryCount := 0;
 
-  repeat
+  while True do
     try
       if not FIdSMTP.Connected then
         FIdSMTP.Connect;
@@ -102,7 +102,6 @@ begin
           Break;
       end;
     end;
-  until False;
 
   try
     if FIdSMTP.Connected then

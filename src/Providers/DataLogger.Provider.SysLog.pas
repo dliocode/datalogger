@@ -52,6 +52,9 @@ var
   LLog: string;
   LSysLogMessage: TIdSysLogMessage;
 begin
+  if Length(ACache) = 0 then
+    Exit;
+
   for LItem in LCache do
   begin
     if not ValidationBeforeSave(LItem) then
@@ -73,22 +76,16 @@ begin
       case LItem.&Type of
         TLoggerType.Trace:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
-
         TLoggerType.Debug:
           LSysLogMessage.Severity := TIdSyslogSeverity.slDebug;
-
         TLoggerType.Info:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
-
         TLoggerType.Warn:
           LSysLogMessage.Severity := TIdSyslogSeverity.slWarning;
-
         TLoggerType.Error:
           LSysLogMessage.Severity := TIdSyslogSeverity.slError;
-
         TLoggerType.Success:
           LSysLogMessage.Severity := TIdSyslogSeverity.slNotice;
-
         TLoggerType.Fatal:
           LSysLogMessage.Severity := TIdSyslogSeverity.slCritical;
       end;
@@ -102,7 +99,7 @@ begin
 
       LRetryCount := 0;
 
-      repeat
+      while True do
         try
           if not FSysLog.Connected then
             FSysLog.Connect;
@@ -125,7 +122,6 @@ begin
               Break;
           end;
         end;
-      until False;
     finally
       LSysLogMessage.Free;
     end;

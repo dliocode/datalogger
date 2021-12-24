@@ -61,6 +61,9 @@ var
   LRetryCount: Integer;
   LLines: Integer;
 begin
+  if not Assigned(FMemo) then
+    raise EDataLoggerException.Create('Memo not defined!');
+
   if Length(ACache) = 0 then
     Exit;
 
@@ -76,7 +79,7 @@ begin
 
     LRetryCount := 0;
 
-    repeat
+    while True do
       try
         if (csDestroying in FMemo.ComponentState) then
           Exit;
@@ -140,7 +143,6 @@ begin
             Break;
         end;
       end;
-    until False;
   end;
 end;
 

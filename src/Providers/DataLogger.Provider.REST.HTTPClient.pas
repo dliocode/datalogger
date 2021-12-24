@@ -162,10 +162,18 @@ var
   LResponse: IHTTPResponse;
   LResponseContent: string;
 begin
-  if Self.Terminated then
-    Exit;
+  try
+    if Self.Terminated then
+      Exit;
 
-  LHTTP := THTTPClient.Create;
+    LHTTP := THTTPClient.Create;
+  except
+    if Assigned(AItemREST.Stream) then
+      AItemREST.Stream.Free;
+
+    Exit
+  end;
+
   try
     LHTTP.HandleRedirects := True;
     LHTTP.ConnectionTimeout := 3000;
@@ -188,7 +196,7 @@ begin
     if LURL.Trim.IsEmpty then
       raise EDataLoggerException.Create('URL is empty!');
 
-    repeat
+    while True do
       try
         if Self.Terminated then
           Exit;
@@ -221,7 +229,6 @@ begin
             Break;
         end;
       end;
-    until False;
   finally
     LHTTP.Free;
 
