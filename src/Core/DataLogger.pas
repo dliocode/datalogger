@@ -434,7 +434,7 @@ begin
     if not(AType = TLoggerType.All) then
       DefineSequence;
 
-    LLogItem := Default (TLoggerItem);
+    LLogItem := default (TLoggerItem);
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;

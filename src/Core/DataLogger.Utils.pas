@@ -182,7 +182,7 @@ begin
 end;
 {$ELSE}
 begin
-  Result := Default (TAppVersion);
+  Result := default(TAppVersion);
 end;
 {$ENDIF}
 
