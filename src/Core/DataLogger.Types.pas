@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Utils,
-  System.TypInfo, System.JSON, System.DateUtils, System.SysUtils, System.Generics.Collections, System.Classes;
+  System.TypInfo, System.JSON, System.DateUtils, System.SysUtils, System.Generics.Collections, System.Classes, System.SyncObjs;
 
 type
   EDataLoggerException = class(Exception)

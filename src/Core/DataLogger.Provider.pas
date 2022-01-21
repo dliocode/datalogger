@@ -52,6 +52,7 @@ type
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLoggerProvider;
     function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
+
     function Clear: TDataLoggerProvider;
     function NotifyEvent: TDataLoggerProvider;
 

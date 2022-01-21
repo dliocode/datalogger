@@ -452,8 +452,8 @@ begin
 
     FListLoggerItem.Add(LLogItem);
   finally
-    FCriticalSection.Release;
     FEvent.SetEvent;
+    FCriticalSection.Release;
   end;
 end;
 
@@ -562,6 +562,9 @@ initialization
 finalization
 
 if Assigned(FLoggerDefault) then
+begin
   FLoggerDefault.Free;
+  FLoggerDefault := nil;
+end;
 
 end.

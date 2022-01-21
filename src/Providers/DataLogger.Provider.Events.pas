@@ -29,6 +29,7 @@ type
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
     procedure Init;
+
     class var FInstance: TEventsConfig;
   protected
     constructor Create;
