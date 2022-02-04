@@ -152,6 +152,30 @@ begin
   FCriticalSection.Free;
 end;
 
+procedure TDataLogger.Execute;
+var
+  LCache: TArray<TLoggerItem>;
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  while not Terminated do
+  begin
+    FEvent.WaitFor(INFINITE);
+    FEvent.ResetEvent;
+
+    LCache := ExtractCache;
+    if Length(LCache) = 0 then
+      Continue;
+
+    LProviders := GetProviders;
+
+    TParallel.For(Low(LProviders), High(LProviders),
+      procedure(Index: Integer)
+      begin
+        LProviders[Index].AddCache(LCache);
+      end);
+  end;
+end;
+
 function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
 begin
   Result := Self;
@@ -386,8 +410,6 @@ begin
 
   CheckProviders;
 
-  LProviders := GetProviders;
-
   FCriticalSection.Acquire;
   try
     FListLoggerItem.Clear;
@@ -395,6 +417,8 @@ begin
   finally
     FCriticalSection.Release;
   end;
+
+  LProviders := GetProviders;
 
   TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
@@ -526,35 +550,6 @@ begin
   end;
 
   Result := LProviders;
-end;
-
-procedure TDataLogger.Execute;
-var
-  LWait: TWaitResult;
-  LCache: TArray<TLoggerItem>;
-  LProviders: TArray<TDataLoggerProvider>;
-begin
-  while not Terminated do
-  begin
-    LWait := FEvent.WaitFor(INFINITE);
-    FEvent.ResetEvent;
-
-    if LWait = wrSignaled then
-    begin
-      LCache := ExtractCache;
-
-      if Length(LCache) = 0 then
-        Continue;
-
-      LProviders := GetProviders;
-
-      TParallel.For(Low(LProviders), High(LProviders),
-        procedure(Index: Integer)
-        begin
-          LProviders[Index].AddCache(LCache);
-        end);
-    end;
-  end;
 end;
 
 initialization

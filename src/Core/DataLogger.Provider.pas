@@ -103,23 +103,18 @@ end;
 
 procedure TDataLoggerProvider.Execute;
 var
-  LWait: TWaitResult;
   LCache: TArray<TLoggerItem>;
 begin
   while not Terminated do
   begin
-    LWait := FEvent.WaitFor(INFINITE);
+    FEvent.WaitFor(INFINITE);
     FEvent.ResetEvent;
 
-    if LWait = wrSignaled then
-    begin
-      LCache := ExtractCache;
+    LCache := ExtractCache;
+    if Length(LCache) = 0 then
+      Continue;
 
-      if Length(LCache) = 0 then
-        Continue;
-
-      Save(LCache);
-    end;
+    Save(LCache);
   end;
 end;
 
