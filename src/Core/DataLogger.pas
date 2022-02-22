@@ -31,6 +31,7 @@ type
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
     FSequence: UInt64;
+    constructor Create;
     function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger; overload;
@@ -79,7 +80,6 @@ type
 
     function Clear: TDataLogger;
 
-    constructor Create; reintroduce;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
 
@@ -98,6 +98,7 @@ function Logger: TDataLogger;
 begin
   if not Assigned(FLoggerDefault) then
     FLoggerDefault := TDataLogger.Builder;
+
   Result := FLoggerDefault;
 end;
 

@@ -78,7 +78,7 @@ end;
 
 destructor TProviderRESTHTTPClient.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderRESTHTTPClient.Save(const ACache: TArray<TLoggerItem>);

@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Utils,
-  System.TypInfo, System.JSON, System.DateUtils, System.SysUtils, System.Generics.Collections, System.Classes, System.SyncObjs;
+  System.TypInfo, System.JSON, System.DateUtils, System.SysUtils, System.Generics.Collections, System.Classes;
 
 type
   EDataLoggerException = class(Exception)
@@ -97,7 +97,7 @@ var
   I: Integer;
   LJO: TJsonObject;
   LKey: string;
-  LValue: TJsonValue;
+  LValue: TJSONValue;
 begin
   Result := TJsonObject.Create;
 
@@ -121,7 +121,7 @@ begin
         try
           for I := 0 to Pred(LJO.Count) do
           begin
-            LKey := Format('${%s}',[LJO.Pairs[I].JsonString.Value]);
+            LKey := Format('${%s}', [LJO.Pairs[I].JsonString.Value]);
 
             if ALogFormat.Contains(LKey) then
             begin

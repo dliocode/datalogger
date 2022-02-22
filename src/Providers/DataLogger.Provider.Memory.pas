@@ -39,7 +39,6 @@ end;
 destructor TProviderMemory.Destroy;
 begin
   FStringList.Free;
-  inherited;
 end;
 
 procedure TProviderMemory.Save(const ACache: TArray<TLoggerItem>);

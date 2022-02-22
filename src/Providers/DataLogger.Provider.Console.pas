@@ -46,7 +46,7 @@ end;
 
 destructor TProviderConsole.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderConsole.Save(const ACache: TArray<TLoggerItem>);

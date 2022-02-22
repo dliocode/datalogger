@@ -71,7 +71,7 @@ end;
 
 destructor TProviderRESTIndy.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderRESTIndy.Save(const ACache: TArray<TLoggerItem>);

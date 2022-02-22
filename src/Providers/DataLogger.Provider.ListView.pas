@@ -50,7 +50,7 @@ end;
 
 destructor TProviderListView.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderListView.Save(const ACache: TArray<TLoggerItem>);

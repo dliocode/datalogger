@@ -42,8 +42,6 @@ type
     function CriticalSection: TCriticalSection;
 
     property LogException: TOnLogException read GetLogException;
-
-    constructor Create;
   public
     function SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
@@ -59,6 +57,7 @@ type
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
 
+    constructor Create; reintroduce;
     procedure AfterConstruction; override; final;
     procedure BeforeDestruction; override; final;
   end;

@@ -45,7 +45,7 @@ end;
 
 destructor TProviderRedis.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);

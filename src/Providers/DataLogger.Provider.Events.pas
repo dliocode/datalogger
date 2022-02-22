@@ -29,10 +29,9 @@ type
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
     procedure Init;
+    constructor Create;
 
     class var FInstance: TEventsConfig;
-  protected
-    constructor Create;
   public
     function OnAny(const AEvent: TExecuteEvents): TEventsConfig;
     function OnTrace(const AEvent: TExecuteEvents): TEventsConfig;
@@ -71,7 +70,7 @@ end;
 
 destructor TProviderEvents.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);

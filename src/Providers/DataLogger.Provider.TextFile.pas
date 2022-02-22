@@ -47,7 +47,7 @@ end;
 
 destructor TProviderTextFile.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);

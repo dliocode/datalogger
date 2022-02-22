@@ -72,7 +72,7 @@ end;
 
 destructor TProviderRESTNetHTTPClient.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderRESTNetHTTPClient.Save(const ACache: TArray<TLoggerItem>);

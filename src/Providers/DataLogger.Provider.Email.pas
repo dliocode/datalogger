@@ -45,7 +45,6 @@ end;
 destructor TProviderEmail.Destroy;
 begin
   FIdMessage.Free;
-  inherited;
 end;
 
 procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);

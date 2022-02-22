@@ -28,7 +28,6 @@ uses
 {$IF DEFINED(ANDROID)}
   Androidapi.Helpers, Androidapi.JNI.Os, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
-
   System.IOUtils, System.SysUtils;
 
 type
@@ -182,7 +181,7 @@ begin
 end;
 {$ELSE}
 begin
-  Result := default(TAppVersion);
+  Result := default (TAppVersion);
 end;
 {$ENDIF}
 
@@ -258,6 +257,8 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
+
+
 begin
   Result := '';
 end;

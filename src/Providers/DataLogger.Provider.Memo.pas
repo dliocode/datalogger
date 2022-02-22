@@ -50,7 +50,7 @@ end;
 
 destructor TProviderMemo.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderMemo.Save(const ACache: TArray<TLoggerItem>);

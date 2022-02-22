@@ -50,7 +50,7 @@ end;
 
 destructor TProviderListBox.Destroy;
 begin
-  inherited;
+
 end;
 
 procedure TProviderListBox.Save(const ACache: TArray<TLoggerItem>);
