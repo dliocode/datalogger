@@ -42,7 +42,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
-    destructor Destroy; override; final;
   end;
 
 implementation
@@ -68,11 +67,6 @@ begin
 
   if FContentType.Trim.IsEmpty then
     FContentType := 'text/plain';
-end;
-
-destructor TProviderRESTNetHTTPClient.Destroy;
-begin
-
 end;
 
 procedure TProviderRESTNetHTTPClient.Save(const ACache: TArray<TLoggerItem>);

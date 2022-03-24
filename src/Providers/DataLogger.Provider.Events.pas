@@ -55,7 +55,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AConfig: TEventsConfig);
-    destructor Destroy; override;
   end;
 
 implementation
@@ -66,11 +65,6 @@ constructor TProviderEvents.Create(const AConfig: TEventsConfig);
 begin
   inherited Create;
   FConfig := AConfig;
-end;
-
-destructor TProviderEvents.Destroy;
-begin
-
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
@@ -164,6 +158,7 @@ end;
 destructor TEventsConfig.Destroy;
 begin
   Init;
+  inherited;
 end;
 
 procedure TEventsConfig.Init;

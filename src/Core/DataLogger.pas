@@ -66,6 +66,8 @@ type
     function Fatal(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function &Type(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function &Type(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
     function SlineBreak: TDataLogger;
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
@@ -310,6 +312,16 @@ end;
 function TDataLogger.Fatal(const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Fatal, AMessage, ATag);
+end;
+
+function TDataLogger.&Type(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger;
+begin
+  Result := AddCache(AType, AMessage, ATag);
+end;
+
+function TDataLogger.&Type(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger;
+begin
+  Result := AddCache(AType, AMessage, ATag);
 end;
 
 function TDataLogger.SlineBreak: TDataLogger;

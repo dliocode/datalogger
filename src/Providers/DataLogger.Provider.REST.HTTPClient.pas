@@ -46,7 +46,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
-    destructor Destroy; override; final;
   end;
 
 implementation
@@ -74,11 +73,6 @@ begin
     FContentType := 'text/plain';
 
   FSaveFinally := nil;
-end;
-
-destructor TProviderRESTHTTPClient.Destroy;
-begin
-
 end;
 
 procedure TProviderRESTHTTPClient.Save(const ACache: TArray<TLoggerItem>);

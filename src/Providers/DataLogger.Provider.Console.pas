@@ -31,7 +31,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AUseColorInConsole: Boolean = True);
-    destructor Destroy; override;
   end;
 
 implementation
@@ -42,11 +41,6 @@ constructor TProviderConsole.Create(const AUseColorInConsole: Boolean = True);
 begin
   inherited Create;
   FUseColorInConsole := AUseColorInConsole;
-end;
-
-destructor TProviderConsole.Destroy;
-begin
-
 end;
 
 procedure TProviderConsole.Save(const ACache: TArray<TLoggerItem>);

@@ -25,7 +25,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AHost: string = '127.0.0.1'; const APort: Integer = 6379; const AKeyPrefix: string = 'DataLogger'; const AMaxSize: Int64 = 10000);
-    destructor Destroy; override;
   end;
 
 implementation
@@ -41,11 +40,6 @@ begin
 
   FKeyPrefix := AKeyPrefix;
   FMaxSize := AMaxSize;
-end;
-
-destructor TProviderRedis.Destroy;
-begin
-
 end;
 
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);

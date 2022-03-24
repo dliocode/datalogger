@@ -26,7 +26,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
-    destructor Destroy; override;
   end;
 
 implementation
@@ -43,11 +42,6 @@ begin
   FCleanOnStart := ACleanOnStart;
   FCleanOnRun := False;
   FFormatDateTime := AFormatDateTime;
-end;
-
-destructor TProviderTextFile.Destroy;
-begin
-
 end;
 
 procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);

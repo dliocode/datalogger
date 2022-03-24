@@ -41,6 +41,7 @@ end;
 destructor TProviderSysLog.Destroy;
 begin
   FSysLog.Free;
+  inherited;
 end;
 
 procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);

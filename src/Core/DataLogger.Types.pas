@@ -44,7 +44,7 @@ type
   end;
 
   TLoggerLogFormat = class
-    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJsonObject;
+    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJSONObject;
     class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
     class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
     class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
@@ -84,7 +84,7 @@ end;
 
 { TLoggerLogFormat }
 
-class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJsonObject;
+class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJSONObject;
   procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
   begin
     if ALogFormat.Contains(ALogKey) then
@@ -95,11 +95,11 @@ class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AIt
 
 var
   I: Integer;
-  LJO: TJsonObject;
+  LJO: TJSONObject;
   LKey: string;
   LValue: TJSONValue;
 begin
-  Result := TJsonObject.Create;
+  Result := TJSONObject.Create;
 
   Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
 
@@ -115,7 +115,7 @@ begin
     _Add(TLoggerFormat.LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.MessageJSON.Trim));
 
     try
-      LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
+      LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJSONObject;
 
       if Assigned(LJO) then
         try
@@ -148,7 +148,7 @@ end;
 
 class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
 var
-  LJO: TJsonObject;
+  LJO: TJSONObject;
 begin
   LJO := AsJsonObject(ALogFormat, AItem);
   try
@@ -161,7 +161,7 @@ end;
 class function TLoggerLogFormat.AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
 var
   LLog: string;
-  LJO: TJsonObject;
+  LJO: TJSONObject;
   I: Integer;
 
   function _Add(const AKey: string; const AValue: string): string;
@@ -184,7 +184,7 @@ begin
     LLog := _Add(TLoggerFormat.LOG_MESSAGE, AItem.MessageJSON.Trim);
 
     try
-      LJO := TJsonObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJsonObject;
+      LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJSONObject;
 
       if Assigned(LJO) then
         try

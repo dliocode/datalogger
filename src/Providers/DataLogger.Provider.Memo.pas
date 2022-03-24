@@ -29,7 +29,6 @@ type
 {$IF DEFINED(MSWINDOWS)}
     constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0);
 {$ENDIF}
-    destructor Destroy; override;
   end;
 
 implementation
@@ -47,11 +46,6 @@ begin
 end;
 
 {$ENDIF}
-
-destructor TProviderMemo.Destroy;
-begin
-
-end;
 
 procedure TProviderMemo.Save(const ACache: TArray<TLoggerItem>);
 {$IF DEFINED(MSWINDOWS)}

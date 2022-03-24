@@ -56,6 +56,7 @@ begin
 {$IF DEFINED(MSWINDOWS)}
   FEventLogger.Free;
 {$ENDIF}
+  inherited;
 end;
 
 procedure TProviderEventLog.Save(const ACache: TArray<TLoggerItem>);
