@@ -175,6 +175,10 @@ end.
 * Comum 
 
 ```
+// Exibe o nome do log.
+// ex: Logger.SetName('SERVICE_REMOTE')
+TLoggerFormat.LOG_NAME;
+
 // Exibe a sequencia que o log foi gerado.
 TLoggerFormat.LOG_SEQUENCE;
 
@@ -211,6 +215,9 @@ TLoggerFormat.LOG_APPVERSION;
 // Exibe o diretório do app.
 TLoggerFormat.LOG_APPPATH
 
+// Exibe o tamanho do app em MB.
+TLoggerFormat.LOG_APPSIZE
+
 // Exibe o nome do computador.
 TLoggerFormat.LOG_COMPUTERNAME;
 
@@ -219,6 +226,9 @@ TLoggerFormat.LOG_USERNAME
 
 // Exibe as informações do Sistema Operacional.
 TLoggerFormat.LOG_OSVERSION
+
+// Exibe o IP Local.
+TLoggerFormat.LOG_IP_LOCAL
 
 ```
 

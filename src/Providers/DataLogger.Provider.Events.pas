@@ -29,9 +29,6 @@ type
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
     procedure Init;
-    constructor Create;
-
-    class var FInstance: TEventsConfig;
   public
     function OnAny(const AEvent: TExecuteEvents): TEventsConfig;
     function OnTrace(const AEvent: TExecuteEvents): TEventsConfig;
@@ -42,10 +39,8 @@ type
     function OnError(const AEvent: TExecuteEvents): TEventsConfig;
     function OnFatal(const AEvent: TExecuteEvents): TEventsConfig;
 
+    constructor Create;
     destructor Destroy; override;
-
-    class function New: TEventsConfig;
-    class destructor UnInitialize;
   end;
 
   TProviderEvents = class(TDataLoggerProvider)
@@ -55,6 +50,7 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AConfig: TEventsConfig);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -65,6 +61,13 @@ constructor TProviderEvents.Create(const AConfig: TEventsConfig);
 begin
   inherited Create;
   FConfig := AConfig;
+end;
+
+destructor TProviderEvents.Destroy;
+begin
+  if Assigned(FConfig) then
+    FConfig.Free;
+  inherited;
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
@@ -135,20 +138,6 @@ begin
 end;
 
 { TEventsConfig }
-
-class function TEventsConfig.New: TEventsConfig;
-begin
-  if not Assigned(FInstance) then
-    FInstance := TEventsConfig.Create;
-
-  Result := FInstance;
-end;
-
-class destructor TEventsConfig.UnInitialize;
-begin
-  if Assigned(FInstance) then
-    FInstance.Free;
-end;
 
 constructor TEventsConfig.Create;
 begin

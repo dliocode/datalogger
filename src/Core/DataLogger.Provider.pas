@@ -52,10 +52,11 @@ type
     function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
 
     function Clear: TDataLoggerProvider;
-    function NotifyEvent: TDataLoggerProvider;
+    function CountLogInCache: Int64;
 
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
+    function NotifyEvent: TDataLoggerProvider;
 
     constructor Create; reintroduce;
     procedure AfterConstruction; override; final;
@@ -167,6 +168,16 @@ begin
   try
     FListLoggerItem.Clear;
     FListLoggerItem.TrimExcess;
+  finally
+    FCriticalSection.Release;
+  end;
+end;
+
+function TDataLoggerProvider.CountLogInCache: Int64;
+begin
+  FCriticalSection.Acquire;
+  try
+    Result := FListLoggerItem.Count;
   finally
     FCriticalSection.Release;
   end;

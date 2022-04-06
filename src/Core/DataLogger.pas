@@ -31,6 +31,7 @@ type
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
     FSequence: UInt64;
+    FName: string;
     constructor Create;
     function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
@@ -71,16 +72,16 @@ type
     function SlineBreak: TDataLogger;
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
-
     function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
     function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+    function SetName(const AName: string): TDataLogger;
 
     function Clear: TDataLogger;
+    function CountLogInCache: Int64;
 
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
@@ -120,7 +121,6 @@ constructor TDataLogger.Create;
 begin
   inherited Create(True);
   FreeOnTerminate := False;
-  NameThreadForDebugging(Self.ClassName);
 end;
 
 procedure TDataLogger.AfterConstruction;
@@ -128,7 +128,7 @@ begin
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
   FListLoggerItem := TList<TLoggerItem>.Create;
-  FListProviders := TObjectList<TDataLoggerProvider>.Create;
+  FListProviders := TObjectList<TDataLoggerProvider>.Create(True);
 
   SetLogLevel(TLoggerType.All);
   SetDisableLogType([]);
@@ -415,6 +415,12 @@ begin
     end);
 end;
 
+function TDataLogger.SetName(const AName: string): TDataLogger;
+begin
+  Result := Self;
+  FName := AName;
+end;
+
 function TDataLogger.Clear: TDataLogger;
 var
   LProviders: TArray<TDataLoggerProvider>;
@@ -438,6 +444,16 @@ begin
     begin
       LProviders[Index].Clear;
     end);
+end;
+
+function TDataLogger.CountLogInCache: Int64;
+begin
+  FCriticalSection.Acquire;
+  try
+    Result := FListLoggerItem.Count;
+  finally
+    FCriticalSection.Release;
+  end;
 end;
 
 function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger;
@@ -472,6 +488,7 @@ begin
       DefineSequence;
 
     LLogItem := default (TLoggerItem);
+    LLogItem.Name := FName;
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;
@@ -479,13 +496,17 @@ begin
     LLogItem.Tag := ATag;
     LLogItem.Message := AMessageString;
     LLogItem.MessageJSON := AMessageJSON;
+
     LLogItem.AppName := TLoggerUtils.AppName;
     LLogItem.AppPath := TLoggerUtils.AppPath;
     LLogItem.AppVersion := TLoggerUtils.AppVersion;
+    LLogItem.AppSize := TLoggerUtils.AppSize;
+
     LLogItem.ComputerName := TLoggerUtils.ComputerName;
     LLogItem.Username := TLoggerUtils.Username;
     LLogItem.OSVersion := TLoggerUtils.OS;
     LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
+    LLogItem.IPLocal := TLoggerUtils.IPLocal;
 
     FListLoggerItem.Add(LLogItem);
   finally
