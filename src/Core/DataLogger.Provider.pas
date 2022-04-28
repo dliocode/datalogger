@@ -58,7 +58,7 @@ type
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
     function NotifyEvent: TDataLoggerProvider;
 
-    constructor Create; reintroduce;
+    constructor Create;
     procedure AfterConstruction; override; final;
     procedure BeforeDestruction; override; final;
   end;
@@ -75,6 +75,8 @@ end;
 
 procedure TDataLoggerProvider.AfterConstruction;
 begin
+  inherited;
+
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
   FListLoggerItem := TList<TLoggerItem>.Create;
@@ -99,6 +101,8 @@ begin
   FListLoggerItem.Free;
   FEvent.Free;
   FCriticalSection.Free;
+
+  inherited;
 end;
 
 procedure TDataLoggerProvider.Execute;

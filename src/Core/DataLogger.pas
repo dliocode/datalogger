@@ -125,6 +125,8 @@ end;
 
 procedure TDataLogger.AfterConstruction;
 begin
+  inherited;
+
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
   FListLoggerItem := TList<TLoggerItem>.Create;
@@ -153,6 +155,8 @@ begin
   FListLoggerItem.Free;
   FEvent.Free;
   FCriticalSection.Free;
+
+  inherited;
 end;
 
 procedure TDataLogger.Execute;

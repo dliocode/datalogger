@@ -3,8 +3,6 @@
   Created by Danilo Lucas
   Github - https://github.com/dliocode
   *************************************
-
-  https://api.telegram.org/bot<TOKEN>/getUpdates
 }
 
 unit DataLogger.Provider.Telegram;
@@ -13,41 +11,47 @@ interface
 
 uses
   DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
-  idURI,
-  System.SysUtils, System.StrUtils;
+  System.SysUtils, System.NetEncoding;
 
 type
+  TTelegramParseMode = (tpNone, tpHTML, tpMarkdown);
+
   TProviderTelegram = class(TProviderRESTHTTPClient)
   private
     FBotToken: string;
     FChatId: string;
+    FParseMode: TTelegramParseMode;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const ABotToken: string; const AChatId: string); reintroduce; overload;
-    constructor Create(const ABotToken: string; const AChatId: Double); reintroduce; overload; deprecated 'ChatId type is string - This function will be removed in future versions';
+    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce; overload;
+    constructor Create(const ABotToken: string; const AChatId: Double; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce; overload; deprecated 'ChatId type is string - This function will be removed in future versions';
   end;
 
 implementation
 
 { TProviderTelegram }
 
+// https://api.telegram.org/bot<TOKEN>/getUpdates
+
 const
   TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates';
-  TELGRAM_API_MARKDOWN = '&parse_mode=markdown';
+  TELGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
+  TELGRAM_API_HTML = '&parse_mode=HTML';
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string);
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown);
 begin
   FBotToken := ABotToken;
   FChatId := AChatId;
+  FParseMode := AParseMode;
 
   inherited Create('', 'application/json');
 end;
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double);
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double; const AParseMode: TTelegramParseMode = tpMarkdown);
 begin
-  Create(ABotToken, FloatToStr(AChatId));
+  Create(ABotToken, FloatToStr(AChatId), AParseMode);
 end;
 
 procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);
@@ -56,7 +60,70 @@ var
   LItem: TLoggerItem;
   LLogItemREST: TLogItemREST;
   LMessage: string;
-  LURLMarkdown: string;
+  LParseMode: string;
+
+  procedure SerializeMessageParseMode;
+  const
+    FormattingMarkdown: array [0 .. 17] of string = ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!');
+  var
+    I: Integer;
+  begin
+    case FParseMode of
+      tpHTML:
+        begin
+          LParseMode := TELGRAM_API_HTML;
+
+          case LItem.&Type of
+            All:
+              ;
+            Trace:
+              ;
+            Debug:
+              ;
+            Info:
+              ;
+            Success:
+              ;
+            Warn:
+              LMessage := '<u>' + LMessage + '</u>';
+
+            Error:
+              LMessage := '<b>' + LMessage + '</b>';
+
+            Fatal:
+              LMessage := '' + LMessage + '';
+          end;
+        end;
+
+      tpMarkdown:
+        begin
+          LParseMode := TELGRAM_API_MARKDOWN;
+
+          // https://core.telegram.org/bots/api#formatting-options
+          for I := Low(FormattingMarkdown) to High(FormattingMarkdown) do
+            LMessage := LMessage.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
+
+          case LItem.&Type of
+            All:
+              ;
+            Trace:
+              ;
+            Debug:
+              ;
+            Info:
+              ;
+            Success:
+              ;
+            Warn:
+              LMessage := '__' + LMessage + '__';
+
+            Error, Fatal:
+              LMessage := '*' + LMessage + '*';
+          end;
+        end;
+    end;
+  end;
+
 begin
   LItemREST := [];
 
@@ -71,34 +138,18 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LURLMarkdown := '';
-    LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LParseMode := '';
+    LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp).Trim;
 
-    if not MatchText(LMessage.Trim, ['_', '*']) then
-    begin
-      LURLMarkdown := TELGRAM_API_MARKDOWN;
-
-      case LItem.&Type of
-        All:
-          ;
-        Trace:
-          ;
-        Debug:
-          ;
-        Info:
-          ;
-        Success:
-          ;
-        Warn:
-          ;
-        Error, Fatal:
-          LMessage := '*' + LMessage.Trim + '*';
-      end;
-    end;
+    if FParseMode <> tpNone then
+      SerializeMessageParseMode;
 
     LLogItemREST.Stream := nil;
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := TIdURI.URLEncode(Format(TELEGRAM_API_SENDMSG + LURLMarkdown, [FBotToken, FChatId, LMessage]));
+
+    LMessage := TNetEncoding.URL.Encode(LMessage);
+    LLogItemREST.URL := Format(TELEGRAM_API_SENDMSG + LParseMode, [FBotToken, FChatId, LMessage]);
+
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 

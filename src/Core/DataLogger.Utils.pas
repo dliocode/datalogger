@@ -21,7 +21,7 @@ uses
   Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
   IdStack,
-  System.IOUtils, System.SysUtils, System.Classes, System.Types;
+  System.IOUtils, System.SysUtils, System.Types;
 
 type
   TLoggerUtils = class

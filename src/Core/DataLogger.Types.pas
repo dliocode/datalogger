@@ -227,14 +227,23 @@ begin
 end;
 
 class function TLoggerLogFormat.AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
+var
+  LLog: string;
 begin
-  Result := TStringStream.Create(AsString(ALogFormat, AItem, AFormatTimestamp), TEncoding.UTF8);
+  LLog := AsString(ALogFormat, AItem, AFormatTimestamp);
+
+  Result := TStringStream.Create(LLog, TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);
 end;
 
 class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
+var
+  LLog: string;
 begin
-  Result := TStringStream.Create(AsJsonObjectToString(ALogFormat, AItem), TEncoding.UTF8);
+  LLog := AsJsonObjectToString(ALogFormat, AItem);
+
+  Result := TStringStream.Create(LLog, TEncoding.UTF8);
+  Result.Seek(0, soFromBeginning);
 end;
 
 end.

@@ -125,12 +125,7 @@ begin
     Exit;
 
   for I := Low(ALogItemREST) to High(ALogItemREST) do
-  begin
-    if Self.Terminated then
-      Break;
-
     HTTP(AMethod, ALogItemREST[I]);
-  end;
 end;
 
 procedure TProviderRESTHTTPClient.InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
@@ -141,9 +136,6 @@ begin
   TParallel.For(Low(ALogItemREST), High(ALogItemREST),
     procedure(Index: Integer)
     begin
-      if Self.Terminated then
-        Exit;
-
       HTTP(AMethod, ALogItemREST[Index]);
     end);
 end;
@@ -156,10 +148,15 @@ var
   LResponse: IHTTPResponse;
   LResponseContent: string;
 begin
-  try
-    if Self.Terminated then
-      Exit;
+  if Self.Terminated then
+  begin
+    if Assigned(AItemREST.Stream) then
+      AItemREST.Stream.Free;
 
+    Exit;
+  end;
+
+  try
     LHTTP := THTTPClient.Create;
   except
     if Assigned(AItemREST.Stream) then

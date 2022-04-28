@@ -142,10 +142,15 @@ var
   LResponse: IHTTPResponse;
   LResponseContent: string;
 begin
-  try
-    if Self.Terminated then
-      Exit;
+  if Self.Terminated then
+  begin
+    if Assigned(AItemREST.Stream) then
+      AItemREST.Stream.Free;
 
+    Exit;
+  end;
+
+  try
     LHTTP := TNetHTTPClient.Create(nil);
   except
     if Assigned(AItemREST.Stream) then
