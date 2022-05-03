@@ -178,7 +178,7 @@ begin
       LURL := FURL;
 
     if LURL.Trim.IsEmpty then
-      raise EDataLoggerException.Create('URL is empty!');
+      raise EDataLoggerException.Create('URL is empty');
 
     while True do
       try

@@ -56,7 +56,7 @@ var
   LLines: Integer;
 begin
   if not Assigned(FMemo) then
-    raise EDataLoggerException.Create('Memo not defined!');
+    raise EDataLoggerException.Create('Memo not defined');
 
   if Length(ACache) = 0 then
     Exit;

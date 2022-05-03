@@ -82,7 +82,7 @@ var
   LItem: TLoggerItem;
 begin
   if not Assigned(FConfig) then
-    raise EDataLoggerException.Create('Config not defined!');
+    raise EDataLoggerException.Create('Config not defined');
 
   if Length(ACache) = 0 then
     Exit;

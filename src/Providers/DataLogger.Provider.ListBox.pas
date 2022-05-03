@@ -56,7 +56,7 @@ var
   LLines: Integer;
 begin
   if not Assigned(FListBox) then
-    raise EDataLoggerException.Create('ListBox not defined!');
+    raise EDataLoggerException.Create('ListBox not defined');
 
   if Length(ACache) = 0 then
     Exit;

@@ -56,7 +56,7 @@ var
   LLines: Integer;
 begin
   if not Assigned(FListView) then
-    raise EDataLoggerException.Create('ListView not defined!');
+    raise EDataLoggerException.Create('ListView not defined');
 
   if Length(ACache) = 0 then
     Exit;

@@ -573,7 +573,7 @@ begin
   end;
 
   if LCount = 0 then
-    raise EDataLoggerException.Create('Provider not defined!');
+    raise EDataLoggerException.Create('Provider not defined');
 end;
 
 function TDataLogger.GetProviders: TArray<TDataLoggerProvider>;
