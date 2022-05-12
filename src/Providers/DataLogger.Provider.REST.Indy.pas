@@ -160,8 +160,8 @@ begin
   try
     LHTTP.Request.Connection := 'Keep-Alive';
     LHTTP.HandleRedirects := True;
-    LHTTP.ConnectTimeout := 3000;
-    LHTTP.ReadTimeout := 3000;
+    LHTTP.ConnectTimeout := 30000;
+    LHTTP.ReadTimeout := 30000;
     LHTTP.Request.AcceptCharSet := 'utf-8';
     LHTTP.Request.AcceptEncoding := 'utf-8';
     LHTTP.Request.UserAgent := 'DataLoggerRest';
