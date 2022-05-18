@@ -15,6 +15,8 @@ uses
   IdHTTP;
 
 type
+  TIdHTTP = IdHTTP.TIdHTTP;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;

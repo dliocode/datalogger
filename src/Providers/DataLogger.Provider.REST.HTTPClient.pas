@@ -11,10 +11,11 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.SysUtils, System.Classes, System.Threading,
-  System.Net.HTTPClient, System.Net.URLClient, System.NetConsts;
+  System.SysUtils, System.Classes, System.Threading, System.Net.HTTPClient, System.Net.URLClient, System.NetConsts;
 
 type
+  THTTPClient = System.Net.HTTPClient.THTTPClient;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;
@@ -166,13 +167,17 @@ begin
   end;
 
   try
+{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
+    LHTTP.ConnectionTimeout := 60000;
+    LHTTP.ResponseTimeout := 60000;
+    LHTTP.SendTimeout := 60000;
+{$ENDIF}
     LHTTP.HandleRedirects := True;
-    LHTTP.ConnectionTimeout := 30000;
-    LHTTP.ResponseTimeout := 30000;
-    LHTTP.AcceptCharSet := 'utf-8';
-    LHTTP.AcceptEncoding := 'utf-8';
     LHTTP.UserAgent := 'DataLoggerRest';
     LHTTP.ContentType := FContentType;
+
+    LHTTP.AcceptCharSet := 'utf-8';
+    LHTTP.AcceptEncoding := 'utf-8';
     LHTTP.Accept := FContentType;
 
     if not FBearerToken.Trim.IsEmpty then
