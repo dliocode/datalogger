@@ -49,20 +49,22 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 |  Nome | Uses  |
 | ------------ | ------------ |
 | Console | DataLogger.Provider.Console |
-| ElasticSearch | DataLogger.Provider.ElasticSearch |
+| [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch |
 | Email | DataLogger.Provider.Email |
 | EventLog | DataLogger.Provider.EventLog |
 | Events | DataLogger.Provider.Events |
 | ListBox | DataLogger.Provider.ListBox |
 | ListView | DataLogger.Provider.ListView |
-| Logstach | DataLogger.Provider.Logstach |
+| [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach |
+| [MatterMost](https://mattermost.com/) | DataLogger.Provider.Mattermost |
 | Memo | DataLogger.Provider.Memo |
 | OutputDebugString | DataLogger.Provider.OutputDebugString |
-| Redis | DataLogger.Provider.Redis |
+| [Redis](https://redis.io/) | DataLogger.Provider.Redis |
 | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient  |
-| Slack | DataLogger.Provider.Slack |
+| [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail |
+| [Slack](https://slack.com/) | DataLogger.Provider.Slack |
 | SysLog | DataLogger.Provider.SysLog |
-| Telegram | DataLogger.Provider.Telegram |
+| [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram |
 | TextFile | DataLogger.Provider.TextFile |
 
 ## Exemplos
