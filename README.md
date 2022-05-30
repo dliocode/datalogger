@@ -58,6 +58,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach |
 | [MatterMost](https://mattermost.com/) | DataLogger.Provider.Mattermost |
 | Memo | DataLogger.Provider.Memo |
+| Memory | DataLogger.Provider.Memory |
 | OutputDebugString | DataLogger.Provider.OutputDebugString |
 | [Redis](https://redis.io/) | DataLogger.Provider.Redis |
 | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient  |
