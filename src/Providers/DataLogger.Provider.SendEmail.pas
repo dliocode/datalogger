@@ -5,64 +5,43 @@
   *************************************
 }
 
-unit DataLogger.Provider.Email;
+unit DataLogger.Provider.SendEmail;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdSMTP, IdMessage,
+  SendEmail, // https://github.com/dliocode/sendemail
   System.SysUtils, System.Classes;
 
 type
-  TProviderEmail = class(TDataLoggerProvider)
+  TProviderSendEmail = class(TDataLoggerProvider)
   private
-    FIdSMTP: TIdSMTP;
-    FIdMessage: TIdMessage;
+    FSendEmail: TSendEmail;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function IdSMTP: TIdSMTP;
-
-    constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
-    destructor Destroy; override;
+    function SendEmail: TSendEmail;
+    constructor Create(const ASendEmail: TSendEmail);
   end;
 
 implementation
 
-{ TProviderEmail }
+{ TProviderSendEmail }
 
-constructor TProviderEmail.Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
-var
-  LToAddress: TArray<string>;
-  LEmail: string;
+constructor TProviderSendEmail.Create(const ASendEmail: TSendEmail);
 begin
   inherited Create;
 
-  FIdSMTP := AIdSMTP;
-  FIdMessage := TIdMessage.Create;
-
-  FIdMessage.From.Text := AFromAddress;
-
-  LToAddress := AToAddress.Trim.Split([';']);
-  for LEmail in LToAddress do
-    FIdMessage.Recipients.Add.Text := LEmail;
-
-  FIdMessage.Subject := ASubject
+  FSendEmail := ASendEmail;
 end;
 
-destructor TProviderEmail.Destroy;
+function TProviderSendEmail.SendEmail: TSendEmail;
 begin
-  FIdMessage.Free;
-  inherited;
+  Result := FSendEmail;
 end;
 
-function TProviderEmail.IdSMTP: TIdSMTP;
-begin
-  Result := FIdSMTP;
-end;
-
-procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderSendEmail.Save(const ACache: TArray<TLoggerItem>);
 var
   LRetryCount: Integer;
   LItem: TLoggerItem;
@@ -86,7 +65,7 @@ begin
       LString.Add(LLog);
     end;
 
-    FIdMessage.Body.Text := LString.Text;
+    FSendEmail.Message(LString.Text.Replace(sLineBreak, '<br />'));
   finally
     LString.Free;
   end;
@@ -95,10 +74,7 @@ begin
 
   while True do
     try
-      if not FIdSMTP.Connected then
-        FIdSMTP.Connect;
-
-      FIdSMTP.Send(FIdMessage);
+      FSendEmail.Send;
 
       Break;
     except
@@ -116,12 +92,6 @@ begin
           Break;
       end;
     end;
-
-  try
-    if FIdSMTP.Connected then
-      FIdSMTP.Disconnect(False);
-  except
-  end;
 end;
 
 end.
