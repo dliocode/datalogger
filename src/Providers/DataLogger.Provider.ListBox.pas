@@ -27,6 +27,9 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
 {$IF DEFINED(MSWINDOWS)}
+    property ListBox: TCustomListBox read FListBox write FListBox;
+    property MaxLogLines: Integer read FMaxLogLines write FMaxLogLines;
+
     constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
 {$ENDIF}
   end;

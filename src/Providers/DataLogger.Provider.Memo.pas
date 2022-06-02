@@ -17,17 +17,23 @@ uses
   System.SysUtils, System.Classes;
 
 type
+  TModeInsert = (tmFirst, tmLast);
+
   TProviderMemo = class(TDataLoggerProvider)
   private
 {$IF DEFINED(MSWINDOWS)}
     FMemo: TCustomMemo;
     FMaxLogLines: Integer;
+    FModeInsert: TModeInsert;
 {$ENDIF}
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
 {$IF DEFINED(MSWINDOWS)}
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0);
+    property Memo: TCustomMemo read FMemo write FMemo;
+    property MaxLogLines: Integer read FMaxLogLines write FMaxLogLines;
+
+    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
 {$ENDIF}
   end;
 
@@ -37,15 +43,18 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0);
+
+constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
 begin
   inherited Create;
 
   FMemo := AMemo;
   FMaxLogLines := AMaxLogLines;
+  FModeInsert := AModeInsert;
 end;
 
 {$ENDIF}
+
 
 procedure TProviderMemo.Save(const ACache: TArray<TLoggerItem>);
 {$IF DEFINED(MSWINDOWS)}
@@ -86,7 +95,12 @@ begin
               if (csDestroying in FMemo.ComponentState) then
                 Exit;
 
-              FMemo.Lines.Add(LLog);
+              case FModeInsert of
+                tmFirst:
+                  FMemo.Lines.Insert(0, LLog);
+                tmLast:
+                  FMemo.Lines.Add(LLog);
+              end;
             end);
 
           if FMaxLogLines > 0 then
@@ -100,7 +114,13 @@ begin
                 LLines := FMemo.Lines.Count;
                 while LLines > FMaxLogLines do
                 begin
-                  FMemo.Lines.Delete(0);
+                  case FModeInsert of
+                    tmFirst:
+                      FMemo.Lines.Delete(Pred(LLines));
+                    tmLast:
+                      FMemo.Lines.Delete(0);
+                  end;
+
                   LLines := FMemo.Lines.Count;
                 end;
               end);
@@ -116,7 +136,8 @@ begin
                 if (csDestroying in FMemo.ComponentState) then
                   Exit;
 
-                SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
+                if FModeInsert = tmLast then
+                  SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
               end);
           end;
         end;
@@ -141,6 +162,8 @@ begin
 end;
 
 {$ELSE}
+
+
 begin
 end;
 {$ENDIF}

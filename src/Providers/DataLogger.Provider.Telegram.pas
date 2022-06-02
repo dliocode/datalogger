@@ -32,11 +32,9 @@ implementation
 
 { TProviderTelegram }
 
-// https://api.telegram.org/bot<TOKEN>/getUpdates
-
 const
   TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s';
-  TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates';
+  TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates'; // https://api.telegram.org/bot<TOKEN>/getUpdates
   TELGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
   TELGRAM_API_HTML = '&parse_mode=HTML';
 

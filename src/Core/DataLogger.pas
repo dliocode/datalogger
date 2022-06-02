@@ -32,6 +32,7 @@ type
     FOnlyLogType: TLoggerTypes;
     FSequence: UInt64;
     FName: string;
+
     constructor Create;
     function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
@@ -40,6 +41,8 @@ type
     procedure CloseProvider;
     procedure CheckProviders;
     function GetProviders: TArray<TDataLoggerProvider>;
+    procedure Lock;
+    procedure UnLock;
   protected
     procedure Execute; override;
   public
@@ -80,6 +83,11 @@ type
     function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
     function SetName(const AName: string): TDataLogger;
 
+    function StartTransaction: TDataLogger;
+    function CommitTransaction: TDataLogger;
+    function RollbackTransaction: TDataLogger;
+    function InTransaction: Boolean;
+
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
 
@@ -90,6 +98,7 @@ type
   end;
 
 function Logger: TDataLogger;
+
 function TLogger: TDataLogger; deprecated 'Use Logger - This function will be removed in future versions';
 
 implementation
@@ -135,6 +144,7 @@ begin
   SetLogLevel(TLoggerType.All);
   SetDisableLogType([]);
   SetOnlyLogType([TLoggerType.All]);
+  SetName('');
 
   FSequence := 0;
 
@@ -175,7 +185,7 @@ begin
 
     LProviders := GetProviders;
 
-    TParallel.For(Low(LProviders), High(LProviders),
+    TParallel.for(Low(LProviders), High(LProviders),
       procedure(Index: Integer)
       begin
         LProviders[Index].AddCache(LCache);
@@ -187,11 +197,11 @@ function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLog
 begin
   Result := Self;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     FListProviders.Add(AProvider);
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 end;
 
@@ -201,12 +211,12 @@ var
 begin
   Result := Self;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     FListProviders.Clear;
     FListProviders.TrimExcess;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   for LItem in AProviders do
@@ -343,7 +353,7 @@ begin
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].SetLogFormat(ALogFormat);
@@ -360,7 +370,7 @@ begin
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].SetFormatTimestamp(AFormatTimestamp);
@@ -395,7 +405,7 @@ begin
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].SetLogException(AException);
@@ -412,7 +422,7 @@ begin
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].SetMaxRetry(AMaxRetry);
@@ -425,6 +435,77 @@ begin
   FName := AName;
 end;
 
+function TDataLogger.StartTransaction: TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  Result := Self;
+
+  CheckProviders;
+
+  LProviders := GetProviders;
+
+  TParallel.for(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].StartTransaction;
+    end);
+end;
+
+function TDataLogger.CommitTransaction: TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  Result := Self;
+
+  CheckProviders;
+
+  LProviders := GetProviders;
+
+  TParallel.for(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].CommitTransaction;
+    end);
+end;
+
+function TDataLogger.RollbackTransaction: TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  Result := Self;
+
+  CheckProviders;
+
+  LProviders := GetProviders;
+
+  TParallel.for(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].RollbackTransaction;
+    end);
+end;
+
+function TDataLogger.InTransaction: Boolean;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+  LProvider: TDataLoggerProvider;
+begin
+  Result := False;
+
+  CheckProviders;
+
+  LProviders := GetProviders;
+
+  for LProvider in LProviders do
+  begin
+    Result := LProvider.InTransaction;
+
+    if Result then
+      Break;
+  end;
+end;
+
 function TDataLogger.Clear: TDataLogger;
 var
   LProviders: TArray<TDataLoggerProvider>;
@@ -433,17 +514,17 @@ begin
 
   CheckProviders;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     FListLoggerItem.Clear;
     FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].Clear;
@@ -452,15 +533,16 @@ end;
 
 function TDataLogger.CountLogInCache: Int64;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     Result := FListLoggerItem.Count;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 end;
 
 function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string): TDataLogger;
+
   procedure DefineSequence;
   begin
     if FSequence = 18446744073709551615 then
@@ -476,7 +558,7 @@ begin
 
   CheckProviders;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
       Exit;
@@ -515,7 +597,7 @@ begin
     FListLoggerItem.Add(LLogItem);
   finally
     FEvent.SetEvent;
-    FCriticalSection.Release;
+    UnLock;
   end;
 end;
 
@@ -533,14 +615,14 @@ function TDataLogger.ExtractCache: TArray<TLoggerItem>;
 var
   LCache: TArray<TLoggerItem>;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     LCache := FListLoggerItem.ToArray;
 
     FListLoggerItem.Clear;
     FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   Result := LCache;
@@ -554,7 +636,7 @@ begin
 
   LProviders := GetProviders;
 
-  TParallel.For(Low(LProviders), High(LProviders),
+  TParallel.for(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
       LProviders[Index].NotifyEvent;
@@ -565,11 +647,11 @@ procedure TDataLogger.CheckProviders;
 var
   LCount: Integer;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     LCount := FListProviders.Count;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   if LCount = 0 then
@@ -580,14 +662,24 @@ function TDataLogger.GetProviders: TArray<TDataLoggerProvider>;
 var
   LProviders: TArray<TDataLoggerProvider>;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     LProviders := FListProviders.ToArray;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   Result := LProviders;
+end;
+
+procedure TDataLogger.Lock;
+begin
+  FCriticalSection.Acquire;
+end;
+
+procedure TDataLogger.UnLock;
+begin
+  FCriticalSection.Release;
 end;
 
 initialization

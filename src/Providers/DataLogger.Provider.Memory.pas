@@ -88,11 +88,11 @@ end;
 
 function TProviderMemory.AsString: string;
 begin
-  CriticalSection.Acquire;
+  Lock;
   try
     Result := FStringList.Text;
   finally
-    CriticalSection.Release;
+    UnLock;
   end;
 end;
 

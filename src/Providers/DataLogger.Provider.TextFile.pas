@@ -25,6 +25,13 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property LoadDir: string read FLogDir write FLogDir;
+    property PrefixFileName: string read FPrefixFileName write FPrefixFileName;
+    property Extension: string read FExtension write FExtension;
+    property CleanOnStart: Boolean read FCleanOnStart write FCleanOnStart;
+    property CleanOnRun: Boolean read FCleanOnRun write FCleanOnRun;
+    property FormatDateTime: string read FFormatDateTime write FFormatDateTime;
+
     constructor Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
   end;
 
@@ -67,7 +74,7 @@ begin
     LFileName := TPath.Combine(IncludeTrailingPathDelimiter(FLogDir), FPrefixFileName);
 
   if not Trim(FFormatDateTime).IsEmpty then
-    LFileName := LFileName + FormatDateTime(FFormatDateTime, Now);
+    LFileName := LFileName + System.SysUtils.FormatDateTime(FFormatDateTime, Now);
 
   if not Trim(FExtension).IsEmpty then
     LFileNameExt := Format('%s.%s', [LFileName, FExtension])
@@ -76,20 +83,39 @@ begin
 
   AssignFile(LTextFile, LFileNameExt);
 
-  if TFile.Exists(LFileNameExt) then
-  begin
-    if FCleanOnStart and not FCleanOnRun then
-    begin
-      TFile.Delete(LFileNameExt);
-      FCleanOnRun := True;
+  LRetryCount := 0;
 
-      Rewrite(LTextFile);
-    end
-    else
-      Append(LTextFile);
-  end
-  else
-    Rewrite(LTextFile);
+  while True do
+  begin
+    try
+      if TFile.Exists(LFileNameExt) then
+      begin
+        if FCleanOnStart and not FCleanOnRun then
+        begin
+          TFile.Delete(LFileNameExt);
+          FCleanOnRun := True;
+
+          Rewrite(LTextFile);
+        end
+        else
+          Append(LTextFile);
+      end
+      else
+        Rewrite(LTextFile);
+
+      Break
+    except
+      on E: Exception do
+      begin
+        Inc(LRetryCount);
+
+        Sleep(100);
+
+        if LRetryCount >= GetMaxRetry then
+          raise;
+      end;
+    end;
+  end;
 
   try
     for LItem in ACache do

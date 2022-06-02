@@ -52,7 +52,7 @@ begin
   if Length(ACache) = 0 then
     Exit;
 
-  LKey := FKeyPrefix + '::DataLogger';
+  LKey := FKeyPrefix + '::DataLoggerRedis';
 
   for LItem in ACache do
   begin

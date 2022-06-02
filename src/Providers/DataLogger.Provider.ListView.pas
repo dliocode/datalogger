@@ -27,6 +27,9 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
 {$IF DEFINED(MSWINDOWS)}
+    property ListView: TCustomListView read FListView write FListView;
+    property MaxLogLines: Integer read FMaxLogLines write FMaxLogLines;
+
     constructor Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0);
 {$ENDIF}
   end;

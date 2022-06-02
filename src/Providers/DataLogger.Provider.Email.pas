@@ -22,7 +22,7 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function IdSMTP: TIdSMTP;
+    property IdSMTP: TIdSMTP read FIdSMTP write FIdSMTP;
 
     constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
     destructor Destroy; override;
@@ -55,11 +55,6 @@ destructor TProviderEmail.Destroy;
 begin
   FIdMessage.Free;
   inherited;
-end;
-
-function TProviderEmail.IdSMTP: TIdSMTP;
-begin
-  Result := FIdSMTP;
 end;
 
 procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);

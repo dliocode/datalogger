@@ -49,6 +49,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property Config: TEventsConfig read FConfig write FConfig;
+
     constructor Create(const AConfig: TEventsConfig);
     destructor Destroy; override;
   end;

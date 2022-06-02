@@ -150,6 +150,13 @@ begin
     Exit;
   end;
 
+  LURL := AItemREST.URL;
+  if LURL.Trim.IsEmpty then
+    LURL := FURL;
+
+  if LURL.Trim.IsEmpty then
+    raise EDataLoggerException.Create('URL is empty');
+
   try
     LHTTP := TIdHTTP.Create(nil);
   except
@@ -160,27 +167,20 @@ begin
   end;
 
   try
-    LHTTP.Request.Connection := 'Keep-Alive';
+    LHTTP.ConnectTimeout := 60000;
+    LHTTP.ReadTimeout := 60000;
     LHTTP.HandleRedirects := True;
-    LHTTP.ConnectTimeout := 30000;
-    LHTTP.ReadTimeout := 30000;
     LHTTP.Request.AcceptCharSet := 'utf-8';
     LHTTP.Request.AcceptEncoding := 'utf-8';
-    LHTTP.Request.UserAgent := 'DataLoggerRest';
+    LHTTP.Request.UserAgent := 'DataLogger.Provider.REST.Indy';
     LHTTP.Request.ContentType := FContentType;
     LHTTP.Request.Accept := FContentType;
+    LHTTP.Request.Connection := 'Keep-Alive';
 
     if not FBearerToken.Trim.IsEmpty then
       LHTTP.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + FBearerToken);
 
     LRetryCount := 0;
-
-    LURL := AItemREST.URL;
-    if LURL.Trim.IsEmpty then
-      LURL := FURL;
-
-    if LURL.Trim.IsEmpty then
-      raise EDataLoggerException.Create('URL is empty');
 
     while True do
       try

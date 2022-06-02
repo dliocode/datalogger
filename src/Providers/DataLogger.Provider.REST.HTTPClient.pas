@@ -157,6 +157,13 @@ begin
     Exit;
   end;
 
+  LURL := AItemREST.URL;
+  if LURL.Trim.IsEmpty then
+    LURL := FURL;
+
+  if LURL.Trim.IsEmpty then
+    raise EDataLoggerException.Create('URL is empty');
+
   try
     LHTTP := THTTPClient.Create;
   except
@@ -173,7 +180,7 @@ begin
     LHTTP.SendTimeout := 60000;
 {$ENDIF}
     LHTTP.HandleRedirects := True;
-    LHTTP.UserAgent := 'DataLoggerRest';
+    LHTTP.UserAgent := 'DataLogger.Provider.REST.HTTPClient';
     LHTTP.ContentType := FContentType;
 
     LHTTP.AcceptCharSet := 'utf-8';
@@ -184,13 +191,6 @@ begin
       LHTTP.CustomHeaders['Authorization'] := 'Bearer ' + FBearerToken;
 
     LRetryCount := 0;
-
-    LURL := AItemREST.URL;
-    if LURL.Trim.IsEmpty then
-      LURL := FURL;
-
-    if LURL.Trim.IsEmpty then
-      raise EDataLoggerException.Create('URL is empty');
 
     while True do
       try

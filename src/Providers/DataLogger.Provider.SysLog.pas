@@ -18,9 +18,16 @@ type
   TProviderSysLog = class(TDataLoggerProvider)
   private
     FSysLog: TIdSysLog;
+    function GetHost: string;
+    function GetPort: Integer;
+    procedure SetHost(const Value: string);
+    procedure SetPort(const Value: Integer);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property Host: string read GetHost write SetHost;
+    property Port: Integer read GetPort write SetPort;
+
     constructor Create(const AHost: string = '127.0.0.1'; const APort: Integer = 514);
     destructor Destroy; override;
   end;
@@ -42,6 +49,26 @@ destructor TProviderSysLog.Destroy;
 begin
   FSysLog.Free;
   inherited;
+end;
+
+function TProviderSysLog.GetHost: string;
+begin
+  Result := FSysLog.Host;
+end;
+
+procedure TProviderSysLog.SetHost(const Value: string);
+begin
+  FSysLog.Host := Value;
+end;
+
+function TProviderSysLog.GetPort: Integer;
+begin
+  Result := FSysLog.Port;
+end;
+
+procedure TProviderSysLog.SetPort(const Value: Integer);
+begin
+  FSysLog.Port := Value;
 end;
 
 procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);

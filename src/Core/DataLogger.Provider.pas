@@ -16,6 +16,7 @@ uses
 type
   TDataLoggerProvider = class(TThread)
   private
+    FCriticalSection: TCriticalSection;
     FEvent: TEvent;
     FListLoggerItem: TList<TLoggerItem>;
     FLogFormat: string;
@@ -25,7 +26,11 @@ type
     FOnlyLogType: TLoggerTypes;
     FLogException: TOnLogException;
     FMaxRetry: Integer;
-    FCriticalSection: TCriticalSection;
+    FUseTransaction: Boolean;
+    FInTransaction: Boolean;
+    FInitialMessage: string;
+    FFinalMessage: string;
+
     function ExtractCache: TArray<TLoggerItem>;
   protected
     procedure Execute; override;
@@ -39,7 +44,8 @@ type
     function GetOnlyLogType: TLoggerTypes;
     function GetLogException: TOnLogException;
     function GetMaxRetry: Integer;
-    function CriticalSection: TCriticalSection;
+    procedure Lock;
+    procedure UnLock;
 
     property LogException: TOnLogException read GetLogException;
   public
@@ -50,6 +56,14 @@ type
     function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLoggerProvider;
     function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
     function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
+    function SetInitialMessage(const AMessage: string): TDataLoggerProvider;
+    function SetFinalMessage(const AMessage: string): TDataLoggerProvider;
+
+    function UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
+    function StartTransaction: TDataLoggerProvider;
+    function CommitTransaction: TDataLoggerProvider;
+    function RollbackTransaction: TDataLoggerProvider;
+    function InTransaction: Boolean;
 
     function Clear: TDataLoggerProvider;
     function CountLogInCache: Int64;
@@ -88,6 +102,7 @@ begin
   SetOnlyLogType([TLoggerType.All]);
   SetLogException(nil);
   SetMaxRetry(5);
+  UseTransaction(False);
 
   Start;
 end;
@@ -164,26 +179,104 @@ begin
   FMaxRetry := AMaxRetry;
 end;
 
+function TDataLoggerProvider.SetInitialMessage(const AMessage: string): TDataLoggerProvider;
+begin
+  Result := Self;
+  FInitialMessage := AMessage;
+end;
+
+function TDataLoggerProvider.SetFinalMessage(const AMessage: string): TDataLoggerProvider;
+begin
+  Result := Self;
+  FFinalMessage := AMessage;
+end;
+
 function TDataLoggerProvider.Clear: TDataLoggerProvider;
 begin
   Result := Self;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     FListLoggerItem.Clear;
     FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Release;
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider.UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
+begin
+  Result := Self;
+  FUseTransaction := AUseTransaction;
+end;
+
+function TDataLoggerProvider.StartTransaction: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  if not FUseTransaction then
+    Exit;
+
+  Lock;
+  try
+    FEvent.SetEvent;
+    FInTransaction := True;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider.CommitTransaction: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  if not FUseTransaction then
+    Exit;
+
+  Lock;
+  try
+    FInTransaction := False;
+    FEvent.SetEvent;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider.RollbackTransaction: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  if not FUseTransaction then
+    Exit;
+
+  Lock;
+  try
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
+
+    FInTransaction := False;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider.InTransaction: Boolean;
+begin
+  Lock;
+  try
+    Result := FInTransaction;
+  finally
+    UnLock;
   end;
 end;
 
 function TDataLoggerProvider.CountLogInCache: Int64;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     Result := FListLoggerItem.Count;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 end;
 
@@ -191,11 +284,11 @@ function TDataLoggerProvider.NotifyEvent: TDataLoggerProvider;
 begin
   Result := Self;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     FEvent.SetEvent;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 end;
 
@@ -251,27 +344,53 @@ begin
   Result := FMaxRetry;
 end;
 
-function TDataLoggerProvider.CriticalSection: TCriticalSection;
+procedure TDataLoggerProvider.Lock;
 begin
-  Result := FCriticalSection;
+  FCriticalSection.Acquire;
+end;
+
+procedure TDataLoggerProvider.UnLock;
+begin
+  FCriticalSection.Release;
 end;
 
 function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;
 var
   LItems: TArray<TLoggerItem>;
   LItem: TLoggerItem;
+  LMessage: string;
+  I: Integer;
 begin
   Result := Self;
 
-  FCriticalSection.Acquire;
+  Lock;
   try
     LItems := AValues;
 
-    for LItem in LItems do
+    for I := Low(AValues) to High(AValues) do
+    begin
+      LItem := AValues[I];
+
+      LMessage := LItem.Message;
+
+      if not FInitialMessage.Trim.IsEmpty then
+        LMessage := FInitialMessage + LMessage;
+
+      if not FFinalMessage.Trim.IsEmpty then
+        LMessage := LMessage + FFinalMessage;
+
+      LItem.Message := LMessage;
+
       FListLoggerItem.Add(LItem);
+    end;
   finally
-    FEvent.SetEvent;
-    FCriticalSection.Release;
+    if not FUseTransaction then
+      FEvent.SetEvent
+    else
+      if not FInTransaction then
+        FEvent.SetEvent;
+
+    UnLock;
   end;
 end;
 
@@ -284,14 +403,14 @@ function TDataLoggerProvider.ExtractCache: TArray<TLoggerItem>;
 var
   LCache: TArray<TLoggerItem>;
 begin
-  FCriticalSection.Acquire;
+  Lock;
   try
     LCache := FListLoggerItem.ToArray;
 
     FListLoggerItem.Clear;
     FListLoggerItem.TrimExcess;
   finally
-    FCriticalSection.Release;
+    UnLock;
   end;
 
   Result := LCache;

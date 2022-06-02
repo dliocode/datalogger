@@ -30,6 +30,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property UseColorInConsole: Boolean read FUseColorInConsole write FUseColorInConsole;
+
     constructor Create(const AUseColorInConsole: Boolean = True);
   end;
 
