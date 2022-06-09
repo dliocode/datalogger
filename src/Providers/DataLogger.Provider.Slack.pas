@@ -12,39 +12,52 @@ unit DataLogger.Provider.Slack;
 interface
 
 uses
-  DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
+{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
+  DataLogger.Provider.REST.Indy,
+{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
+  DataLogger.Provider.REST.NetHTTPClient,
+{$ELSE}
+  DataLogger.Provider.REST.HTTPClient,
+{$ENDIF}
+  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
+{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
+  TProviderSlack = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
+  TProviderSlack = class(TProviderRESTNetHTTPClient)
+{$ELSE}
   TProviderSlack = class(TProviderRESTHTTPClient)
+{$ENDIF}
   private
+    FServiceName: string;
     FChannel: string;
     FUsername: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const AServicesName: string; const AChannel: string = ''; const AUsername: string = ''); reintroduce;
+    property Channel: string read FChannel write FChannel;
+    property Username: string read FUsername write FUsername;
+
+    constructor Create(const AServiceName: string; const AChannel: string = ''; const AUsername: string = ''); reintroduce;
   end;
 
 implementation
 
 { TProviderSlack }
 
-constructor TProviderSlack.Create(const AServicesName: string; const AChannel: string = ''; const AUsername: string = '');
-var
-  LURL: string;
+constructor TProviderSlack.Create(const AServiceName: string; const AChannel: string = ''; const AUsername: string = '');
 begin
-  LURL := Format('https://hooks.slack.com/services/%s', [AServicesName]);
-
+  FServiceName := AServiceName;
   FChannel := AChannel;
+  FUsername := AUsername;
 
   if not FChannel.Trim.IsEmpty then
     if not FChannel.StartsWith('#') then
       FChannel := '#' + AChannel;
 
-  FUsername := AUsername;
-
-  inherited Create(LURL, 'application/json', '');
+  inherited Create('', 'application/json');
 end;
 
 procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);
@@ -64,26 +77,24 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('text', TJSONString.Create(LLog));
+      LJO.AddPair('text', LLog);
 
       if not FChannel.Trim.IsEmpty then
-        LJO.AddPair('channel', TJSONString.Create(FChannel));
+        LJO.AddPair('channel', FChannel);
 
       if not FUsername.Trim.IsEmpty then
-        LJO.AddPair('username', TJSONString.Create(FUsername));
+        LJO.AddPair('username', FUsername);
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
+      LLogItemREST.URL := Format('https://hooks.slack.com/services/%s', [FServiceName]);
     finally
       LJO.Free;
     end;

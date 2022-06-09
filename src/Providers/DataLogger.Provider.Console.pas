@@ -59,16 +59,13 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
     begin
       Writeln;
       Continue;
     end;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LRetryCount := 0;
 
@@ -85,13 +82,13 @@ begin
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;
@@ -158,6 +155,7 @@ type
   end;
 
 {$IF DEFINED(MSWINDOWS)}
+
 var
   ConOut: THandle;
   BufInfo: TConsoleScreenBufferInfo;
@@ -170,6 +168,7 @@ begin
   SetConsoleTextAttribute(ConOut, BufInfo.wAttributes);
 end;
 {$ELSEIF DEFINED(LINUX)}
+
 var
   LColor: Integer;
 begin
@@ -183,6 +182,7 @@ begin
   Write(#27'[0m');
 end;
 {$ELSE}
+
 begin
   Writeln(ALog);
 end;

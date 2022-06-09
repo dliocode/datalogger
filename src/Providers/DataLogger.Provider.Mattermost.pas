@@ -12,48 +12,66 @@ unit DataLogger.Provider.Mattermost;
 interface
 
 uses
-  DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
-  System.SysUtils, System.Classes, System.JSON, System.Net.URLClient, System.NetConsts, System.Net.HttpClient;
+{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
+  DataLogger.Provider.REST.Indy,
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
+  DataLogger.Provider.REST.NetHTTPClient,
+{$ELSE}
+  DataLogger.Provider.REST.HTTPClient,
+{$ENDIF}
+  DataLogger.Types,
+  System.SysUtils, System.Classes, System.JSON, System.Net.URLClient, System.NetConsts, System.Net.HTTPClient;
 
 type
+{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
+  TProviderMattermost = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
+  TProviderMattermost = class(TProviderRESTNetHTTPClient)
+{$ELSE}
   TProviderMattermost = class(TProviderRESTHTTPClient)
+{$ENDIF}
   private
-    FChannel: string;
+    FURL: string;
+    FTokenBearer: string;
+    FChannelId: string;
     function Login(const AURL: string; const AUsername: string; const APassword: string): string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const AURL: string; const ATokenBearer: string; const AChannel: string); reintroduce;
-    constructor CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannel: string);
+    property URL: string read FURL write FURL;
+    property TokenBearer: string read FTokenBearer write FTokenBearer;
+    property ChannelId: string read FChannelId write FChannelId;
+
+    constructor Create(const AURL: string; const ATokenBearer: string; const AChannelId: string); reintroduce;
+    constructor CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannelId: string);
   end;
 
 implementation
 
 { TProviderMattermost }
 
-constructor TProviderMattermost.Create(const AURL: string; const ATokenBearer: string; const AChannel: string);
-var
-  LURL: string;
+constructor TProviderMattermost.Create(const AURL: string; const ATokenBearer: string; const AChannelId: string);
 begin
-  FChannel := AChannel;
+  FURL := AURL;
+  FTokenBearer := ATokenBearer;
+  FChannelId := AChannelId;
 
-  LURL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(AURL)]);
-  inherited Create(LURL, 'application/json', ATokenBearer);
+  inherited Create('', 'application/json', ATokenBearer);
 end;
 
-constructor TProviderMattermost.CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannel: string);
+constructor TProviderMattermost.CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannelId: string);
 var
   LTokenBearer: string;
 begin
   LTokenBearer := Login(AURL, AUsername, APassword);
 
-  Create(AURL, LTokenBearer, AChannel);
+  Create(AURL, LTokenBearer, AChannelId);
 end;
 
 function TProviderMattermost.Login(const AURL: string; const AUsername: string; const APassword: string): string;
 var
   LHTTP: THTTPClient;
-  LBodyJSON: TJSONOBject;
+  LBodyJSON: TJSONObject;
   LBody: TStream;
   LResponse: IHTTPResponse;
 begin
@@ -67,15 +85,14 @@ begin
     LHTTP.HandleRedirects := True;
     LHTTP.UserAgent := 'DataLogger.Provider.Mattermost';
     LHTTP.ContentType := 'application/json';
-
     LHTTP.AcceptCharSet := 'utf-8';
     LHTTP.AcceptEncoding := 'utf-8';
     LHTTP.Accept := 'application/json';
 
     LBodyJSON := TJSONObject.Create;
     try
-      LBodyJSON.AddPair('login_id',AUsername);
-      LBodyJSON.AddPair('password',APassword);
+      LBodyJSON.AddPair('login_id', AUsername);
+      LBodyJSON.AddPair('password', APassword);
 
       LBody := TStringStream.Create(LBodyJSON.ToString, TEncoding.UTF8);
     finally
@@ -88,7 +105,7 @@ begin
         raise EDataLoggerException.Create('Erro: Invalid authentication in Provider Mattermost - Response nil!');
 
       if LResponse.StatusCode <> 200 then
-        raise EDataLoggerException.CreateFmt('Error: Invalid authentication in Provider Mattermost - (%d) %s',[LResponse.StatusCode, LResponse.ContentAsString(TEncoding.UTF8)]);
+        raise EDataLoggerException.CreateFmt('Error: Invalid authentication in Provider Mattermost - (%d) %s', [LResponse.StatusCode, LResponse.ContentAsString(TEncoding.UTF8)]);
 
       Result := LResponse.HeaderValue['Token'];
     finally
@@ -114,21 +131,19 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('channel_id', TJSONString.Create(FChannel));
-      LJO.AddPair('message', TJSONString.Create(LLog));
+      LJO.AddPair('channel_id', FChannelId);
+      LJO.AddPair('message', LLog);
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
+      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(FURL)]);
     finally
       LJO.Free;
     end;

@@ -10,13 +10,27 @@ unit DataLogger.Provider.Telegram;
 interface
 
 uses
-  DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
+{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+  DataLogger.Provider.REST.Indy,
+{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+  DataLogger.Provider.REST.NetHTTPClient,
+{$ELSE}
+  DataLogger.Provider.REST.HTTPClient,
+{$ENDIF}
+  DataLogger.Types,
   System.SysUtils, System.NetEncoding;
 
 type
   TTelegramParseMode = (tpNone, tpHTML, tpMarkdown);
 
+{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+
+  TProviderTelegram = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+  TProviderTelegram = class(TProviderRESTNetHTTPClient)
+{$ELSE}
   TProviderTelegram = class(TProviderRESTHTTPClient)
+{$ENDIF}
   private
     FBotToken: string;
     FChatId: string;
@@ -24,8 +38,11 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce; overload;
-    constructor Create(const ABotToken: string; const AChatId: Double; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce; overload; deprecated 'ChatId type is string - This function will be removed in future versions';
+    property BotToken: string read FBotToken write FBotToken;
+    property ChatId: string read FChatId write FChatId;
+    property ParseMode: TTelegramParseMode read FParseMode write FParseMode;
+
+    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce;
   end;
 
 implementation
@@ -45,11 +62,6 @@ begin
   FParseMode := AParseMode;
 
   inherited Create('', 'application/json');
-end;
-
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: Double; const AParseMode: TTelegramParseMode = tpMarkdown);
-begin
-  Create(ABotToken, FloatToStr(AChatId), AParseMode);
 end;
 
 procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);
@@ -130,14 +142,11 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
     LParseMode := '';
-    LMessage := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp).Trim;
+    LMessage := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp).Trim;
 
     if FParseMode <> tpNone then
       SerializeMessageParseMode;

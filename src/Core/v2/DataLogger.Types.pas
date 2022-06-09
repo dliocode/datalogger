@@ -20,8 +20,6 @@ type
   TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal);
   TLoggerTypes = set of TLoggerType;
 
-  TLoggerTypeAutoCommit = (tcAll, tcBlock);
-
   TLoggerTypeHelper = record helper for TLoggerType
   public
     function ToString: string;

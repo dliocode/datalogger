@@ -19,12 +19,12 @@ uses
 type
   TProviderEventLog = class(TDataLoggerProvider)
   private
-{$IF DEFINED(MSWINDOWS)}
-    FEventLogger: TEventLogger;
-{$ENDIF}
+    FName: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property Name: string read FName write FName;
+
     constructor Create(const AName: string = '');
     destructor Destroy; override;
   end;
@@ -34,27 +34,21 @@ implementation
 { TProviderEventLog }
 
 constructor TProviderEventLog.Create(const AName: string = '');
-{$IF DEFINED(MSWINDOWS)}
-var
-  LName: string;
-{$ENDIF}
 begin
   inherited Create;
 
 {$IF DEFINED(MSWINDOWS)}
   if AName.Trim.IsEmpty then
-    LName := TLoggerUtils.AppName
+    FName := TLoggerUtils.AppName
   else
-    LName := AName;
-
-  FEventLogger := TEventLogger.Create(LName);
+    FName := AName;
 {$ENDIF}
 end;
 
 destructor TProviderEventLog.Destroy;
 begin
 {$IF DEFINED(MSWINDOWS)}
-  FEventLogger.Free;
+
 {$ENDIF}
   inherited;
 end;
@@ -62,6 +56,7 @@ end;
 procedure TProviderEventLog.Save(const ACache: TArray<TLoggerItem>);
 {$IF DEFINED(MSWINDOWS)}
 var
+  LEventLogger: TEventLogger;
   LRetryCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
@@ -70,55 +65,59 @@ begin
   if Length(ACache) = 0 then
     Exit;
 
-  for LItem in ACache do
-  begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
+  LEventLogger := TEventLogger.Create(FName);
+  try
+    for LItem in ACache do
+    begin
+      if LItem.&Type = TLoggerType.All then
+        Continue;
 
-    if LItem.&Type = TLoggerType.All then
-      Continue;
+      LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
-
-    case LItem.&Type of
-      TLoggerType.Debug:
+      case LItem.&Type of
+        TLoggerType.Debug:
+          LEventType := EVENTLOG_INFORMATION_TYPE;
+        TLoggerType.Info:
+          LEventType := EVENTLOG_INFORMATION_TYPE;
+        TLoggerType.Warn:
+          LEventType := EVENTLOG_WARNING_TYPE;
+        TLoggerType.Error:
+          LEventType := EVENTLOG_ERROR_TYPE;
+        TLoggerType.Success:
+          LEventType := EVENTLOG_SUCCESS;
+      else
         LEventType := EVENTLOG_INFORMATION_TYPE;
-      TLoggerType.Info:
-        LEventType := EVENTLOG_INFORMATION_TYPE;
-      TLoggerType.Warn:
-        LEventType := EVENTLOG_WARNING_TYPE;
-      TLoggerType.Error:
-        LEventType := EVENTLOG_ERROR_TYPE;
-      TLoggerType.Success:
-        LEventType := EVENTLOG_SUCCESS;
-    else
-      LEventType := EVENTLOG_INFORMATION_TYPE;
-    end;
-
-    LRetryCount := 0;
-
-    while True do
-      try
-        FEventLogger.LogMessage(LLog, LEventType, 0, 0);
-        Break;
-      except
-        on E: Exception do
-        begin
-          Inc(LRetryCount);
-
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
-
-          if Self.Terminated then
-            Exit;
-
-          if LRetryCount >= GetMaxRetry then
-            Break;
-        end;
       end;
+
+      LRetryCount := 0;
+
+      while True do
+        try
+          LEventLogger.LogMessage(LLog, LEventType, 0, 0);
+          Break;
+        except
+          on E: Exception do
+          begin
+            Inc(LRetryCount);
+
+            if Assigned(FLogException) then
+              FLogException(Self, LItem, E, LRetryCount);
+
+            if Self.Terminated then
+              Exit;
+
+            if LRetryCount >= FMaxRetry then
+              Break;
+          end;
+        end;
+    end;
+  finally
+    LEventLogger.Free;
   end;
 end;
 {$ELSE}
+
+
 begin
 end;
 {$ENDIF}
