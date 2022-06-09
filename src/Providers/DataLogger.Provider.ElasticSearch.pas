@@ -10,27 +10,49 @@ unit DataLogger.Provider.ElasticSearch;
 interface
 
 uses
-  DataLogger.Provider.REST.HTTPClient, DataLogger.Types,
+{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+  DataLogger.Provider.REST.Indy,
+{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+  DataLogger.Provider.REST.NetHTTPClient,
+{$ELSE}
+  DataLogger.Provider.REST.HTTPClient,
+{$ENDIF}
+  DataLogger.Types,
   System.SysUtils;
 
 type
+{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+  TProviderElasticSearch = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+  TProviderElasticSearch = class(TProviderRESTNetHTTPClient)
+{$ELSE}
   TProviderElasticSearch = class(TProviderRESTHTTPClient)
+{$ENDIF}
+  private
+    FHost: string;
+    FPort: Integer;
+    FIndex: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const AElasticHOST: string = 'http://localhost'; const AElasticPORT: Integer = 9200; const AElasticIndex: string = 'logger'); reintroduce;
+    property Host: string read FHost write FHost;
+    property Port: Integer read FPort write FPort;
+    property &Index: string read FIndex write FIndex;
+
+    constructor Create(const AHost: string = 'http://localhost'; const APort: Integer = 9200; const AIndex: string = 'logger'); reintroduce;
   end;
 
 implementation
 
 { TProviderElasticSearch }
 
-constructor TProviderElasticSearch.Create(const AElasticHOST: string = 'http://localhost'; const AElasticPORT: Integer = 9200; const AElasticIndex: string = 'logger');
-var
-  LURL: string;
+constructor TProviderElasticSearch.Create(const AHost: string = 'http://localhost'; const APort: Integer = 9200; const AIndex: string = 'logger');
 begin
-  LURL := Format('%s:%d/%s/_doc', [AElasticHOST, AElasticPORT, AElasticIndex.ToLower]);
-  inherited Create(LURL, 'application/json', '');
+  FHost := AHost;
+  FPort := APort;
+  FIndex := AIndex;
+
+  inherited Create('', 'application/json', '');
 end;
 
 procedure TProviderElasticSearch.Save(const ACache: TArray<TLoggerItem>);
@@ -46,14 +68,12 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(GetLogFormat, LItem);
+    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('%s:%d/%s/_doc', [FHost, FPort, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);;
   end;

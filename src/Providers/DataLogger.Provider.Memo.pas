@@ -43,7 +43,6 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-
 constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
 begin
   inherited Create;
@@ -65,20 +64,17 @@ var
   LLines: Integer;
 begin
   if not Assigned(FMemo) then
-    raise EDataLoggerException.Create('Memo not defined');
+    raise EDataLoggerException.Create('Memo not defined!');
 
   if Length(ACache) = 0 then
     Exit;
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       LLog := ''
     else
-      LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+      LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LRetryCount := 0;
 
@@ -148,21 +144,19 @@ begin
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;
   end;
 end;
-
 {$ELSE}
-
 
 begin
 end;

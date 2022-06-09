@@ -56,7 +56,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | ListBox | DataLogger.Provider.ListBox |
 | ListView | DataLogger.Provider.ListView |
 | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach |
-| [MatterMost](https://mattermost.com/) | DataLogger.Provider.Mattermost |
+| [Mattermost](https://mattermost.com/) | DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks |
 | Memo | DataLogger.Provider.Memo |
 | Memory | DataLogger.Provider.Memory |
 | OutputDebugString | DataLogger.Provider.OutputDebugString |

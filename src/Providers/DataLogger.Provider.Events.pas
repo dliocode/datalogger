@@ -76,7 +76,7 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
   procedure _Execute(const AEvent: TExecuteEvents; const AItem: TLoggerItem);
   begin
     if Assigned(AEvent) then
-      AEvent(GetLogFormat, AItem, GetFormatTimestamp);
+      AEvent(FLogFormat, AItem, FFormatTimestamp);
   end;
 
 var
@@ -84,16 +84,13 @@ var
   LItem: TLoggerItem;
 begin
   if not Assigned(FConfig) then
-    raise EDataLoggerException.Create('Config not defined');
+    raise EDataLoggerException.Create('Config not defined!');
 
   if Length(ACache) = 0 then
     Exit;
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
@@ -126,13 +123,13 @@ begin
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end

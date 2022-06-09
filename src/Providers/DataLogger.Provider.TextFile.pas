@@ -32,14 +32,14 @@ type
     property CleanOnRun: Boolean read FCleanOnRun write FCleanOnRun;
     property FormatDateTime: string read FFormatDateTime write FFormatDateTime;
 
-    constructor Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
+    constructor Create(const ALogDir: string = '.'; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
   end;
 
 implementation
 
 { TProviderTextFile }
 
-constructor TProviderTextFile.Create(const ALogDir: string = ''; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
+constructor TProviderTextFile.Create(const ALogDir: string = '.'; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
 begin
   inherited Create;
 
@@ -111,7 +111,7 @@ begin
 
         Sleep(100);
 
-        if LRetryCount >= GetMaxRetry then
+        if LRetryCount >= FMaxRetry then
           raise;
       end;
     end;
@@ -120,13 +120,10 @@ begin
   try
     for LItem in ACache do
     begin
-      if not ValidationBeforeSave(LItem) then
-        Continue;
-
       if LItem.&Type = TLoggerType.All then
         LLog := ''
       else
-        LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+        LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
       LRetryCount := 0;
 
@@ -143,13 +140,13 @@ begin
           begin
             Inc(LRetryCount);
 
-            if Assigned(LogException) then
-              LogException(Self, LItem, E, LRetryCount);
+            if Assigned(FLogException) then
+              FLogException(Self, LItem, E, LRetryCount);
 
             if Self.Terminated then
               Exit;
 
-            if LRetryCount >= GetMaxRetry then
+            if LRetryCount >= FMaxRetry then
               Break;
           end;
         end;

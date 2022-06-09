@@ -17,13 +17,18 @@ uses
 type
   TProviderRedis = class(TDataLoggerProvider)
   private
+    FHost: string;
+    FPort: Integer;
     FKeyPrefix: string;
     FMaxSize: Int64;
-    FRedisClient: IRedisClient;
-    FConnected: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    property Host: string read FHost write FHost;
+    property Port: Integer read FPort write FPort;
+    property KeyPrefix: string read FKeyPrefix write FKeyPrefix;
+    property MaxSize: Int64 read FMaxSize write FMaxSize;
+
     constructor Create(const AHost: string = '127.0.0.1'; const APort: Integer = 6379; const AKeyPrefix: string = 'DataLogger'; const AMaxSize: Int64 = 10000);
   end;
 
@@ -35,15 +40,16 @@ constructor TProviderRedis.Create(const AHost: string = '127.0.0.1'; const APort
 begin
   inherited Create;
 
-  FRedisClient := TRedisClient.Create(AHost, APort);
-  FConnected := False;
-
+  FHost := AHost;
+  FPort := APort;
   FKeyPrefix := AKeyPrefix;
   FMaxSize := AMaxSize;
 end;
 
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);
 var
+  LRedisClient: IRedisClient;
+  LConnected: Boolean;
   LRetryCount: Integer;
   LKey: string;
   LItem: TLoggerItem;
@@ -54,60 +60,60 @@ begin
 
   LKey := FKeyPrefix + '::DataLoggerRedis';
 
+  LRedisClient := TRedisClient.Create(FHost, FPort);
+  LConnected := False;
+
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LRetryCount := 0;
 
     while True do
       try
-        if not FConnected then
+        if not LConnected then
         begin
-          FRedisClient.Connect;
-          FConnected := True;
+          LRedisClient.Connect;
+          LConnected := True;
         end;
 
-        FRedisClient.RPUSH(LKey, [LLog]);
+        LRedisClient.RPUSH(LKey, [LLog]);
 
         Break;
       except
         on E: Exception do
         begin
-          if FConnected then
+          if LConnected then
           begin
             try
               try
-                FRedisClient.Disconnect;
+                LRedisClient.Disconnect;
               except
               end;
             finally
-              FConnected := False;
+              LConnected := False;
             end;
           end;
 
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;
   end;
 
   try
-    FRedisClient.LTRIM(LKey, -FMaxSize, -1);
+    LRedisClient.LTRIM(LKey, -FMaxSize, -1);
   except
   end;
 end;

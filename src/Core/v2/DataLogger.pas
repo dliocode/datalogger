@@ -17,7 +17,6 @@ type
   TLoggerItem = DataLogger.Types.TLoggerItem;
   TLoggerType = DataLogger.Types.TLoggerType;
   TLoggerTypes = DataLogger.Types.TLoggerTypes;
-  TLoggerTypeAutoCommit = DataLogger.Types.TLoggerTypeAutoCommit;
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
@@ -41,7 +40,6 @@ type
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
-    procedure SaveForce;
     procedure CloseProvider;
     function GetProviders: TArray<TDataLoggerProvider>;
     procedure Lock;
@@ -485,20 +483,13 @@ var
 begin
   Result := Self;
 
-  SaveForce;
-
   LProviders := GetProviders;
 
-  Lock;
-  try
-    TParallel.For(Low(LProviders), High(LProviders),
-      procedure(Index: Integer)
-      begin
-        LProviders[Index].StartTransaction;
-      end);
-  finally
-    UnLock;
-  end;
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].StartTransaction;
+    end);
 end;
 
 function TDataLogger.CommitTransaction: TDataLogger;
@@ -507,20 +498,13 @@ var
 begin
   Result := Self;
 
-  SaveForce;
-
   LProviders := GetProviders;
 
-  Lock;
-  try
-    TParallel.For(Low(LProviders), High(LProviders),
-      procedure(Index: Integer)
-      begin
-        LProviders[Index].CommitTransaction;
-      end);
-  finally
-    UnLock;
-  end;
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].CommitTransaction;
+    end);
 end;
 
 function TDataLogger.RollbackTransaction: TDataLogger;
@@ -529,20 +513,13 @@ var
 begin
   Result := Self;
 
-  SaveForce;
-
   LProviders := GetProviders;
 
-  Lock;
-  try
-    TParallel.For(Low(LProviders), High(LProviders),
-      procedure(Index: Integer)
-      begin
-        LProviders[Index].RollbackTransaction;
-      end);
-  finally
-    UnLock;
-  end;
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].RollbackTransaction;
+    end);
 end;
 
 function TDataLogger.InTransaction: Boolean;
@@ -554,17 +531,12 @@ begin
 
   LProviders := GetProviders;
 
-  Lock;
-  try
-    for LProvider in LProviders do
-    begin
-      Result := LProvider.InTransaction;
+  for LProvider in LProviders do
+  begin
+    Result := LProvider.InTransaction;
 
-      if Result then
-        Break;
-    end;
-  finally
-    UnLock;
+    if Result then
+      Break;
   end;
 end;
 
@@ -681,41 +653,17 @@ begin
   Result := LCache;
 end;
 
-procedure TDataLogger.SaveForce;
-var
-  LCount: Integer;
-begin
-  Lock;
-  try
-    FEvent.SetEvent;
-    LCount := FListLoggerItem.Count;
-  finally
-    UnLock;
-  end;
-
-  while LCount > 0 do
-  begin
-    Sleep(1);
-    LCount := CountLogInCache;
-  end;
-end;
-
 procedure TDataLogger.CloseProvider;
 var
   LProviders: TArray<TDataLoggerProvider>;
 begin
   LProviders := GetProviders;
 
-  Lock;
-  try
-    TParallel.For(Low(LProviders), High(LProviders),
-      procedure(Index: Integer)
-      begin
-        LProviders[Index].NotifyEvent;
-      end);
-  finally
-    UnLock;
-  end;
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].NotifyEvent;
+    end);
 end;
 
 function TDataLogger.GetProviders: TArray<TDataLoggerProvider>;

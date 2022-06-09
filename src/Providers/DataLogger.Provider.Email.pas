@@ -18,14 +18,18 @@ type
   TProviderEmail = class(TDataLoggerProvider)
   private
     FIdSMTP: TIdSMTP;
-    FIdMessage: TIdMessage;
+    FFromAddress: string;
+    FToAddress: string;
+    FSubject: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     property IdSMTP: TIdSMTP read FIdSMTP write FIdSMTP;
+    property FromAddress: string read FFromAddress write FFromAddress;
+    property ToAddress: string read FToAddress write FToAddress;
+    property Subject: string read FSubject write FSubject;
 
     constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
-    destructor Destroy; override;
   end;
 
 implementation
@@ -33,89 +37,90 @@ implementation
 { TProviderEmail }
 
 constructor TProviderEmail.Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
-var
-  LToAddress: TArray<string>;
-  LEmail: string;
 begin
   inherited Create;
 
   FIdSMTP := AIdSMTP;
-  FIdMessage := TIdMessage.Create;
-
-  FIdMessage.From.Text := AFromAddress;
-
-  LToAddress := AToAddress.Trim.Split([';']);
-  for LEmail in LToAddress do
-    FIdMessage.Recipients.Add.Text := LEmail;
-
-  FIdMessage.Subject := ASubject
-end;
-
-destructor TProviderEmail.Destroy;
-begin
-  FIdMessage.Free;
-  inherited;
+  FFromAddress := AFromAddress;
+  FToAddress := AToAddress;
+  FSubject := ASubject;
 end;
 
 procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);
 var
+  LIdMessage: TIdMessage;
+  LToAddress: TArray<string>;
+  LEmail: string;
   LRetryCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
   LString: TStringList;
 begin
+  if not Assigned(FIdSMTP) then
+    raise EDataLoggerException.Create('IdSMTP not defined!');
+
   if Length(ACache) = 0 then
     Exit;
 
-  LString := TStringList.Create;
+  LIdMessage := TIdMessage.Create;
   try
-    for LItem in ACache do
-    begin
-      if not ValidationBeforeSave(LItem) then
-        Continue;
+    LIdMessage.From.Text := FFromAddress;
 
-      if LItem.&Type = TLoggerType.All then
-        Continue;
+    LToAddress := FToAddress.Trim.Split([';']);
+    for LEmail in LToAddress do
+      LIdMessage.Recipients.Add.Text := LEmail.Trim;
 
-      LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
-      LString.Add(LLog);
-    end;
+    LIdMessage.Subject := FSubject;
 
-    FIdMessage.Body.Text := LString.Text;
-  finally
-    LString.Free;
-  end;
-
-  LRetryCount := 0;
-
-  while True do
+    LString := TStringList.Create;
     try
-      if not FIdSMTP.Connected then
-        FIdSMTP.Connect;
-
-      FIdSMTP.Send(FIdMessage);
-
-      Break;
-    except
-      on E: Exception do
+      for LItem in ACache do
       begin
-        Inc(LRetryCount);
+        if LItem.&Type = TLoggerType.All then
+          Continue;
 
-        if Assigned(LogException) then
-          LogException(Self, LItem, E, LRetryCount);
-
-        if Self.Terminated then
-          Exit;
-
-        if LRetryCount >= GetMaxRetry then
-          Break;
+        LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+        LString.Add(LLog);
       end;
+
+      LIdMessage.Body.Text := LString.Text;
+    finally
+      LString.Free;
     end;
 
-  try
-    if FIdSMTP.Connected then
-      FIdSMTP.Disconnect(False);
-  except
+    LRetryCount := 0;
+
+    while True do
+      try
+        if not FIdSMTP.Connected then
+          FIdSMTP.Connect;
+
+        FIdSMTP.Send(LIdMessage);
+
+        Break;
+      except
+        on E: Exception do
+        begin
+          Inc(LRetryCount);
+
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
+
+          if Self.Terminated then
+            Exit;
+
+          if LRetryCount >= FMaxRetry then
+            Break;
+        end;
+      end;
+
+    try
+      if FIdSMTP.Connected then
+        FIdSMTP.Disconnect(False);
+    except
+    end;
+  finally
+    LIdMessage.Free;
   end;
 end;
 

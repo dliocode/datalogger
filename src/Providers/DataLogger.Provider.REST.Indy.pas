@@ -12,7 +12,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   System.SysUtils, System.Classes, System.Threading,
-  IdHTTP;
+  IdHTTP, IdSSLOpenSSL;
 
 type
   TIdHTTP = IdHTTP.TIdHTTP;
@@ -23,23 +23,25 @@ type
     URL: string;
   end;
 
-  TSaveFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
   TLoggerMethod = (tlmGet, tlmPost);
 
   TProviderRESTIndy = class(TDataLoggerProvider)
   private
     FURL: string;
-    FBearerToken: string;
     FContentType: string;
-    FSaveFinally: TSaveFinally;
+    FBearerToken: string;
+    FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TLoggerMethod; const AItemREST: TLogItemREST);
   protected
-    procedure SetURL(const AURL: string);
+    property URL: string read FURL write FURL;
+    property ContentType: string read FContentType write FContentType;
+    property BearerToken: string read FBearerToken write FBearerToken;
 
     procedure InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
 
-    procedure SetSendFinally(const ASaveFinally: TSaveFinally);
+    procedure SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
@@ -83,16 +85,13 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
     if Trim(LowerCase(FContentType)) = 'application/json' then
-      LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(GetLogFormat, LItem)
+      LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem)
     else
-      LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatTimestamp);
+      LLogItemREST.Stream := TLoggerLogFormat.AsStream(FLogFormat, LItem, FFormatTimestamp);
 
     LLogItemREST.LogItem := LItem;
 
@@ -102,14 +101,9 @@ begin
   InternalSaveAsync(TLoggerMethod.tlmPost, LItemREST);
 end;
 
-procedure TProviderRESTIndy.SetSendFinally(const ASaveFinally: TSaveFinally);
+procedure TProviderRESTIndy.SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
 begin
-  FSaveFinally := ASaveFinally;
-end;
-
-procedure TProviderRESTIndy.SetURL(const AURL: string);
-begin
-  FURL := AURL;
+  FExecuteFinally := AExecuteFinally;
 end;
 
 procedure TProviderRESTIndy.InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
@@ -140,6 +134,7 @@ var
   LRetryCount: Integer;
   LURL: string;
   LHTTP: TIdHTTP;
+  LSSL: TIdSSLIOHandlerSocketOpenSSL;
   LResponseContent: string;
 begin
   if Self.Terminated then
@@ -159,6 +154,7 @@ begin
 
   try
     LHTTP := TIdHTTP.Create(nil);
+    LSSL := nil;
   except
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
@@ -179,6 +175,17 @@ begin
 
     if not FBearerToken.Trim.IsEmpty then
       LHTTP.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + FBearerToken);
+
+    if LURL.ToLower.Contains('https://') then
+    begin
+      if not LoadOpenSSLLibrary then
+        raise EDataLoggerException.Create('DLL''s not compatible or not found (ssleay32 e libeay32)');
+
+      LSSL := TIdSSLIOHandlerSocketOpenSSL.Create(LHTTP);
+      LSSL.SSLOptions.Method := sslvTLSv1_2;
+    end;
+
+    LHTTP.IOHandler := LSSL;
 
     LRetryCount := 0;
 
@@ -205,21 +212,24 @@ begin
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, AItemREST.LogItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, AItemREST.LogItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;
   finally
     LHTTP.Free;
 
-    if Assigned(FSaveFinally) then
-      FSaveFinally(AItemREST.LogItem, LResponseContent);
+    if Assigned(LSSL) then
+      UnLoadOpenSSLLibrary;
+
+    if Assigned(FExecuteFinally) then
+      FExecuteFinally(AItemREST.LogItem, LResponseContent);
 
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;

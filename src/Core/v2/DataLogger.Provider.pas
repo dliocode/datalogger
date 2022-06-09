@@ -18,33 +18,38 @@ type
   private
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
-    FListLoggerBase: TList<TLoggerItem>;
-    FListTransaction: TObjectDictionary<Integer, TList<TLoggerItem>>;
     FListLoggerItem: TList<TLoggerItem>;
-
+    FListTransaction: TDictionary<string, TLoggerItem>;
+    FLogFormat: string;
+    FFormatTimestamp: string;
     FLogLevel: TLoggerType;
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
-
+    FLogException: TOnLogException;
+    FMaxRetry: Integer;
     FUseTransaction: Boolean;
     FAutoCommit: TLoggerTypes;
-    FTypeAutoCommit: TLoggerTypeAutoCommit;
     FInTransaction: Boolean;
     FInitialMessage: string;
     FFinalMessage: string;
 
     function ExtractCache: TArray<TLoggerItem>;
   protected
-    FLogFormat: string;
-    FFormatTimestamp: string;
-    FLogException: TOnLogException;
-    FMaxRetry: Integer;
-
     procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
 
+    function ValidationBeforeSave(const ALogItem: TLoggerItem): Boolean;
+    function GetLogFormat: string;
+    function GetFormatTimestamp: string;
+    function GetLogLevel: TLoggerType;
+    function GetDisableLevel: TLoggerTypes;
+    function GetOnlyLogType: TLoggerTypes;
+    function GetLogException: TOnLogException;
+    function GetMaxRetry: Integer;
     procedure Lock;
     procedure UnLock;
+
+    property LogException: TOnLogException read GetLogException;
   public
     function SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
@@ -57,12 +62,11 @@ type
     function SetFinalMessage(const AMessage: string): TDataLoggerProvider;
 
     function UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
-    function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
-    function StartTransaction(const AUseLock: Boolean = True): TDataLoggerProvider;
-    function CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
-    function RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+    function AutoCommit(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
+    function StartTransaction: TDataLoggerProvider;
+    function CommitTransaction: TDataLoggerProvider;
+    function RollbackTransaction: TDataLoggerProvider;
     function InTransaction: Boolean;
-    function CountTransaction: Integer;
 
     function Clear: TDataLoggerProvider;
     function CountLogInCache: Int64;
@@ -92,11 +96,8 @@ begin
 
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
-  FListLoggerBase := TList<TLoggerItem>.Create;
-  FListLoggerItem := FListLoggerBase;
-  FListTransaction := TObjectDictionary < Integer, TList < TLoggerItem >>.Create([doOwnsValues]);
-
-  FInTransaction := False;
+  FListLoggerItem := TList<TLoggerItem>.Create;
+  FListTransaction := TDictionary<string, TLoggerItem>.Create;
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
   SetFormatTimestamp('yyyy-mm-dd hh:nn:ss:zzz');
@@ -106,7 +107,7 @@ begin
   SetLogException(nil);
   SetMaxRetry(5);
   UseTransaction(False);
-  AutoCommit([], tcBlock);
+  AutoCommit([]);
 
   Start;
 end;
@@ -117,15 +118,9 @@ begin
   FEvent.SetEvent;
   WaitFor;
 
-  Lock;
-  try
-    FListTransaction.Free;
-    FListLoggerBase.Free;
-    FEvent.Free;
-  finally
-    UnLock;
-  end;
-
+  FListTransaction.Free;
+  FListLoggerItem.Free;
+  FEvent.Free;
   FCriticalSection.Free;
 
   inherited;
@@ -221,93 +216,13 @@ begin
   FUseTransaction := AUseTransaction;
 end;
 
-function TDataLoggerProvider.AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+function TDataLoggerProvider.AutoCommit(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
 begin
   Result := Self;
   FAutoCommit := ALogTypes;
-  FTypeAutoCommit := ATypeAutoCommit;
 end;
 
-function TDataLoggerProvider.StartTransaction(const AUseLock: Boolean = True): TDataLoggerProvider;
-var
-  LCountTransaction: Integer;
-begin
-  Result := Self;
-
-  if not FUseTransaction then
-    Exit;
-
-  if AUseLock then
-    Lock;
-  try
-    LCountTransaction := FListTransaction.Count;
-
-    if LCountTransaction = 0 then
-      FInTransaction := True;
-
-    FListLoggerItem := TList<TLoggerItem>.Create;
-    FListTransaction.Add(LCountTransaction + 1, FListLoggerItem);
-  finally
-    if AUseLock then
-      UnLock;
-  end;
-end;
-
-function TDataLoggerProvider.CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
-var
-  LCountTransaction: Integer;
-  LCurrent: TList<TLoggerItem>;
-  LCurrentValues: TArray<TLoggerItem>;
-begin
-  Result := Self;
-
-  if not FUseTransaction then
-    Exit;
-
-  if AUseLock then
-    Lock;
-  try
-    while True do
-    begin
-      LCountTransaction := FListTransaction.Count;
-
-      if LCountTransaction = 0 then
-        Exit;
-
-      FListTransaction.TryGetValue(LCountTransaction, LCurrent);
-      LCurrentValues := LCurrent.ToArray;
-
-      if LCountTransaction > 1 then
-      begin
-        FListTransaction.TryGetValue(LCountTransaction - 1, FListLoggerItem);
-        FListLoggerItem.AddRange(LCurrentValues);
-      end;
-
-      FListTransaction.Remove(LCountTransaction);
-
-      if LCountTransaction = 1 then
-      begin
-        FListLoggerItem := FListLoggerBase;
-        FListLoggerItem.AddRange(LCurrentValues);
-        FEvent.SetEvent;
-
-        FInTransaction := False;
-
-        Break;
-      end;
-
-      if ATypeCommit = tcBlock then
-        Break;
-    end;
-  finally
-    if AUseLock then
-      UnLock;
-  end;
-end;
-
-function TDataLoggerProvider.RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
-var
-  LCountTransaction: Integer;
+function TDataLoggerProvider.StartTransaction: TDataLoggerProvider;
 begin
   Result := Self;
 
@@ -316,31 +231,48 @@ begin
 
   Lock;
   try
-    while True do
-    begin
-      LCountTransaction := FListTransaction.Count;
+    if FInTransaction then
+      Exit;
 
-      if LCountTransaction = 0 then
-        Exit;
+    FEvent.SetEvent;
+    FInTransaction := True;
+  finally
+    UnLock;
+  end;
+end;
 
-      if LCountTransaction > 1 then
-        FListTransaction.TryGetValue(LCountTransaction - 1, FListLoggerItem);
+function TDataLoggerProvider.CommitTransaction: TDataLoggerProvider;
+begin
+  Result := Self;
 
-      FListTransaction.Remove(LCountTransaction);
+  if not FUseTransaction then
+    Exit;
 
-      if LCountTransaction = 1 then
-      begin
-        FListLoggerItem := FListLoggerBase;
-        FEvent.SetEvent;
+  Lock;
+  try
+    if not FInTransaction then
+      Exit;
 
-        FInTransaction := False;
+    FInTransaction := False;
+    FEvent.SetEvent;
+  finally
+    UnLock;
+  end;
+end;
 
-        Break;
-      end;
+function TDataLoggerProvider.RollbackTransaction: TDataLoggerProvider;
+begin
+  Result := Self;
 
-      if ATypeCommit = tcBlock then
-        Break;
-    end;
+  if not FUseTransaction then
+    Exit;
+
+  Lock;
+  try
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
+
+    FInTransaction := False;
   finally
     UnLock;
   end;
@@ -351,16 +283,6 @@ begin
   Lock;
   try
     Result := FInTransaction;
-  finally
-    UnLock;
-  end;
-end;
-
-function TDataLoggerProvider.CountTransaction: Integer;
-begin
-  Lock;
-  try
-    Result := FListTransaction.Count;
   finally
     UnLock;
   end;
@@ -388,6 +310,58 @@ begin
   end;
 end;
 
+function TDataLoggerProvider.ValidationBeforeSave(const ALogItem: TLoggerItem): Boolean;
+begin
+  Result := False;
+
+  if (TLoggerType.All in GetDisableLevel) or (ALogItem.&Type in GetDisableLevel) then
+    Exit;
+
+  if not(TLoggerType.All in GetOnlyLogType) and not(ALogItem.&Type in GetOnlyLogType) then
+    Exit;
+
+  if not(ALogItem.&Type in GetOnlyLogType) then
+    if Ord(GetLogLevel) > Ord(ALogItem.&Type) then
+      Exit;
+
+  Result := True;
+end;
+
+function TDataLoggerProvider.GetLogFormat: string;
+begin
+  Result := FLogFormat;
+end;
+
+function TDataLoggerProvider.GetFormatTimestamp: string;
+begin
+  Result := FFormatTimestamp;
+end;
+
+function TDataLoggerProvider.GetLogLevel: TLoggerType;
+begin
+  Result := FLogLevel;
+end;
+
+function TDataLoggerProvider.GetDisableLevel: TLoggerTypes;
+begin
+  Result := FDisableLogType;
+end;
+
+function TDataLoggerProvider.GetOnlyLogType: TLoggerTypes;
+begin
+  Result := FOnlyLogType;
+end;
+
+function TDataLoggerProvider.GetLogException: TOnLogException;
+begin
+  Result := FLogException;
+end;
+
+function TDataLoggerProvider.GetMaxRetry: Integer;
+begin
+  Result := FMaxRetry;
+end;
+
 procedure TDataLoggerProvider.Lock;
 begin
   FCriticalSection.Acquire;
@@ -413,39 +387,28 @@ begin
       begin
         LItem := AValues[I];
 
-        if (TLoggerType.All in FDisableLogType) or (LItem.&Type in FDisableLogType) then
-          Continue;
-
-        if not(TLoggerType.All in FOnlyLogType) and not(LItem.&Type in FOnlyLogType) then
-          Continue;
-
-        if not(LItem.&Type in FOnlyLogType) then
-          if Ord(FLogLevel) > Ord(LItem.&Type) then
-            Continue;
-
         LMessage := LItem.Message;
-        try
-          if not FInitialMessage.Trim.IsEmpty then
-            LMessage := FInitialMessage + LMessage;
 
-          if not FFinalMessage.Trim.IsEmpty then
-            LMessage := LMessage + FFinalMessage;
-        finally
-          LItem.Message := LMessage;
-        end;
+        if not FInitialMessage.Trim.IsEmpty then
+          LMessage := FInitialMessage + LMessage;
+
+        if not FFinalMessage.Trim.IsEmpty then
+          LMessage := LMessage + FFinalMessage;
+
+        LItem.Message := LMessage;
 
         FListLoggerItem.Add(LItem);
 
         if FUseTransaction and FInTransaction then
           if LItem.&Type in FAutoCommit then
-          begin
-            CommitTransaction(FTypeAutoCommit, False);
-            StartTransaction(False);
-          end;
+             FEvent.SetEvent;
       end;
     finally
-      if not FUseTransaction or not FInTransaction then
-        FEvent.SetEvent;
+      if not FUseTransaction then
+        FEvent.SetEvent
+      else
+        if not FInTransaction then
+          FEvent.SetEvent;
     end;
   finally
     UnLock;

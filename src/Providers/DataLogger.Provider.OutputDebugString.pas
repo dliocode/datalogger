@@ -38,19 +38,15 @@ begin
 {$IF DEFINED(LINUX)}
   Exit;
 {$ENDIF}
-
   if Length(ACache) = 0 then
     Exit;
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(GetLogFormat, LItem, GetFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
     LRetryCount := 0;
 
@@ -61,20 +57,19 @@ begin
 {$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
         FMX.Types.Log.d(LLog);
 {$ENDIF}
-
         Break;
       except
         on E: Exception do
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, LItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, LItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;

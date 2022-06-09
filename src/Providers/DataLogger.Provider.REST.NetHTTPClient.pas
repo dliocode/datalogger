@@ -22,24 +22,26 @@ type
     URL: string;
   end;
 
-  TSaveFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
 
   TLoggerMethod = (tlmGet, tlmPost);
 
   TProviderRESTNetHTTPClient = class(TDataLoggerProvider)
   private
     FURL: string;
-    FBearerToken: string;
     FContentType: string;
-    FSaveFinally: TSaveFinally;
+    FBearerToken: string;
+    FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TLoggerMethod; const AItemREST: TLogItemREST);
   protected
-    procedure SetURL(const AURL: string);
+    property URL: string read FURL write FURL;
+    property ContentType: string read FContentType write FContentType;
+    property BearerToken: string read FBearerToken write FBearerToken;
 
     procedure InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
 
-    procedure SetSendFinally(const ASaveFinally: TSaveFinally);
+    procedure SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
@@ -83,16 +85,13 @@ begin
 
   for LItem in ACache do
   begin
-    if not ValidationBeforeSave(LItem) then
-      Continue;
-
     if LItem.&Type = TLoggerType.All then
       Continue;
 
     if Trim(LowerCase(FContentType)) = 'application/json' then
-      LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(GetLogFormat, LItem)
+      LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem)
     else
-      LLogItemREST.Stream := TLoggerLogFormat.AsStream(GetLogFormat, LItem, GetFormatTimestamp);
+      LLogItemREST.Stream := TLoggerLogFormat.AsStream(FLogFormat, LItem, FFormatTimestamp);
 
     LLogItemREST.LogItem := LItem;
 
@@ -102,14 +101,9 @@ begin
   InternalSaveAsync(TLoggerMethod.tlmPost, LItemREST);
 end;
 
-procedure TProviderRESTNetHTTPClient.SetSendFinally(const ASaveFinally: TSaveFinally);
+procedure TProviderRESTNetHTTPClient.SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
 begin
-  FSaveFinally := ASaveFinally;
-end;
-
-procedure TProviderRESTNetHTTPClient.SetURL(const AURL: string);
-begin
-  FURL := AURL;
+  FExecuteFinally := AExecuteFinally;
 end;
 
 procedure TProviderRESTNetHTTPClient.InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
@@ -211,21 +205,21 @@ begin
         begin
           Inc(LRetryCount);
 
-          if Assigned(LogException) then
-            LogException(Self, AItemREST.LogItem, E, LRetryCount);
+          if Assigned(FLogException) then
+            FLogException(Self, AItemREST.LogItem, E, LRetryCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= GetMaxRetry then
+          if LRetryCount >= FMaxRetry then
             Break;
         end;
       end;
   finally
     LHTTP.Free;
 
-    if Assigned(FSaveFinally) then
-      FSaveFinally(AItemREST.LogItem, LResponseContent);
+    if Assigned(FExecuteFinally) then
+      FExecuteFinally(AItemREST.LogItem, LResponseContent);
 
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
