@@ -607,6 +607,9 @@ var
 begin
   Result := Self;
 
+  if Terminated then
+    Exit;
+
   Lock;
   try
     if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then

@@ -23,34 +23,30 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Name: string read FName write FName;
+    function Name(const AValue: string): TProviderEventLog;
 
-    constructor Create(const AName: string = '');
-    destructor Destroy; override;
+    constructor Create; overload;
   end;
 
 implementation
 
 { TProviderEventLog }
 
-constructor TProviderEventLog.Create(const AName: string = '');
+constructor TProviderEventLog.Create;
 begin
   inherited Create;
 
-{$IF DEFINED(MSWINDOWS)}
-  if AName.Trim.IsEmpty then
-    FName := TLoggerUtils.AppName
-  else
-    FName := AName;
-{$ENDIF}
+  Name(TLoggerUtils.AppName);
 end;
 
-destructor TProviderEventLog.Destroy;
+function TProviderEventLog.Name(const AValue: string): TProviderEventLog;
 begin
-{$IF DEFINED(MSWINDOWS)}
+  Result := Self;
 
-{$ENDIF}
-  inherited;
+  if AValue.Trim.IsEmpty then
+    FName := TLoggerUtils.AppName
+  else
+    FName := AValue;
 end;
 
 procedure TProviderEventLog.Save(const ACache: TArray<TLoggerItem>);
@@ -99,6 +95,8 @@ begin
           on E: Exception do
           begin
             Inc(LRetryCount);
+
+            Sleep(50);
 
             if Assigned(FLogException) then
               FLogException(Self, LItem, E, LRetryCount);

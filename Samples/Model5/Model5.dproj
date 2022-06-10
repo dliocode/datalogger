@@ -101,7 +101,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="Unit2.pas">
+        <DCCReference Include="Unit5.pas">
             <Form>Form2</Form>
             <FormType>dfm</FormType>
         </DCCReference>

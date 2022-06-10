@@ -38,11 +38,12 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property BotToken: string read FBotToken write FBotToken;
-    property ChatId: string read FChatId write FChatId;
-    property ParseMode: TTelegramParseMode read FParseMode write FParseMode;
+    function BotToken(const AValue: string): TProviderTelegram;
+    function ChatId(const AValue: string): TProviderTelegram;
+    function ParseMode(const AValue: TTelegramParseMode): TProviderTelegram;
 
-    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); reintroduce;
+    constructor Create; overload;
+    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); overload; deprecated 'Use TProviderTelegram.Create.BotToken(''AAAAA'').ChatId(''00000000'').ParseMode(tpMarkdown) - This function will be removed in future versions';
   end;
 
 implementation
@@ -55,13 +56,41 @@ const
   TELGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
   TELGRAM_API_HTML = '&parse_mode=HTML';
 
+constructor TProviderTelegram.Create;
+begin
+  inherited Create;
+
+  ContentType('application/json');
+  BotToken('');
+  ChatId('');
+  ParseMode(tpMarkdown);
+end;
+
 constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown);
 begin
-  FBotToken := ABotToken;
-  FChatId := AChatId;
-  FParseMode := AParseMode;
+  Create;
 
-  inherited Create('', 'application/json');
+  BotToken(ABotToken);
+  ChatId(AChatId);
+  ParseMode(AParseMode);
+end;
+
+function TProviderTelegram.BotToken(const AValue: string): TProviderTelegram;
+begin
+  Result := Self;
+  FBotToken := AValue;
+end;
+
+function TProviderTelegram.ChatId(const AValue: string): TProviderTelegram;
+begin
+  Result := Self;
+  FChatId := AValue;
+end;
+
+function TProviderTelegram.ParseMode(const AValue: TTelegramParseMode): TProviderTelegram;
+begin
+  Result := Self;
+  FParseMode := AValue;
 end;
 
 procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);

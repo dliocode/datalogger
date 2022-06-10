@@ -20,7 +20,7 @@ uses
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
   DataLogger.Types,
-  System.SysUtils, System.Classes, System.JSON, System.Net.URLClient, System.NetConsts, System.Net.HTTPClient;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
@@ -31,89 +31,45 @@ type
   TProviderMattermost = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FURL: string;
-    FTokenBearer: string;
     FChannelId: string;
-    function Login(const AURL: string; const AUsername: string; const APassword: string): string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property URL: string read FURL write FURL;
-    property TokenBearer: string read FTokenBearer write FTokenBearer;
-    property ChannelId: string read FChannelId write FChannelId;
+    function URL(const AValue: string): TProviderMattermost; overload;
+    function URL: string; overload;
+    function ChannelId(const AValue: string): TProviderMattermost;
 
-    constructor Create(const AURL: string; const ATokenBearer: string; const AChannelId: string); reintroduce;
-    constructor CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannelId: string);
+    constructor Create; overload;
   end;
 
 implementation
 
 { TProviderMattermost }
 
-constructor TProviderMattermost.Create(const AURL: string; const ATokenBearer: string; const AChannelId: string);
+constructor TProviderMattermost.Create;
 begin
-  FURL := AURL;
-  FTokenBearer := ATokenBearer;
-  FChannelId := AChannelId;
+  inherited Create;
 
-  inherited Create('', 'application/json', ATokenBearer);
+  URL('http://localhost');
+  ContentType('application/json');
+  ChannelId('');
 end;
 
-constructor TProviderMattermost.CreateLogin(const AURL: string; const AUsername: string; const APassword: string; const AChannelId: string);
-var
-  LTokenBearer: string;
+function TProviderMattermost.URL(const AValue: string): TProviderMattermost;
 begin
-  LTokenBearer := Login(AURL, AUsername, APassword);
-
-  Create(AURL, LTokenBearer, AChannelId);
+  Result := Self;
+  inherited URL(AValue);
 end;
 
-function TProviderMattermost.Login(const AURL: string; const AUsername: string; const APassword: string): string;
-var
-  LHTTP: THTTPClient;
-  LBodyJSON: TJSONObject;
-  LBody: TStream;
-  LResponse: IHTTPResponse;
+function TProviderMattermost.URL: string;
 begin
-  LHTTP := THTTPClient.Create;
-  try
-{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
-    LHTTP.ConnectionTimeout := 60000;
-    LHTTP.ResponseTimeout := 60000;
-    LHTTP.SendTimeout := 60000;
-{$ENDIF}
-    LHTTP.HandleRedirects := True;
-    LHTTP.UserAgent := 'DataLogger.Provider.Mattermost';
-    LHTTP.ContentType := 'application/json';
-    LHTTP.AcceptCharSet := 'utf-8';
-    LHTTP.AcceptEncoding := 'utf-8';
-    LHTTP.Accept := 'application/json';
+  Result := inherited URL;
+end;
 
-    LBodyJSON := TJSONObject.Create;
-    try
-      LBodyJSON.AddPair('login_id', AUsername);
-      LBodyJSON.AddPair('password', APassword);
-
-      LBody := TStringStream.Create(LBodyJSON.ToString, TEncoding.UTF8);
-    finally
-      LBodyJSON.Free;
-    end;
-
-    try
-      LResponse := LHTTP.Post(Format('%s/api/v4/users/login', [ExcludeTrailingPathDelimiter(AURL)]), LBody);
-      if not Assigned(LResponse) then
-        raise EDataLoggerException.Create('Erro: Invalid authentication in Provider Mattermost - Response nil!');
-
-      if LResponse.StatusCode <> 200 then
-        raise EDataLoggerException.CreateFmt('Error: Invalid authentication in Provider Mattermost - (%d) %s', [LResponse.StatusCode, LResponse.ContentAsString(TEncoding.UTF8)]);
-
-      Result := LResponse.HeaderValue['Token'];
-    finally
-      LBody.Free;
-    end;
-  finally
-    LHTTP.Free;
-  end;
+function TProviderMattermost.ChannelId(const AValue: string): TProviderMattermost;
+begin
+  Result := Self;
+  FChannelId := AValue;
 end;
 
 procedure TProviderMattermost.Save(const ACache: TArray<TLoggerItem>);
@@ -143,7 +99,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(FURL)]);
+      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(URL)]);
     finally
       LJO.Free;
     end;

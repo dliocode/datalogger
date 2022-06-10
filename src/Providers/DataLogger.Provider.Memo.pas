@@ -30,10 +30,12 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
 {$IF DEFINED(MSWINDOWS)}
-    property Memo: TCustomMemo read FMemo write FMemo;
-    property MaxLogLines: Integer read FMaxLogLines write FMaxLogLines;
+    function Memo(const AValue: TCustomMemo): TProviderMemo;
+    function MaxLogLines(const AValue: Integer): TProviderMemo;
+    function ModeInsert(const AValue: TModeInsert): TProviderMemo;
 
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
+    constructor Create; overload;
+    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
 {$ENDIF}
   end;
 
@@ -43,13 +45,41 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
+
+constructor TProviderMemo.Create;
 begin
   inherited Create;
 
-  FMemo := AMemo;
-  FMaxLogLines := AMaxLogLines;
-  FModeInsert := AModeInsert;
+  Memo(nil);
+  MaxLogLines(0);
+  ModeInsert(tmLast);
+end;
+
+constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
+begin
+  Create;
+
+  Memo(AMemo);
+  MaxLogLines(AMaxLogLines);
+  ModeInsert(AModeInsert);
+end;
+
+function TProviderMemo.Memo(const AValue: TCustomMemo): TProviderMemo;
+begin
+  Result := Self;
+  FMemo := AValue;
+end;
+
+function TProviderMemo.MaxLogLines(const AValue: Integer): TProviderMemo;
+begin
+  Result := Self;
+  FMaxLogLines := AValue;
+end;
+
+function TProviderMemo.ModeInsert(const AValue: TModeInsert): TProviderMemo;
+begin
+  Result := Self;
+  FModeInsert := AValue;
 end;
 
 {$ENDIF}
@@ -144,6 +174,8 @@ begin
         begin
           Inc(LRetryCount);
 
+          Sleep(50);
+
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);
 
@@ -157,6 +189,7 @@ begin
   end;
 end;
 {$ELSE}
+
 
 begin
 end;

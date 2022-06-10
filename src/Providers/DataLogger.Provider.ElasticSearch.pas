@@ -29,30 +29,64 @@ type
   TProviderElasticSearch = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FHost: string;
     FPort: Integer;
     FIndex: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Host: string read FHost write FHost;
-    property Port: Integer read FPort write FPort;
-    property &Index: string read FIndex write FIndex;
+    function URL(const AValue: string): TProviderElasticSearch; overload;
+    function URL: string; overload;
+    function Port(const AValue: Integer): TProviderElasticSearch;
+    function Index(const AValue: string): TProviderElasticSearch;
 
-    constructor Create(const AHost: string = 'http://localhost'; const APort: Integer = 9200; const AIndex: string = 'logger'); reintroduce;
+    constructor Create; overload;
+    constructor Create(const AHost: string; const APort: Integer = 9200; const AIndex: string = 'logger'); overload; deprecated 'Use TProviderElasticSearch.Create.URL(''http://localhost'').Port(9200).Index(''logger'') - This function will be removed in future versions';
   end;
 
 implementation
 
 { TProviderElasticSearch }
 
-constructor TProviderElasticSearch.Create(const AHost: string = 'http://localhost'; const APort: Integer = 9200; const AIndex: string = 'logger');
+constructor TProviderElasticSearch.Create;
 begin
-  FHost := AHost;
-  FPort := APort;
-  FIndex := AIndex;
+  inherited Create;
 
-  inherited Create('', 'application/json', '');
+  URL('http://localhost');
+  ContentType('application/json');
+  Port(9200);
+  Index('logger');
+end;
+
+constructor TProviderElasticSearch.Create(const AHost: string; const APort: Integer = 9200; const AIndex: string = 'logger');
+begin
+  Create;
+
+  URL(AHost);
+  Port(APort);
+  Index(AIndex);
+end;
+
+function TProviderElasticSearch.URL(const AValue: string): TProviderElasticSearch;
+begin
+  Result := Self;
+  inherited URL(AVAlue);
+end;
+
+function TProviderElasticSearch.URL: string;
+begin
+  Result := inherited URL;
+end;
+
+function TProviderElasticSearch.Port(const AValue: Integer): TProviderElasticSearch;
+begin
+  Result := Self;
+  FPort := AValue;
+end;
+
+function TProviderElasticSearch.Index(const AValue: string): TProviderElasticSearch;
+begin
+  Result := Self;
+  FIndex := AValue;
 end;
 
 procedure TProviderElasticSearch.Save(const ACache: TArray<TLoggerItem>);
@@ -73,7 +107,7 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s:%d/%s/_doc', [FHost, FPort, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s:%d/%s/_doc', [URL, FPort, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);;
   end;

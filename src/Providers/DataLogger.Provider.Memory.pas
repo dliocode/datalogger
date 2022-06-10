@@ -70,6 +70,8 @@ begin
         begin
           Inc(LRetryCount);
 
+          Sleep(50);
+
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);
 

@@ -27,10 +27,11 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
 {$IF DEFINED(MSWINDOWS)}
-    property ListBox: TCustomListBox read FListBox write FListBox;
-    property MaxLogLines: Integer read FMaxLogLines write FMaxLogLines;
+    function ListBox(const AValue: TCustomListBox): TProviderListBox;
+    function MaxLogLines(const AValue: Integer): TProviderListBox;
 
-    constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
+    constructor Create; overload;
+    constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListBox.Create.ListBox(ListBox).MaxLogLines(0) - This function will be removed in future versions';
 {$ENDIF}
   end;
 
@@ -40,12 +41,33 @@ implementation
 
 {$IF DEFINED(MSWINDOWS)}
 
-constructor TProviderListBox.Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
+
+constructor TProviderListBox.Create;
 begin
   inherited Create;
 
-  FListBox := AListBox;
-  FMaxLogLines := AMaxLogLines;
+  ListBox(nil);
+  MaxLogLines(0);
+end;
+
+constructor TProviderListBox.Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
+begin
+  Create;
+
+  ListBox(AListBox);
+  MaxLogLines(AMaxLogLines);
+end;
+
+function TProviderListBox.ListBox(const AValue: TCustomListBox): TProviderListBox;
+begin
+  Result := Self;
+  FListBox := AValue;
+end;
+
+function TProviderListBox.MaxLogLines(const AValue: Integer): TProviderListBox;
+begin
+  Result := Self;
+  FMaxLogLines := AValue;
 end;
 
 {$ENDIF}
@@ -128,6 +150,8 @@ begin
         begin
           Inc(LRetryCount);
 
+          Sleep(50);
+
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);
 
@@ -141,6 +165,7 @@ begin
   end;
 end;
 {$ELSE}
+
 
 begin
 end;

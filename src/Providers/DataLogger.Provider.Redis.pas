@@ -24,26 +24,50 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Host: string read FHost write FHost;
-    property Port: Integer read FPort write FPort;
-    property KeyPrefix: string read FKeyPrefix write FKeyPrefix;
-    property MaxSize: Int64 read FMaxSize write FMaxSize;
+    function Host(const AValue: string): TProviderRedis;
+    function Port(const AValue: Integer): TProviderRedis;
+    function KeyPrefix(const AValue: string): TProviderRedis;
+    function MaxSize(const AValue: Int64): TProviderRedis;
 
-    constructor Create(const AHost: string = '127.0.0.1'; const APort: Integer = 6379; const AKeyPrefix: string = 'DataLogger'; const AMaxSize: Int64 = 10000);
+    constructor Create;
   end;
 
 implementation
 
 { TProviderRedis }
 
-constructor TProviderRedis.Create(const AHost: string = '127.0.0.1'; const APort: Integer = 6379; const AKeyPrefix: string = 'DataLogger'; const AMaxSize: Int64 = 10000);
+constructor TProviderRedis.Create;
 begin
   inherited Create;
 
-  FHost := AHost;
-  FPort := APort;
-  FKeyPrefix := AKeyPrefix;
-  FMaxSize := AMaxSize;
+  Host('127.0.0.1');
+  Port(6379);
+  KeyPrefix('DataLoggerRedis');
+  MaxSize(10000);
+end;
+
+function TProviderRedis.Host(const AValue: string): TProviderRedis;
+begin
+  Result := Self;
+  FHost := AValue;
+end;
+
+function TProviderRedis.Port(const AValue: Integer): TProviderRedis;
+begin
+  Result := Self;
+  FPort := AValue;
+end;
+
+function TProviderRedis.KeyPrefix(const AValue: string): TProviderRedis;
+begin
+  Result := Self;
+  FKeyPrefix := AValue;
+end;
+
+function TProviderRedis.MaxSize(const AValue: Int64): TProviderRedis;
+begin
+  Result := Self;
+  FMaxSize := AValue;
 end;
 
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);
@@ -58,7 +82,7 @@ begin
   if Length(ACache) = 0 then
     Exit;
 
-  LKey := FKeyPrefix + '::DataLoggerRedis';
+  LKey := FKeyPrefix + '::DataLoggerRedis::';
 
   LRedisClient := TRedisClient.Create(FHost, FPort);
   LConnected := False;
@@ -99,6 +123,8 @@ begin
           end;
 
           Inc(LRetryCount);
+
+          Sleep(50);
 
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);

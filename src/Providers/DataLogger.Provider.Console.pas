@@ -30,19 +30,26 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property UseColorInConsole: Boolean read FUseColorInConsole write FUseColorInConsole;
+    function UseColorInConsole(const AValue: Boolean): TProviderConsole;
 
-    constructor Create(const AUseColorInConsole: Boolean = True);
+    constructor Create;
   end;
 
 implementation
 
 { TProviderConsole }
 
-constructor TProviderConsole.Create(const AUseColorInConsole: Boolean = True);
+constructor TProviderConsole.Create;
 begin
   inherited Create;
-  FUseColorInConsole := AUseColorInConsole;
+
+  UseColorInConsole(True);
+end;
+
+function TProviderConsole.UseColorInConsole(const AValue: Boolean): TProviderConsole;
+begin
+  Result := Self;
+  FUseColorInConsole := AValue;
 end;
 
 procedure TProviderConsole.Save(const ACache: TArray<TLoggerItem>);
@@ -81,6 +88,8 @@ begin
         on E: Exception do
         begin
           Inc(LRetryCount);
+
+          Sleep(50);
 
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);
@@ -156,6 +165,7 @@ type
 
 {$IF DEFINED(MSWINDOWS)}
 
+
 var
   ConOut: THandle;
   BufInfo: TConsoleScreenBufferInfo;
@@ -168,6 +178,7 @@ begin
   SetConsoleTextAttribute(ConOut, BufInfo.wAttributes);
 end;
 {$ELSEIF DEFINED(LINUX)}
+
 
 var
   LColor: Integer;
@@ -182,6 +193,7 @@ begin
   Write(#27'[0m');
 end;
 {$ELSE}
+
 
 begin
   Writeln(ALog);

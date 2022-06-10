@@ -2,7 +2,7 @@ program Model5;
 
 uses
   Vcl.Forms,
-  Unit2 in 'Unit2.pas' {Form2},
+  Unit5 in 'Unit5.pas' {Form2},
   DataLogger in '..\..\src\Core\DataLogger.pas',
   DataLogger.Provider in '..\..\src\Core\DataLogger.Provider.pas',
   DataLogger.Types in '..\..\src\Core\DataLogger.Types.pas',
