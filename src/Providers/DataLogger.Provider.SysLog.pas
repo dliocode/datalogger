@@ -18,17 +18,13 @@ type
   TProviderSysLog = class(TDataLoggerProvider)
   private
     FSysLog: TIdSysLog;
-    function GetHost: string;
-    function GetPort: Integer;
-    procedure SetHost(const Value: string);
-    procedure SetPort(const Value: Integer);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Host: string read GetHost write SetHost;
-    property Port: Integer read GetPort write SetPort;
+    function Host(const AValue: string): TProviderSysLog;
+    function Port(const AValue: Integer): TProviderSysLog;
 
-    constructor Create(const AHost: string = '127.0.0.1'; const APort: Integer = 514);
+    constructor Create;
     destructor Destroy; override;
   end;
 
@@ -36,13 +32,13 @@ implementation
 
 { TProviderSysLog }
 
-constructor TProviderSysLog.Create(const AHost: string = '127.0.0.1'; const APort: Integer = 514);
+constructor TProviderSysLog.Create;
 begin
   inherited Create;
 
   FSysLog := TIdSysLog.Create(nil);
-  FSysLog.Host := AHost;
-  FSysLog.Port := APort;
+  FSysLog.Host := '';
+  FSysLog.Port := 514;
 end;
 
 destructor TProviderSysLog.Destroy;
@@ -51,24 +47,16 @@ begin
   inherited;
 end;
 
-function TProviderSysLog.GetHost: string;
+function TProviderSysLog.Host(const AValue: string): TProviderSysLog;
 begin
-  Result := FSysLog.Host;
+  Result := Self;
+  FSysLog.Host := AValue;
 end;
 
-procedure TProviderSysLog.SetHost(const Value: string);
+function TProviderSysLog.Port(const AValue: Integer): TProviderSysLog;
 begin
-  FSysLog.Host := Value;
-end;
-
-function TProviderSysLog.GetPort: Integer;
-begin
-  Result := FSysLog.Port;
-end;
-
-procedure TProviderSysLog.SetPort(const Value: Integer);
-begin
-  FSysLog.Port := Value;
+  Result := Self;
+  FSysLog.Port := AValue;
 end;
 
 procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);
@@ -135,6 +123,8 @@ begin
           on E: Exception do
           begin
             Inc(LRetryCount);
+
+            Sleep(50);
 
             if Assigned(FLogException) then
               FLogException(Self, LItem, E, LRetryCount);

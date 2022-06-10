@@ -11,58 +11,230 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.IOUtils, System.SysUtils, System.Classes;
+  System.IOUtils, System.SysUtils, System.Classes, System.Zip;
 
 type
+  TProviderTextFileExecuteCompress = reference to procedure(const ADirLogFileName: string; const AFileName: string; var ARemoveFile: Boolean);
+
   TProviderTextFile = class(TDataLoggerProvider)
   private
     FLogDir: string;
     FPrefixFileName: string;
     FExtension: string;
+    FMaxFileSizeInKiloByte: Int64;
+    FMaxBackupFileCount: Int64;
+    FCompress: Boolean;
+    FCompressCustom: TProviderTextFileExecuteCompress;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
     FFormatDateTime: string;
+    FEncoding: TEncoding;
+
+    FWriter: TStreamWriter;
+    FRotateInternal: Int64;
+    FOldFileName: string;
+
+    function GetLogFileName(const AFileNumber: Int64): string;
+    procedure CreateWriter;
+    procedure FreeWriter;
+    procedure InternalWriteLog(const AValue: string);
+    procedure MoveFile(const ASourceFileName, ADestFileName: string);
+    procedure RotateLog;
+    procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
+    procedure ZipFile(const ADirFileName, AFileName: string);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property LoadDir: string read FLogDir write FLogDir;
-    property PrefixFileName: string read FPrefixFileName write FPrefixFileName;
-    property Extension: string read FExtension write FExtension;
-    property CleanOnStart: Boolean read FCleanOnStart write FCleanOnStart;
-    property CleanOnRun: Boolean read FCleanOnRun write FCleanOnRun;
-    property FormatDateTime: string read FFormatDateTime write FFormatDateTime;
+    function LogDir(const AValue: string): TProviderTextFile;
+    function PrefixFileName(const AValue: string): TProviderTextFile;
+    function Extension(const AValue: string): TProviderTextFile;
+    function MaxFileSizeInKiloByte(const AValue: Int64): TProviderTextFile;
+    function MaxBackupFileCount(const AValue: Int64): TProviderTextFile;
+    function Compress(const AValue: Boolean): TProviderTextFile;
+    function CompressCustom(const AValue: TProviderTextFileExecuteCompress): TProviderTextFile;
+    function CleanOnStart(const AValue: Boolean): TProviderTextFile;
+    function FormatDateTime(const AValue: string): TProviderTextFile;
+    function Encoding(const AValue: TEncoding): TProviderTextFile;
 
-    constructor Create(const ALogDir: string = '.'; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
+    constructor Create; overload;
+    constructor Create(
+      const ALogDir: string; const APrefixFileName: string = ''; const AExtension: string = '.txt';
+      const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd'); overload; deprecated 'Use TProviderTextFile.Create.LogDir(''.'').PrefixFileName(''.'').Extension(''log'') - This function will be removed in future versions';
+
+    destructor Destroy; override;
   end;
 
 implementation
 
 { TProviderTextFile }
 
-constructor TProviderTextFile.Create(const ALogDir: string = '.'; const APrefixFileName: string = ''; const AExtension: string = 'txt'; const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
+constructor TProviderTextFile.Create;
 begin
   inherited Create;
 
-  FLogDir := ALogDir.Replace('/', TPath.DirectorySeparatorChar).Replace('\', TPath.DirectorySeparatorChar);
-  FPrefixFileName := APrefixFileName;
-  FExtension := AExtension;
-  FCleanOnStart := ACleanOnStart;
+  FLogDir := '.';
+  FPrefixFileName := '';
+  FExtension := '.txt';
+  FMaxFileSizeInKiloByte := 0;
+  FMaxBackupFileCount := 0;
+  FCompress := False;
+  FCompressCustom := nil;
+  FCleanOnStart := False;
   FCleanOnRun := False;
-  FFormatDateTime := AFormatDateTime;
+  FFormatDateTime := 'yyyy-mm-dd';
+  FEncoding := TEncoding.UTF8;
+
+  FWriter := nil;
+  FRotateInternal := 0;
+end;
+
+constructor TProviderTextFile.Create(
+  const ALogDir: string; const APrefixFileName: string = ''; const AExtension: string = '.txt';
+  const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
+begin
+  Create;
+
+  LogDir(ALogDir);
+  PrefixFileName(APrefixFileName);
+  Extension(AExtension);
+  CleanOnStart(ACleanOnStart);
+  FormatDateTime(AFormatDateTime);
+end;
+
+destructor TProviderTextFile.Destroy;
+begin
+  FreeWriter;
+
+  inherited;
+end;
+
+function TProviderTextFile.LogDir(const AValue: string): TProviderTextFile;
+begin
+  Result := Self;
+  FLogDir := AValue.Replace('/', TPath.DirectorySeparatorChar).Replace('\', TPath.DirectorySeparatorChar);;
+end;
+
+function TProviderTextFile.PrefixFileName(const AValue: string): TProviderTextFile;
+begin
+  Result := Self;
+  FPrefixFileName := AValue;
+end;
+
+function TProviderTextFile.Extension(const AValue: string): TProviderTextFile;
+begin
+  Result := Self;
+
+  FExtension := AValue;
+  if not AValue.StartsWith('.') then
+    FExtension := '.' + AValue;
+end;
+
+function TProviderTextFile.MaxFileSizeInKiloByte(const AValue: Int64): TProviderTextFile;
+begin
+  Result := Self;
+  FMaxFileSizeInKiloByte := AValue;
+end;
+
+function TProviderTextFile.MaxBackupFileCount(const AValue: Int64): TProviderTextFile;
+begin
+  Result := Self;
+  FMaxBackupFileCount := AValue;
+end;
+
+function TProviderTextFile.Compress(const AValue: Boolean): TProviderTextFile;
+begin
+  Result := Self;
+  FCompress := AValue;
+end;
+
+function TProviderTextFile.CompressCustom(const AValue: TProviderTextFileExecuteCompress): TProviderTextFile;
+begin
+  Result := Self;
+  FCompressCustom := AValue;
+end;
+
+function TProviderTextFile.CleanOnStart(const AValue: Boolean): TProviderTextFile;
+begin
+  Result := Self;
+  FCleanOnRun := AValue;
+end;
+
+function TProviderTextFile.FormatDateTime(const AValue: string): TProviderTextFile;
+begin
+  Result := Self;
+  FFormatDateTime := AValue;
+end;
+
+function TProviderTextFile.Encoding(const AValue: TEncoding): TProviderTextFile;
+begin
+  Result := Self;
+  FEncoding := AValue
 end;
 
 procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);
 var
-  LRetryCount: Integer;
-  LFileName: string;
-  LFileNameExt: string;
-  LTextFile: TextFile;
   LItem: TLoggerItem;
+  LFileName: string;
+  LRetryCount: Integer;
   LLog: string;
 begin
-  if Length(ACache) = 0 then
-    Exit;
+  LFileName := GetLogFileName(0);
+  if FOldFileName.Trim.IsEmpty then
+    FOldFileName := LFileName;
 
+  if not LFileName.Equals(FOldFileName) then
+  begin
+    if FCompress then
+      ZipFile(FOldFileName, '');
+
+    FOldFileName := LFileName;
+  end;
+
+  if not FCleanOnRun then
+    if FCleanOnStart then
+    begin
+      LRetryCount := 0;
+
+      while True do
+        try
+          if TFile.Exists(LFileName) then
+            TFile.Delete(LFileName);
+        except
+          Inc(LRetryCount);
+
+          Sleep(50);
+
+          if LRetryCount >= FMaxRetry then
+            raise;
+        end;
+
+      FCleanOnRun := True;
+    end;
+
+  CreateWriter;
+  try
+    for LItem in ACache do
+    begin
+      if LItem.&Type = TLoggerType.All then
+        LLog := ''
+      else
+        LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+
+      InternalWriteLog(LLog);
+
+      if FMaxFileSizeInKiloByte > 0 then
+        if FWriter.BaseStream.Size > FMaxFileSizeInKiloByte * 1024 then
+          RotateLog;
+    end;
+  finally
+    FreeWriter;
+  end;
+end;
+
+function TProviderTextFile.GetLogFileName(const AFileNumber: Int64): string;
+var
+  LFileName: string;
+begin
   if not FLogDir.Trim.IsEmpty then
     if not TDirectory.Exists(FLogDir) then
       if not CreateDir(FLogDir) then
@@ -76,83 +248,198 @@ begin
   if not Trim(FFormatDateTime).IsEmpty then
     LFileName := LFileName + System.SysUtils.FormatDateTime(FFormatDateTime, Now);
 
-  if not Trim(FExtension).IsEmpty then
-    LFileNameExt := Format('%s.%s', [LFileName, FExtension])
-  else
-    LFileNameExt := LFileName;
+  if AFileNumber > 0 then
+    LFileName := LFileName + '_' + IntToStr(AFileNumber);
 
-  AssignFile(LTextFile, LFileNameExt);
+  if not Trim(FExtension).IsEmpty then
+    Result := Format('%s%s', [LFileName, FExtension])
+  else
+    Result := LFileName;
+end;
+
+procedure TProviderTextFile.CreateWriter;
+var
+  LLogFileName: string;
+  LFileStream: TFileStream;
+  LFileAccessMode: Word;
+  LRetryCount: Integer;
+begin
+  LLogFileName := GetLogFileName(0);
+
+  LFileAccessMode := fmOpenWrite or fmShareDenyNone;
+  if not TFile.Exists(LLogFileName) then
+    LFileAccessMode := LFileAccessMode or fmCreate;
 
   LRetryCount := 0;
 
   while True do
-  begin
     try
-      if TFile.Exists(LFileNameExt) then
-      begin
-        if FCleanOnStart and not FCleanOnRun then
-        begin
-          TFile.Delete(LFileNameExt);
-          FCleanOnRun := True;
+      LFileStream := TFileStream.Create(LLogFileName, LFileAccessMode);
+      try
+        LFileStream.Seek(0, TSeekOrigin.soEnd);
 
-          Rewrite(LTextFile);
-        end
-        else
-          Append(LTextFile);
-      end
-      else
-        Rewrite(LTextFile);
+        FWriter := TStreamWriter.Create(LFileStream, FEncoding, 128);
+        FWriter.AutoFlush := True;
+        FWriter.OwnStream;
 
-      Break
+        Break;
+      except
+        LFileStream.Free;
+        raise;
+      end;
     except
       on E: Exception do
       begin
         Inc(LRetryCount);
 
-        Sleep(100);
+        Sleep(50);
 
         if LRetryCount >= FMaxRetry then
           raise;
       end;
     end;
+end;
+
+procedure TProviderTextFile.FreeWriter;
+begin
+  if not Assigned(FWriter) then
+    Exit;
+
+  FWriter.Free;
+  FWriter := nil;
+end;
+
+procedure TProviderTextFile.InternalWriteLog(const AValue: string);
+begin
+  FWriter.WriteLine(AValue);
+  FWriter.Flush;
+end;
+
+procedure TProviderTextFile.MoveFile(const ASourceFileName: string; const ADestFileName: string);
+var
+  LRetryCount: Integer;
+begin
+  LRetryCount := 0;
+
+  while True do
+    try
+      TFile.Move(ASourceFileName, ADestFileName);
+      Break;
+    except
+      on Exception do
+      begin
+        Inc(LRetryCount);
+
+        Sleep(50);
+
+        if LRetryCount >= FMaxRetry then
+          raise EDataLoggerException.CreateFmt('Cannot rename %s to %s', [ASourceFileName, ADestFileName]);
+      end;
+    end;
+end;
+
+procedure TProviderTextFile.RotateLog;
+var
+  LNow: TDateTime;
+  LRotateDateTime: string;
+  LZipFileName: string;
+
+  LRotateInternal: Int64;
+  LRenamedFileName: string;
+  I: Integer;
+  LCurrentFileName: string;
+  LFileName: string;
+begin
+  LNow := Now;
+  LRotateDateTime := System.SysUtils.FormatDateTime('c.zzz', LNow);
+
+  InternalWriteLog('');
+  InternalWriteLog('[ROTATE ' + LRotateDateTime + ']');
+  FreeWriter;
+
+  if FMaxBackupFileCount = 0 then
+  begin
+    Inc(FRotateInternal);
+    LRotateInternal := FRotateInternal;
+  end
+  else
+    LRotateInternal := FMaxBackupFileCount;
+
+  LRenamedFileName := GetLogFileName(LRotateInternal);
+  if FCompress then
+    LRenamedFileName := ChangeFileExt(LRenamedFileName, '.zip');
+
+  if TFile.Exists(LRenamedFileName) then
+    TFile.Delete(LRenamedFileName);
+
+  for I := Pred(LRotateInternal) downto 1 do
+  begin
+    LCurrentFileName := GetLogFileName(I);
+    if FCompress then
+      LCurrentFileName := ChangeFileExt(LCurrentFileName, '.zip');
+
+    LRenamedFileName := GetLogFileName(I + 1);
+    if FCompress then
+      LRenamedFileName := ChangeFileExt(LRenamedFileName, '.zip');
+
+    if TFile.Exists(LCurrentFileName) then
+      MoveFile(LCurrentFileName, LRenamedFileName);
   end;
 
-  try
-    for LItem in ACache do
+  LFileName := GetLogFileName(0);
+  LRenamedFileName := GetLogFileName(1);
+  MoveFile(LFileName, LRenamedFileName);
+
+  if FCompress then
+  begin
+    LZipFileName := System.SysUtils.FormatDateTime('yyyymmdd_hhnnsszzz', LNow);
+    ZipFile(LRenamedFileName, Format('%s_RT%s%s', [TPath.GetFileNameWithoutExtension(LFileName), LZipFileName, FExtension]));
+  end;
+
+  CreateWriter;
+  InternalWriteLog('[START ROTATE ' + LRotateDateTime + ']');
+  InternalWriteLog('');
+end;
+
+procedure TProviderTextFile.ZipFile(const ADirFileName: string; const AFileName: string);
+begin
+  TThread.CreateAnonymousThread(
+    procedure
+    var
+      LRemoveLogFileName: Boolean;
     begin
-      if LItem.&Type = TLoggerType.All then
-        LLog := ''
+      LRemoveLogFileName := True;
+
+      if Assigned(FCompressCustom) then
+        FCompressCustom(ADirFileName, AFileName, LRemoveLogFileName)
       else
-        LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+        CreateZipFile(ADirFileName, AFileName);
 
-      LRetryCount := 0;
+      if LRemoveLogFileName then
+        if TFile.Exists(ADirFileName) then
+          TFile.Delete(ADirFileName);
+    end).Start;
+end;
 
-      while True do
-        try
-          if not TFile.Exists(LFileNameExt) then
-            Rewrite(LTextFile);
+procedure TProviderTextFile.CreateZipFile(const ADirFileName: string; const AFileName: string);
+var
+  LZipFileName: string;
+  LZipFile: TZipFile;
+begin
+  LZipFileName := ChangeFileExt(ADirFileName, '.zip');
 
-          Writeln(LTextFile, UTF8Encode(LLog));
+  if TFile.Exists(LZipFileName) then
+    TFile.Delete(LZipFileName);
 
-          Break;
-        except
-          on E: Exception do
-          begin
-            Inc(LRetryCount);
+  LZipFile := TZipFile.Create;
+  try
+    LZipFile.Open(LZipFileName, zmWrite);
 
-            if Assigned(FLogException) then
-              FLogException(Self, LItem, E, LRetryCount);
-
-            if Self.Terminated then
-              Exit;
-
-            if LRetryCount >= FMaxRetry then
-              Break;
-          end;
-        end;
-    end;
+    if TFile.Exists(ADirFileName) then
+      LZipFile.Add(ADirFileName, AFileName);
   finally
-    CloseFile(LTextFile);
+    LZipFile.Close;
+    LZipFile.Free;
   end;
 end;
 

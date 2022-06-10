@@ -49,9 +49,10 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Config: TEventsConfig read FConfig write FConfig;
+    function Config(const AValue: TEventsConfig): TProviderEvents;
 
-    constructor Create(const AConfig: TEventsConfig);
+    constructor Create; overload;
+    constructor Create(const AConfig: TEventsConfig); overload; deprecated 'Use TProviderEvents.Create.Config(TEventsConfig.Create.OnAny(TExecuteEvents)) - This function will be removed in future versions';
     destructor Destroy; override;
   end;
 
@@ -59,17 +60,32 @@ implementation
 
 { TProviderEvents }
 
-constructor TProviderEvents.Create(const AConfig: TEventsConfig);
+constructor TProviderEvents.Create;
 begin
   inherited Create;
-  FConfig := AConfig;
+
+  Config(nil);
+end;
+
+constructor TProviderEvents.Create(const AConfig: TEventsConfig);
+begin
+  Create;
+
+  Config(AConfig);
 end;
 
 destructor TProviderEvents.Destroy;
 begin
   if Assigned(FConfig) then
     FConfig.Free;
+
   inherited;
+end;
+
+function TProviderEvents.Config(const AValue: TEventsConfig): TProviderEvents;
+begin
+  Result := Self;
+  FConfig := AValue;
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
@@ -122,6 +138,8 @@ begin
         on E: Exception do
         begin
           Inc(LRetryCount);
+
+          Sleep(50);
 
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);

@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{EBFBD998-10B6-45E1-B320-8E7F8DA9EF4A}</ProjectGuid>
-        <ProjectVersion>19.3</ProjectVersion>
+        <ProjectVersion>19.4</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
@@ -184,23 +184,6 @@
         <DCCReference Include="..\..\src\Core\DataLogger.Types.pas"/>
         <DCCReference Include="..\..\src\Core\DataLogger.Utils.pas"/>
         <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Console.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.ElasticSearch.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Email.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.EventLog.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Events.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.ListBox.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.ListView.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Logstach.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Memo.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.OutputDebugString.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Redis.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.HTTPClient.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.Indy.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Slack.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.SysLog.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.Telegram.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.TextFile.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -239,14 +222,14 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Debug\Model1.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>Model1.exe</RemoteName>
+                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="OSX32">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="OSX32">
+                <DeployFile LocalName="Win32\Debug\Model1.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>Model1.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -1059,17 +1042,17 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
             </Deployment>
             <Platforms>
                 <Platform value="Android">False</Platform>

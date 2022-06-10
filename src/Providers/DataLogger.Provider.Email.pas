@@ -24,26 +24,67 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property IdSMTP: TIdSMTP read FIdSMTP write FIdSMTP;
-    property FromAddress: string read FFromAddress write FFromAddress;
-    property ToAddress: string read FToAddress write FToAddress;
-    property Subject: string read FSubject write FSubject;
+    function IdSMTP(const AValue: TIdSMTP): TProviderEmail; overload;
+    function IdSMTP: TIdSMTP; overload;
+    function FromAddress(const AValue: string): TProviderEmail;
+    function ToAddress(const AValue: string): TProviderEmail;
+    function Subject(const AValue: string): TProviderEmail;
 
-    constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
+    constructor Create; overload;
+    constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger'); overload; deprecated 'Use TProviderEmail.Create.IdSMTP(IdSMTP).FromAddress(''email@email.com'').ToAddress(''email@email.com'').Subject(''My Subject'') - This function will be removed in future versions';
   end;
 
 implementation
 
 { TProviderEmail }
 
-constructor TProviderEmail.Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
+constructor TProviderEmail.Create;
 begin
   inherited Create;
 
-  FIdSMTP := AIdSMTP;
-  FFromAddress := AFromAddress;
-  FToAddress := AToAddress;
-  FSubject := ASubject;
+  IdSMTP(nil);
+  FromAddress('');
+  ToAddress('');
+  Subject('');
+end;
+
+constructor TProviderEmail.Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
+begin
+  Create;
+
+  IdSMTP(AIdSMTP);
+  FromAddress(AFromAddress);
+  ToAddress(AToAddress);
+  Subject(ASubject);
+end;
+
+function TProviderEmail.IdSMTP(const AValue: TIdSMTP): TProviderEmail;
+begin
+  Result := Self;
+  FIdSMTP := AValue;
+end;
+
+function TProviderEmail.IdSMTP: TIdSMTP;
+begin
+  Result := FIdSMTP;
+end;
+
+function TProviderEmail.FromAddress(const AValue: string): TProviderEmail;
+begin
+  Result := Self;
+  FFromAddress := AValue;
+end;
+
+function TProviderEmail.ToAddress(const AValue: string): TProviderEmail;
+begin
+  Result := Self;
+  FToAddress := AValue;
+end;
+
+function TProviderEmail.Subject(const AValue: string): TProviderEmail;
+begin
+  Result := Self;
+  FSubject := AValue;
 end;
 
 procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);
@@ -102,6 +143,8 @@ begin
         on E: Exception do
         begin
           Inc(LRetryCount);
+
+          Sleep(50);
 
           if Assigned(FLogException) then
             FLogException(Self, LItem, E, LRetryCount);

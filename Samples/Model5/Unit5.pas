@@ -1,4 +1,4 @@
-unit Unit2;
+unit Unit5;
 
 interface
 
@@ -56,12 +56,12 @@ begin
       if LStop then
         Break;
 
-      Sleep(100);
+      Sleep(60);
 
       if (I = 5) or (I = 70) then
       begin
         Logger.Warn('StartTransaction');
-        Logger.StartTransaction; // 1
+        Logger.StartTransaction;
       end;
 
       try
@@ -69,7 +69,7 @@ begin
       finally
         if I = 50 then
         begin
-          Logger.CommitTransaction; // 1
+          Logger.CommitTransaction;
           Logger.Warn('CommitTransaction');
         end;
 
@@ -100,8 +100,8 @@ end;
 
 procedure TForm2.FormCreate(Sender: TObject);
 begin
-  M1 := TProviderMemo.Create(Memo2).UseTransaction(True);
-  M2 := TProviderMemo.Create(Memo1);
+  M1 := TProviderMemo.Create.Memo(Memo2).UseTransaction(True);
+  M2 := TProviderMemo.Create.Memo(Memo1);
 
   Logger.SetProvider([M1, M2]);
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ': ' + TLoggerFormat.LOG_MESSAGE);

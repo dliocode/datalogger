@@ -31,33 +31,63 @@ type
   TProviderMattermostHooks = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FURL: string;
     FChannelId: string;
     FUsername: string;
     FModePropsCard: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property URL: string read FURL write FURL;
-    property ChannelId: string read FChannelId write FChannelId;
-    property Username: string read FUsername write FUsername;
-    property ModePropsCard: Boolean read FModePropsCard write FModePropsCard;
+    function URL(const AValue: string): TProviderMattermostHooks; overload;
+    function URL: string; overload;
+    function ChannelId(const AValue: string): TProviderMattermostHooks;
+    function Username(const AValue: string): TProviderMattermostHooks;
+    function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
 
-    constructor Create(const AURL: string; const AChannelId: string; const AUserName: string = ''; const AModePropsCard: Boolean = False); reintroduce;
+    constructor Create;
   end;
 
 implementation
 
 { TProviderMattermostHooks }
 
-constructor TProviderMattermostHooks.Create(const AURL: string; const AChannelId: string; const AUserName: string = ''; const AModePropsCard: Boolean = False);
+constructor TProviderMattermostHooks.Create;
 begin
-  FURL := AURL;
-  FChannelId := AChannelId;
-  FUsername := AUserName;
-  FModePropsCard := AModePropsCard;
+  inherited Create;
 
-  inherited Create('', 'application/json');
+  URL('http://localhost');
+  ContentType('application/json');
+  ChannelId('');
+  Username('');
+  ModePropsCard(False);
+end;
+
+function TProviderMattermostHooks.URL(const AValue: string): TProviderMattermostHooks;
+begin
+  Result := Self;
+  inherited URL(AValue);
+end;
+
+function TProviderMattermostHooks.URL: string;
+begin
+  Result := inherited URL;
+end;
+
+function TProviderMattermostHooks.ChannelId(const AValue: string): TProviderMattermostHooks;
+begin
+  Result := Self;
+  FChannelId := AValue;
+end;
+
+function TProviderMattermostHooks.Username(const AValue: string): TProviderMattermostHooks;
+begin
+  Result := Self;
+  FUsername := AValue;
+end;
+
+function TProviderMattermostHooks.ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
+begin
+  Result := Self;
+  FModePropsCard := AValue;
 end;
 
 procedure TProviderMattermostHooks.Save(const ACache: TArray<TLoggerItem>);
@@ -86,7 +116,7 @@ var
 
         LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
         LLogItemREST.LogItem := LItem;
-        LLogItemREST.URL := FURL;
+        LLogItemREST.URL := URL;
       finally
         LJO.Free;
       end;
@@ -128,7 +158,7 @@ var
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString.Replace('\r\n', '\r\n\r\n'), TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := FURL;
+      LLogItemREST.URL := URL;
     finally
       LJO.Free;
     end;

@@ -37,27 +37,47 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property Channel: string read FChannel write FChannel;
-    property Username: string read FUsername write FUsername;
+    function ServiceName(const AValue: string): TProviderSlack;
+    function Channel(const AValue: string): TProviderSlack;
+    function Username(const AValue: string): TProviderSlack;
 
-    constructor Create(const AServiceName: string; const AChannel: string = ''; const AUsername: string = ''); reintroduce;
+    constructor Create;
   end;
 
 implementation
 
 { TProviderSlack }
 
-constructor TProviderSlack.Create(const AServiceName: string; const AChannel: string = ''; const AUsername: string = '');
+constructor TProviderSlack.Create;
 begin
-  FServiceName := AServiceName;
-  FChannel := AChannel;
-  FUsername := AUsername;
+  inherited Create;
 
+  ContentType('application/json');
+  ServiceName('');
+  Channel('');
+  Username('');
+end;
+
+function TProviderSlack.ServiceName(const AValue: string): TProviderSlack;
+begin
+  Result := Self;
+  FServiceName := AValue;
+end;
+
+function TProviderSlack.Channel(const AValue: string): TProviderSlack;
+begin
+  Result := Self;
+
+  FChannel := AValue;
   if not FChannel.Trim.IsEmpty then
     if not FChannel.StartsWith('#') then
-      FChannel := '#' + AChannel;
+      FChannel := '#' + AValue;
+end;
 
-  inherited Create('', 'application/json');
+function TProviderSlack.Username(const AValue: string): TProviderSlack;
+begin
+  Result := Self;
+  FUsername := AValue;
 end;
 
 procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);

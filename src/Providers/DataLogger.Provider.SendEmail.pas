@@ -21,20 +21,32 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    property SendEmail: TSendEmail read FSendEmail write FSendEmail;
+    function SendEmail(const ASendEmail: TSendEmail): TProviderSendEmail; overload;
+    function SendEmail: TSendEmail; overload;
 
-    constructor Create(const ASendEmail: TSendEmail);
+    constructor Create;
   end;
 
 implementation
 
 { TProviderSendEmail }
 
-constructor TProviderSendEmail.Create(const ASendEmail: TSendEmail);
+constructor TProviderSendEmail.Create;
 begin
   inherited Create;
 
+  FSendEmail := nil;
+end;
+
+function TProviderSendEmail.SendEmail(const ASendEmail: TSendEmail): TProviderSendEmail;
+begin
+  Result := Self;
   FSendEmail := ASendEmail;
+end;
+
+function TProviderSendEmail.SendEmail: TSendEmail;
+begin
+  Result := FSendEmail;
 end;
 
 procedure TProviderSendEmail.Save(const ACache: TArray<TLoggerItem>);
@@ -74,6 +86,8 @@ begin
       on E: Exception do
       begin
         Inc(LRetryCount);
+
+        Sleep(50);
 
         if Assigned(FLogException) then
           FLogException(Self, LItem, E, LRetryCount);

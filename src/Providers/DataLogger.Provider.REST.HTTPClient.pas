@@ -34,33 +34,48 @@ type
   private
     FURL: string;
     FContentType: string;
-    FBearerToken: string;
+    FToken: string;
+    FMethod: TLoggerMethod;
     FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TLoggerMethod; const AItemREST: TLogItemREST);
   protected
-    property URL: string read FURL write FURL;
-    property ContentType: string read FContentType write FContentType;
-    property BearerToken: string read FBearerToken write FBearerToken;
-
     procedure InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
 
-    procedure SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
+    function URL(const AValue: string): TProviderRESTHTTPClient; overload;
+    function URL: string; overload;
+    function ContentType(const AValue: string): TProviderRESTHTTPClient;
+    function BearerToken(const AValue: string): TProviderRESTHTTPClient;
+    function Token(const AValue: string): TProviderRESTHTTPClient;
+    function Method(const AValue: TLoggerMethod): TProviderRESTHTTPClient;
+    function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+
+    constructor Create; overload;
+    constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = ''); overload; deprecated 'Use TProviderRESTHTTPClient.Create.URL('').ContentType(''application/json'').BearerToken(''aaaa'') - This function will be removed in future versions';
   end;
 
 implementation
 
 { TProviderRESTHTTPClient }
 
-constructor TProviderRESTHTTPClient.Create(const AURL: string; const AContentType: string = 'text/plain'; const ABearerToken: string = '');
+constructor TProviderRESTHTTPClient.Create;
+begin
+  inherited Create;
+
+  URL('');
+  ContentType('text/plain');
+  Token('');
+  Method(tlmPost);
+end;
+
+constructor TProviderRESTHTTPClient.Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = '');
 var
   LProtocol: string;
   LHost: string;
 begin
-  inherited Create;
+  Create;
 
   LProtocol := 'http://';
   LHost := AURL;
@@ -68,14 +83,62 @@ begin
   if not LHost.ToLower.StartsWith('http://') and not LHost.ToLower.StartsWith('https://') then
     LHost := LProtocol + AURL;
 
-  FURL := LHost;
-  FBearerToken := ABearerToken;
-  FContentType := AContentType;
+  URL(LHost);
+  Token(AToken);
+  ContentType(AContentType);
 
   if FContentType.Trim.IsEmpty then
-    FContentType := 'text/plain';
+    ContentType('text/plain');
 
-  FExecuteFinally := nil;
+  ExecuteFinally(nil);
+end;
+
+function TProviderRESTHTTPClient.URL(const AValue: string): TProviderRESTHTTPClient;
+var
+  LProtocol: string;
+begin
+  Result := Self;
+
+  LProtocol := 'http://';
+
+  FURL := AValue;
+  if not AValue.ToLower.StartsWith('http://') and not AValue.ToLower.StartsWith('https://') then
+    FURL := LProtocol + AValue;
+end;
+
+function TProviderRESTHTTPClient.URL: string;
+begin
+  Result := FURL;
+end;
+
+function TProviderRESTHTTPClient.ContentType(const AValue: string): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FContentType := AValue;
+end;
+
+function TProviderRESTHTTPClient.BearerToken(const AValue: string): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FToken := 'Bearer ' + AValue;
+end;
+
+function TProviderRESTHTTPClient.Token(const AValue: string): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FToken := AValue;
+end;
+
+function TProviderRESTHTTPClient.Method(const AValue: TLoggerMethod): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FMethod := AValue;
+end;
+
+function TProviderRESTHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FExecuteFinally := AExecuteFinally;
 end;
 
 procedure TProviderRESTHTTPClient.Save(const ACache: TArray<TLoggerItem>);
@@ -104,12 +167,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TLoggerMethod.tlmPost, LItemREST);
-end;
-
-procedure TProviderRESTHTTPClient.SetExecuteFinally(const AExecuteFinally: TExecuteFinally);
-begin
-  FExecuteFinally := AExecuteFinally;
+  InternalSaveAsync(FMethod, LItemREST);
 end;
 
 procedure TProviderRESTHTTPClient.InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
@@ -181,8 +239,8 @@ begin
     LHTTP.AcceptEncoding := 'utf-8';
     LHTTP.Accept := FContentType;
 
-    if not FBearerToken.Trim.IsEmpty then
-      LHTTP.CustomHeaders['Authorization'] := 'Bearer ' + FBearerToken;
+    if not FToken.Trim.IsEmpty then
+      LHTTP.CustomHeaders['Authorization'] := FToken;
 
     LRetryCount := 0;
 
@@ -208,6 +266,8 @@ begin
         on E: Exception do
         begin
           Inc(LRetryCount);
+
+          Sleep(50);
 
           if Assigned(FLogException) then
             FLogException(Self, AItemREST.LogItem, E, LRetryCount);
