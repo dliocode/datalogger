@@ -5,6 +5,8 @@
   *************************************
 }
 
+// C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools\Event Viewer.lnk
+
 unit DataLogger.Provider.EventLog;
 
 interface
@@ -71,8 +73,6 @@ begin
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
       case LItem.&Type of
-        TLoggerType.Debug:
-          LEventType := EVENTLOG_INFORMATION_TYPE;
         TLoggerType.Info:
           LEventType := EVENTLOG_INFORMATION_TYPE;
         TLoggerType.Warn:

@@ -38,3 +38,4 @@ src/*.~*
 *.~*
 *.a
 *.stat
+*delphilsp.json

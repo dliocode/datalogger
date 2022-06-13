@@ -5,6 +5,8 @@
   *************************************
 }
 
+//
+
 unit DataLogger.Provider.Telegram;
 
 interface
@@ -189,7 +191,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TLoggerMethod.tlmGet, LItemREST);
+  InternalSave(TRESTMethod.tlmGet, LItemREST);
 end;
 
 end.

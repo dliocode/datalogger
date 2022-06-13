@@ -19,19 +19,19 @@ uses
   System.SysUtils, System.Classes;
 
 type
-  TProviderListBoxModeInsert = (tmFirst, tmLast);
+  TListBoxModeInsert = (tmFirst, tmLast);
 
   TProviderListBox = class(TDataLoggerProvider)
   private
     FListBox: TCustomListBox;
     FMaxLogLines: Integer;
-    FModeInsert: TProviderListBoxModeInsert;
+    FModeInsert: TListBoxModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function ListBox(const AValue: TCustomListBox): TProviderListBox;
     function MaxLogLines(const AValue: Integer): TProviderListBox;
-    function ModeInsert(const AValue: TProviderListBoxModeInsert): TProviderListBox;
+    function ModeInsert(const AValue: TListBoxModeInsert): TProviderListBox;
 
     constructor Create; overload;
     constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListBox.Create.ListBox(ListBox).MaxLogLines(0) - This function will be removed in future versions';
@@ -70,7 +70,7 @@ begin
   FMaxLogLines := AValue;
 end;
 
-function TProviderListBox.ModeInsert(const AValue: TProviderListBoxModeInsert): TProviderListBox;
+function TProviderListBox.ModeInsert(const AValue: TListBoxModeInsert): TProviderListBox;
 begin
   Result := Self;
   FModeInsert := AValue;
@@ -130,10 +130,25 @@ begin
                   Exit;
 
                 LLines := FListBox.Items.Count;
-                while LLines > FMaxLogLines do
-                begin
-                  FListBox.Items.Delete(0);
-                  LLines := FListBox.Items.Count;
+
+                case FModeInsert of
+                  tmFirst:
+                    begin
+                      while LLines > FMaxLogLines do
+                      begin
+                        FListBox.Items.Delete(Pred(LLines));
+                        LLines := FListBox.Items.Count;
+                      end;
+                    end;
+
+                  tmLast:
+                    begin
+                      while LLines > FMaxLogLines do
+                      begin
+                        FListBox.Items.Delete(0);
+                        LLines := FListBox.Items.Count;
+                      end;
+                    end;
                 end;
               end);
           end;

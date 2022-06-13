@@ -20,6 +20,7 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    function Clear: TProviderMemory;
     function AsString: string;
 
     constructor Create;
@@ -82,6 +83,18 @@ begin
             Break;
         end;
       end;
+  end;
+end;
+
+function TProviderMemory.Clear: TProviderMemory;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FStringList.Clear;
+  finally
+    UnLock;
   end;
 end;
 

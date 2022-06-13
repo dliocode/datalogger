@@ -28,19 +28,19 @@ type
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
-  TLoggerMethod = (tlmGet, tlmPost);
+  TRESTMethod = (tlmGet, tlmPost);
 
   TProviderRESTHTTPClient = class(TDataLoggerProvider)
   private
     FURL: string;
     FContentType: string;
     FToken: string;
-    FMethod: TLoggerMethod;
+    FMethod: TRESTMethod;
     FExecuteFinally: TExecuteFinally;
-    procedure HTTP(const AMethod: TLoggerMethod; const AItemREST: TLogItemREST);
+    procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
-    procedure InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
-    procedure InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
+    procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
+    procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -49,7 +49,7 @@ type
     function ContentType(const AValue: string): TProviderRESTHTTPClient;
     function BearerToken(const AValue: string): TProviderRESTHTTPClient;
     function Token(const AValue: string): TProviderRESTHTTPClient;
-    function Method(const AValue: TLoggerMethod): TProviderRESTHTTPClient;
+    function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
 
     constructor Create; overload;
@@ -129,7 +129,7 @@ begin
   FToken := AValue;
 end;
 
-function TProviderRESTHTTPClient.Method(const AValue: TLoggerMethod): TProviderRESTHTTPClient;
+function TProviderRESTHTTPClient.Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
 begin
   Result := Self;
   FMethod := AValue;
@@ -170,7 +170,7 @@ begin
   InternalSaveAsync(FMethod, LItemREST);
 end;
 
-procedure TProviderRESTHTTPClient.InternalSave(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
+procedure TProviderRESTHTTPClient.InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 var
   I: Integer;
 begin
@@ -181,7 +181,7 @@ begin
     HTTP(AMethod, ALogItemREST[I]);
 end;
 
-procedure TProviderRESTHTTPClient.InternalSaveAsync(const AMethod: TLoggerMethod; const ALogItemREST: TArray<TLogItemREST>);
+procedure TProviderRESTHTTPClient.InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 begin
   if Length(ALogItemREST) = 0 then
     Exit;
@@ -193,7 +193,7 @@ begin
     end);
 end;
 
-procedure TProviderRESTHTTPClient.HTTP(const AMethod: TLoggerMethod; const AItemREST: TLogItemREST);
+procedure TProviderRESTHTTPClient.HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
 var
   LRetryCount: Integer;
   LURL: string;
@@ -282,11 +282,11 @@ begin
   finally
     LHTTP.Free;
 
-    if Assigned(FExecuteFinally) then
-      FExecuteFinally(AItemREST.LogItem, LResponseContent);
-
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
+
+    if Assigned(FExecuteFinally) then
+      FExecuteFinally(AItemREST.LogItem, LResponseContent);
   end;
 end;
 

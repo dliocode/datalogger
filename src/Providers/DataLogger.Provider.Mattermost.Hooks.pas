@@ -37,8 +37,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderMattermostHooks; overload;
-    function URL: string; overload;
+    function URL(const AValue: string): TProviderMattermostHooks;
+    function BearerToken(const AValue: string): TProviderMattermostHooks;
     function ChannelId(const AValue: string): TProviderMattermostHooks;
     function Username(const AValue: string): TProviderMattermostHooks;
     function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
@@ -67,9 +67,10 @@ begin
   inherited URL(AValue);
 end;
 
-function TProviderMattermostHooks.URL: string;
+function TProviderMattermostHooks.BearerToken(const AValue: string): TProviderMattermostHooks;
 begin
-  Result := inherited URL;
+  Result := Self;
+  inherited BearerToken(AValue);
 end;
 
 function TProviderMattermostHooks.ChannelId(const AValue: string): TProviderMattermostHooks;
@@ -116,7 +117,7 @@ var
 
         LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
         LLogItemREST.LogItem := LItem;
-        LLogItemREST.URL := URL;
+        LLogItemREST.URL := '';
       finally
         LJO.Free;
       end;
@@ -158,7 +159,7 @@ var
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString.Replace('\r\n', '\r\n\r\n'), TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := URL;
+      LLogItemREST.URL := '';
     finally
       LJO.Free;
     end;
@@ -177,7 +178,7 @@ begin
   else
     Default;
 
-  InternalSave(TLoggerMethod.tlmPost, LItemREST);
+  InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 end.

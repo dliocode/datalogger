@@ -10,9 +10,9 @@ unit DataLogger.Provider.ElasticSearch;
 interface
 
 uses
-{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+{$IF DEFINED(DATALOGGER_ELASTICSEARCH_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_ELASTICSEARCH_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -21,9 +21,9 @@ uses
   System.SysUtils;
 
 type
-{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+{$IF DEFINED(DATALOGGER_ELASTICSEARCH_USE_INDY)}
   TProviderElasticSearch = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_ELASTICSEARCH_USE_NETHTTPCLIENT)}
   TProviderElasticSearch = class(TProviderRESTNetHTTPClient)
 {$ELSE}
   TProviderElasticSearch = class(TProviderRESTHTTPClient)
@@ -34,13 +34,11 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderElasticSearch; overload;
-    function URL: string; overload;
+    function URL(const AValue: string): TProviderElasticSearch;
     function Port(const AValue: Integer): TProviderElasticSearch;
     function Index(const AValue: string): TProviderElasticSearch;
 
-    constructor Create; overload;
-    constructor Create(const AHost: string; const APort: Integer = 9200; const AIndex: string = 'logger'); overload; deprecated 'Use TProviderElasticSearch.Create.URL(''http://localhost'').Port(9200).Index(''logger'') - This function will be removed in future versions';
+    constructor Create;
   end;
 
 implementation
@@ -57,24 +55,10 @@ begin
   Index('logger');
 end;
 
-constructor TProviderElasticSearch.Create(const AHost: string; const APort: Integer = 9200; const AIndex: string = 'logger');
-begin
-  Create;
-
-  URL(AHost);
-  Port(APort);
-  Index(AIndex);
-end;
-
 function TProviderElasticSearch.URL(const AValue: string): TProviderElasticSearch;
 begin
   Result := Self;
   inherited URL(AVAlue);
-end;
-
-function TProviderElasticSearch.URL: string;
-begin
-  Result := inherited URL;
 end;
 
 function TProviderElasticSearch.Port(const AValue: Integer): TProviderElasticSearch;
@@ -107,12 +91,12 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s:%d/%s/_doc', [URL, FPort, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s:%d/%s/_doc', [inherited URL, FPort, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);;
   end;
 
-  InternalSaveAsync(TLoggerMethod.tlmPost, LItemREST);
+  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 end.

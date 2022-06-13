@@ -5,6 +5,8 @@
   *************************************
 }
 
+// https://github.com/danieleteti/delphiredisclient
+
 unit DataLogger.Provider.Redis;
 
 interface

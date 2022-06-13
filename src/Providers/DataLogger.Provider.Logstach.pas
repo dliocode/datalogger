@@ -34,13 +34,11 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderLogstach; overload;
-    function URL: string; overload;
+    function URL(const AValue: string): TProviderLogstach;
     function Port(const AValue: Integer): TProviderLogstach;
     function Index(const AValue: string): TProviderLogstach;
 
     constructor Create; overload;
-    constructor Create(const AHost: string; const APort: Integer = 5044; const AIndex: string = 'logger'); overload; deprecated 'Use TProviderLogstach.Create.Host(''http://localhost'').Port(5044).Index(''logger'') - This function will be removed in future versions';
   end;
 
 implementation
@@ -57,24 +55,10 @@ begin
   Index('logger');
 end;
 
-constructor TProviderLogstach.Create(const AHost: string; const APort: Integer = 5044; const AIndex: string = 'logger');
-begin
-  Create;
-
-  URL(AHost);
-  Port(APort);
-  Index(AIndex);
-end;
-
 function TProviderLogstach.URL(const AValue: string): TProviderLogstach;
 begin
   Result := Self;
   inherited URL(AValue);
-end;
-
-function TProviderLogstach.URL: string;
-begin
-  Result := inherited URL;
 end;
 
 function TProviderLogstach.Port(const AValue: Integer): TProviderLogstach;
@@ -107,11 +91,11 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s:%d/%s/doc', [URL, FPort, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s:%d/%s/doc', [inherited URL, FPort, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
-  InternalSave(TLoggerMethod.tlmPost, LItemREST);
+  InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 end.

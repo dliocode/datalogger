@@ -19,22 +19,22 @@ uses
   System.SysUtils, System.Classes;
 
 type
-  TProviderMemoModeInsert = (tmFirst, tmLast);
+  TMemoModeInsert = (tmFirst, tmLast);
 
   TProviderMemo = class(TDataLoggerProvider)
   private
     FMemo: TCustomMemo;
     FMaxLogLines: Integer;
-    FModeInsert: TProviderMemoModeInsert;
+    FModeInsert: TMemoModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function Memo(const AValue: TCustomMemo): TProviderMemo;
     function MaxLogLines(const AValue: Integer): TProviderMemo;
-    function ModeInsert(const AValue: TProviderMemoModeInsert): TProviderMemo;
+    function ModeInsert(const AValue: TMemoModeInsert): TProviderMemo;
 
     constructor Create; overload;
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TProviderMemoModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
+    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
   end;
 
 implementation
@@ -50,7 +50,7 @@ begin
   ModeInsert(tmLast);
 end;
 
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TProviderMemoModeInsert = tmLast);
+constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast);
 begin
   Create;
 
@@ -71,7 +71,7 @@ begin
   FMaxLogLines := AValue;
 end;
 
-function TProviderMemo.ModeInsert(const AValue: TProviderMemoModeInsert): TProviderMemo;
+function TProviderMemo.ModeInsert(const AValue: TMemoModeInsert): TProviderMemo;
 begin
   Result := Self;
   FModeInsert := AValue;

@@ -1,0 +1,11 @@
+{
+	"name": "SendEmail",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "./",
+	"projects": [],
+	"dependencies": {
+		"http://github.com/dliocode/sendemail": "^1.0.13"
+	}
+}

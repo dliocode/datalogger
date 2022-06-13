@@ -32,6 +32,8 @@ $ boss install github.com/dliocode/datalogger
 Existem duas maneiras diferentes de usar o DataLogger: 
 Diretamente pelo ``` Logger ``` ou instanciando seu próprio ``` TDataLogger ```.
 
+[Samples](https://github.com/dliocode/datalogger/tree/main/Samples)
+
 O primeiro destina-se apenas a ser um log compartilhado conveniente para ser usado em todo o seu aplicativo, se você escolher.
 
 * **Uses necessária**: 
@@ -60,7 +62,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | Memo | DataLogger.Provider.Memo |
 | Memory | DataLogger.Provider.Memory |
 | OutputDebugString | DataLogger.Provider.OutputDebugString |
-| [Redis](https://redis.io/) | DataLogger.Provider.Redis |
+| [Redis](https://github.com/danieleteti/delphiredisclient) | DataLogger.Provider.Redis |
 | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient  |
 | [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail |
 | [Slack](https://slack.com/) | DataLogger.Provider.Slack |

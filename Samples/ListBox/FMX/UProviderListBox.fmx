@@ -1,0 +1,59 @@
+object Form2: TForm2
+  Left = 0
+  Top = 0
+  Caption = 'DataLogger - ListBox'
+  ClientHeight = 480
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object Panel1: TPanel
+    Align = Top
+    Position.Y = 21.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object btnMakeLog: TButton
+      Position.X = 280.000000000000000000
+      Position.Y = 8.000000000000000000
+      TabOrder = 0
+      Text = 'Make Log'
+      OnClick = btnMakeLogClick
+    end
+  end
+  object pnlInfo: TRectangle
+    Align = Top
+    Fill.Color = claBlack
+    Size.Width = 640.000000000000000000
+    Size.Height = 21.000000000000000000
+    Size.PlatformDefault = False
+    object Label1: TLabel
+      Align = Client
+      StyledSettings = [Family, Size, Style]
+      HitTest = True
+      Size.Width = 640.000000000000000000
+      Size.Height = 21.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.FontColor = claWhite
+      Text = '  GITHUB: https://github.com/dliocode/datalogger'
+      TabOrder = 0
+      OnClick = Label1Click
+    end
+  end
+  object ListBox1: TListBox
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 418.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    DisableFocusEffect = True
+    DefaultItemStyles.ItemStyle = ''
+    DefaultItemStyles.GroupHeaderStyle = ''
+    DefaultItemStyles.GroupFooterStyle = ''
+    Viewport.Width = 636.000000000000000000
+    Viewport.Height = 414.000000000000000000
+  end
+end

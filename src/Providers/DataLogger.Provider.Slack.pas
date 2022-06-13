@@ -33,12 +33,14 @@ type
   private
     FServiceName: string;
     FChannel: string;
+    FChannelId: string;
     FUsername: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function ServiceName(const AValue: string): TProviderSlack;
     function Channel(const AValue: string): TProviderSlack;
+    function ChannelId(const AValue: string): TProviderSlack;
     function Username(const AValue: string): TProviderSlack;
 
     constructor Create;
@@ -55,6 +57,7 @@ begin
   ContentType('application/json');
   ServiceName('');
   Channel('');
+  ChannelId('');
   Username('');
 end;
 
@@ -72,6 +75,12 @@ begin
   if not FChannel.Trim.IsEmpty then
     if not FChannel.StartsWith('#') then
       FChannel := '#' + AValue;
+end;
+
+function TProviderSlack.ChannelId(const AValue: string): TProviderSlack;
+begin
+  Result := Self;
+  FChannelId := AValue;
 end;
 
 function TProviderSlack.Username(const AValue: string): TProviderSlack;
@@ -106,8 +115,11 @@ begin
     try
       LJO.AddPair('text', LLog);
 
-      if not FChannel.Trim.IsEmpty then
-        LJO.AddPair('channel', FChannel);
+      if not FChannelId.Trim.IsEmpty then
+        LJO.AddPair('channel_id', FChannelId)
+      else
+        if not FChannel.Trim.IsEmpty then
+          LJO.AddPair('channel', FChannel);
 
       if not FUsername.Trim.IsEmpty then
         LJO.AddPair('username', FUsername);
@@ -122,7 +134,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TLoggerMethod.tlmPost, LItemREST);
+  InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 end.

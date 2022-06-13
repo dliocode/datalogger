@@ -1,0 +1,22 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-06-13T11:09:49.8486913-03:00",
+	"installedModules": {
+		"github.com/hashload/horse": {
+			"name": "horse",
+			"version": "3.0.1",
+			"hash": "0c0049d693028f6631b00587f270e6d2",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"github.com/hashload/jhonson": {
+			"name": "jhonson",
+			"version": "1.1.4",
+			"hash": "7f48e0509b98505a12fa80ee39b53aea",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-06-13T10:28:12.8936466-03:00",
+	"installedModules": {
+		"http://github.com/dliocode/sendemail": {
+			"name": "sendemail",
+			"version": "1.0.13",
+			"hash": "d2e8086baf1ed7d83f8804869d372f1c",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}

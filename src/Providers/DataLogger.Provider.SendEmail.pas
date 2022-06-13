@@ -5,19 +5,22 @@
   *************************************
 }
 
+// https://github.com/dliocode/sendemail
+
 unit DataLogger.Provider.SendEmail;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  SendEmail, // https://github.com/dliocode/sendemail
+  SendEmail,
   System.SysUtils, System.Classes;
 
 type
   TProviderSendEmail = class(TDataLoggerProvider)
   private
     FSendEmail: TSendEmail;
+    FModeCustom: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -25,6 +28,7 @@ type
     function SendEmail: TSendEmail; overload;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -36,16 +40,44 @@ begin
   inherited Create;
 
   FSendEmail := nil;
+  FModeCustom := False;
+end;
+
+destructor TProviderSendEmail.Destroy;
+begin
+  if not FModeCustom then
+    if Assigned(FSendEmail) then
+    begin
+      FSendEmail.Free;
+      FSendEmail := nil;
+    end;
+
+  inherited;
 end;
 
 function TProviderSendEmail.SendEmail(const ASendEmail: TSendEmail): TProviderSendEmail;
 begin
   Result := Self;
+
+  if not FModeCustom then
+  begin
+    if Assigned(FSendEmail) then
+    begin
+      FSendEmail.Free;
+      FSendEmail := nil;
+    end;
+
+    FModeCustom := True;
+  end;
+
   FSendEmail := ASendEmail;
 end;
 
 function TProviderSendEmail.SendEmail: TSendEmail;
 begin
+  if not Assigned(FSendEmail) then
+    FSendEmail := TSendEmail.Create;
+
   Result := FSendEmail;
 end;
 

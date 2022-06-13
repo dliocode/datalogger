@@ -18,6 +18,8 @@ type
 
   TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
 
+  TProviderEvents = class;
+
   TEventsConfig = class
   private
     FOnAny: TExecuteEvents;

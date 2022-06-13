@@ -35,8 +35,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderMattermost; overload;
-    function URL: string; overload;
+    function URL(const AValue: string): TProviderMattermost;
+    function BearerToken(const AValue: string): TProviderMattermost;
     function ChannelId(const AValue: string): TProviderMattermost;
 
     constructor Create; overload;
@@ -61,15 +61,16 @@ begin
   inherited URL(AValue);
 end;
 
-function TProviderMattermost.URL: string;
-begin
-  Result := inherited URL;
-end;
-
 function TProviderMattermost.ChannelId(const AValue: string): TProviderMattermost;
 begin
   Result := Self;
   FChannelId := AValue;
+end;
+
+function TProviderMattermost.BearerToken(const AValue: string): TProviderMattermost;
+begin
+  Result := Self;
+  inherited BearerToken(AValue);
 end;
 
 procedure TProviderMattermost.Save(const ACache: TArray<TLoggerItem>);
@@ -99,7 +100,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(URL)]);
+      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(inherited URL)]);
     finally
       LJO.Free;
     end;
@@ -107,7 +108,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TLoggerMethod.tlmPost, LItemREST);
+  InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 end.

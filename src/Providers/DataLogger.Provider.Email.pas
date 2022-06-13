@@ -25,13 +25,11 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function IdSMTP(const AValue: TIdSMTP): TProviderEmail; overload;
-    function IdSMTP: TIdSMTP; overload;
     function FromAddress(const AValue: string): TProviderEmail;
     function ToAddress(const AValue: string): TProviderEmail;
     function Subject(const AValue: string): TProviderEmail;
 
-    constructor Create; overload;
-    constructor Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger'); overload; deprecated 'Use TProviderEmail.Create.IdSMTP(IdSMTP).FromAddress(''email@email.com'').ToAddress(''email@email.com'').Subject(''My Subject'') - This function will be removed in future versions';
+    constructor Create;
   end;
 
 implementation
@@ -48,25 +46,10 @@ begin
   Subject('');
 end;
 
-constructor TProviderEmail.Create(const AIdSMTP: TIdSMTP; const AFromAddress: string; const AToAddress: string; const ASubject: string = 'Logger');
-begin
-  Create;
-
-  IdSMTP(AIdSMTP);
-  FromAddress(AFromAddress);
-  ToAddress(AToAddress);
-  Subject(ASubject);
-end;
-
 function TProviderEmail.IdSMTP(const AValue: TIdSMTP): TProviderEmail;
 begin
   Result := Self;
   FIdSMTP := AValue;
-end;
-
-function TProviderEmail.IdSMTP: TIdSMTP;
-begin
-  Result := FIdSMTP;
 end;
 
 function TProviderEmail.FromAddress(const AValue: string): TProviderEmail;

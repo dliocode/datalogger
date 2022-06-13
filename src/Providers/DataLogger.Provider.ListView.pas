@@ -19,19 +19,19 @@ uses
   System.SysUtils, System.Classes;
 
 type
-  TProviderListViewModeInsert = (tmFirst, tmLast);
+  TListViewModeInsert = (tmFirst, tmLast);
 
   TProviderListView = class(TDataLoggerProvider)
   private
     FListView: TCustomListView;
     FMaxLogLines: Integer;
-    FModeInsert: TProviderListViewModeInsert;
+    FModeInsert: TListViewModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function ListView(const AValue: TCustomListView): TProviderListView;
     function MaxLogLines(const AValue: Integer): TProviderListView;
-    function ModeInsert(const AValue: TProviderListViewModeInsert): TProviderListView;
+    function ModeInsert(const AValue: TListViewModeInsert): TProviderListView;
 
     constructor Create; overload;
     constructor Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListView.Create.ListView(ListView).MaxLogLines(0) - This function will be removed in future versions';
@@ -70,7 +70,7 @@ begin
   FMaxLogLines := AValue;
 end;
 
-function TProviderListView.ModeInsert(const AValue: TProviderListViewModeInsert): TProviderListView;
+function TProviderListView.ModeInsert(const AValue: TListViewModeInsert): TProviderListView;
 begin
   Result := Self;
   FModeInsert := AValue;
@@ -142,10 +142,25 @@ begin
                   Exit;
 
                 LLines := FListView.Items.Count;
-                while LLines > FMaxLogLines do
-                begin
-                  FListView.Items.Delete(0);
-                  LLines := FListView.Items.Count;
+
+                case FModeInsert of
+                  tmFirst:
+                  begin
+                    while LLines > FMaxLogLines do
+                    begin
+                      FListView.Items.Delete(Pred(FListView.Items.Count));
+                      LLines := FListView.Items.Count;
+                    end;
+                  end;
+
+                  tmLast:
+                  begin
+                    while LLines > FMaxLogLines do
+                    begin
+                      FListView.Items.Delete(0);
+                      LLines := FListView.Items.Count;
+                    end;
+                  end;
                 end;
               end);
           end;
