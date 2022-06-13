@@ -111,7 +111,7 @@ end;
 function TProviderTextFile.LogDir(const AValue: string): TProviderTextFile;
 begin
   Result := Self;
-  FLogDir := AValue.Replace('/', TPath.DirectorySeparatorChar).Replace('\', TPath.DirectorySeparatorChar);;
+  FLogDir := AValue.Replace('/', TPath.DirectorySeparatorChar).Replace('\', TPath.DirectorySeparatorChar);
 end;
 
 function TProviderTextFile.PrefixFileName(const AValue: string): TProviderTextFile;
