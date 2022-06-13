@@ -11,10 +11,10 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(MSWINDOWS)}
-  Winapi.Windows,
-{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
+{$IF DEFINED(DATALOGGER_FMX)}
   FMX.Types,
+{$ELSE}
+  Winapi.Windows,
 {$ENDIF}
   System.SysUtils;
 
@@ -52,10 +52,10 @@ begin
 
     while True do
       try
-{$IF DEFINED(MSWINDOWS)}
-        OutputDebugString(PChar(LLog));
-{$ELSEIF DEFINED(ANDROID) || DEFINED(IOS)}
+{$IF DEFINED(DATALOGGER_FMX)}
         FMX.Types.Log.d(LLog);
+{$ELSE}
+        OutputDebugString(PChar(LLog));
 {$ENDIF}
         Break;
       except

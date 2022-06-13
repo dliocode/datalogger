@@ -11,40 +11,35 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(MSWINDOWS)}
+{$IF DEFINED(DATALOGGER_FMX)}
+  FMX.Memo,
+{$ELSE}
   Vcl.StdCtrls, Winapi.Windows, Winapi.Messages,
 {$ENDIF}
   System.SysUtils, System.Classes;
 
 type
-  TModeInsert = (tmFirst, tmLast);
+  TProviderMemoModeInsert = (tmFirst, tmLast);
 
   TProviderMemo = class(TDataLoggerProvider)
   private
-{$IF DEFINED(MSWINDOWS)}
     FMemo: TCustomMemo;
     FMaxLogLines: Integer;
-    FModeInsert: TModeInsert;
-{$ENDIF}
+    FModeInsert: TProviderMemoModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-{$IF DEFINED(MSWINDOWS)}
     function Memo(const AValue: TCustomMemo): TProviderMemo;
     function MaxLogLines(const AValue: Integer): TProviderMemo;
-    function ModeInsert(const AValue: TModeInsert): TProviderMemo;
+    function ModeInsert(const AValue: TProviderMemoModeInsert): TProviderMemo;
 
     constructor Create; overload;
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
-{$ENDIF}
+    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TProviderMemoModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
   end;
 
 implementation
 
 { TProviderMemo }
-
-{$IF DEFINED(MSWINDOWS)}
-
 
 constructor TProviderMemo.Create;
 begin
@@ -55,7 +50,7 @@ begin
   ModeInsert(tmLast);
 end;
 
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TModeInsert = tmLast);
+constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TProviderMemoModeInsert = tmLast);
 begin
   Create;
 
@@ -76,17 +71,13 @@ begin
   FMaxLogLines := AValue;
 end;
 
-function TProviderMemo.ModeInsert(const AValue: TModeInsert): TProviderMemo;
+function TProviderMemo.ModeInsert(const AValue: TProviderMemoModeInsert): TProviderMemo;
 begin
   Result := Self;
   FModeInsert := AValue;
 end;
 
-{$ENDIF}
-
-
 procedure TProviderMemo.Save(const ACache: TArray<TLoggerItem>);
-{$IF DEFINED(MSWINDOWS)}
 var
   LItem: TLoggerItem;
   LLog: string;
@@ -113,7 +104,6 @@ begin
         if (csDestroying in FMemo.ComponentState) then
           Exit;
 
-        FMemo.Lines.BeginUpdate;
         try
           TThread.Synchronize(nil,
             procedure
@@ -121,9 +111,12 @@ begin
               if (csDestroying in FMemo.ComponentState) then
                 Exit;
 
+              FMemo.Lines.BeginUpdate;
+
               case FModeInsert of
                 tmFirst:
                   FMemo.Lines.Insert(0, LLog);
+
                 tmLast:
                   FMemo.Lines.Add(LLog);
               end;
@@ -143,6 +136,7 @@ begin
                   case FModeInsert of
                     tmFirst:
                       FMemo.Lines.Delete(Pred(LLines));
+
                     tmLast:
                       FMemo.Lines.Delete(0);
                   end;
@@ -152,20 +146,32 @@ begin
               end);
           end;
         finally
-          if not(csDestroying in FMemo.ComponentState) then
-          begin
-            FMemo.Lines.EndUpdate;
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              if (csDestroying in FMemo.ComponentState) then
+                Exit;
 
-            TThread.Synchronize(nil,
-              procedure
-              begin
-                if (csDestroying in FMemo.ComponentState) then
-                  Exit;
+              FMemo.Lines.EndUpdate;
 
-                if FModeInsert = tmLast then
-                  SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
-              end);
-          end;
+              case FModeInsert of
+                tmFirst:
+                  begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                    FMemo.VScrollBar.Value := FMemo.VScrollBar.Min;
+{$ENDIF}
+                  end;
+
+                tmLast:
+                  begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                    FMemo.VScrollBar.Value := FMemo.VScrollBar.Max;
+{$ELSE}
+                    SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
+{$ENDIF}
+                  end;
+              end;
+            end);
         end;
 
         Break;
@@ -188,11 +194,5 @@ begin
       end;
   end;
 end;
-{$ELSE}
-
-
-begin
-end;
-{$ENDIF}
 
 end.

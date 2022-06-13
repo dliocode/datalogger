@@ -11,36 +11,35 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(MSWINDOWS)}
+{$IF DEFINED(DATALOGGER_FMX)}
+  FMX.ListView,
+{$ELSE}
   Vcl.ComCtrls,
 {$ENDIF}
   System.SysUtils, System.Classes;
 
 type
+  TProviderListViewModeInsert = (tmFirst, tmLast);
+
   TProviderListView = class(TDataLoggerProvider)
   private
-{$IF DEFINED(MSWINDOWS)}
     FListView: TCustomListView;
     FMaxLogLines: Integer;
-{$ENDIF}
+    FModeInsert: TProviderListViewModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-{$IF DEFINED(MSWINDOWS)}
     function ListView(const AValue: TCustomListView): TProviderListView;
     function MaxLogLines(const AValue: Integer): TProviderListView;
+    function ModeInsert(const AValue: TProviderListViewModeInsert): TProviderListView;
 
     constructor Create; overload;
     constructor Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListView.Create.ListView(ListView).MaxLogLines(0) - This function will be removed in future versions';
-{$ENDIF}
   end;
 
 implementation
 
 { TProviderListView }
-
-{$IF DEFINED(MSWINDOWS)}
-
 
 constructor TProviderListView.Create;
 begin
@@ -48,6 +47,7 @@ begin
 
   ListView(nil);
   MaxLogLines(0);
+  ModeInsert(tmLast);
 end;
 
 constructor TProviderListView.Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0);
@@ -70,11 +70,13 @@ begin
   FMaxLogLines := AValue;
 end;
 
-{$ENDIF}
-
+function TProviderListView.ModeInsert(const AValue: TProviderListViewModeInsert): TProviderListView;
+begin
+  Result := Self;
+  FModeInsert := AValue;
+end;
 
 procedure TProviderListView.Save(const ACache: TArray<TLoggerItem>);
-{$IF DEFINED(MSWINDOWS)}
 var
   LItem: TLoggerItem;
   LLog: string;
@@ -101,7 +103,6 @@ begin
         if (csDestroying in FListView.ComponentState) then
           Exit;
 
-        FListView.Items.BeginUpdate;
         try
           TThread.Synchronize(nil,
             procedure
@@ -109,7 +110,27 @@ begin
               if (csDestroying in FListView.ComponentState) then
                 Exit;
 
-              FListView.Items.Add.Caption := LLog;
+              FListView.Items.BeginUpdate;
+
+              case FModeInsert of
+                tmFirst:
+                  begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                    FListView.Items.AddItem(0).IndexTitle := LLog;
+{$ELSE}
+                    FListView.Items.Insert(0).Caption := LLog;
+{$ENDIF}
+                  end;
+
+                tmLast:
+                  begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                    FListView.Items.Add.IndexTitle := LLog;
+{$ELSE}
+                    FListView.Items.Add.Caption := LLog;
+{$ENDIF}
+                  end;
+              end;
             end);
 
           if FMaxLogLines > 0 then
@@ -131,15 +152,33 @@ begin
         finally
           if not(csDestroying in FListView.ComponentState) then
           begin
-            FListView.Items.EndUpdate;
-
             TThread.Synchronize(nil,
               procedure
               begin
                 if (csDestroying in FListView.ComponentState) then
                   Exit;
 
-                FListView.Scroll(0, FListView.Items.Count);
+                FListView.Items.EndUpdate;
+
+                case FModeInsert of
+                  tmFirst:
+                    begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                      FListView.ScrollTo(0);
+{$ELSE}
+                      FListView.Scroll(0, 0);
+{$ENDIF}
+                    end;
+
+                  tmLast:
+                    begin
+{$IF DEFINED(DATALOGGER_FMX)}
+                      FListView.ScrollTo(Pred(FListView.Items.Count));
+{$ELSE}
+                      FListView.Scroll(0, FListView.Items.Count);
+{$ENDIF}
+                    end;
+                end;
               end);
           end;
         end;
@@ -164,11 +203,5 @@ begin
       end;
   end;
 end;
-{$ELSE}
-
-
-begin
-end;
-{$ENDIF}
 
 end.

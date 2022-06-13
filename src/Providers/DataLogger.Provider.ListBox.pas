@@ -11,36 +11,35 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(MSWINDOWS)}
+{$IF DEFINED(DATALOGGER_FMX)}
+  FMX.ListBox,
+{$ELSE}
   Vcl.StdCtrls,
 {$ENDIF}
   System.SysUtils, System.Classes;
 
 type
+  TProviderListBoxModeInsert = (tmFirst, tmLast);
+
   TProviderListBox = class(TDataLoggerProvider)
   private
-{$IF DEFINED(MSWINDOWS)}
     FListBox: TCustomListBox;
     FMaxLogLines: Integer;
-{$ENDIF}
+    FModeInsert: TProviderListBoxModeInsert;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-{$IF DEFINED(MSWINDOWS)}
     function ListBox(const AValue: TCustomListBox): TProviderListBox;
     function MaxLogLines(const AValue: Integer): TProviderListBox;
+    function ModeInsert(const AValue: TProviderListBoxModeInsert): TProviderListBox;
 
     constructor Create; overload;
     constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListBox.Create.ListBox(ListBox).MaxLogLines(0) - This function will be removed in future versions';
-{$ENDIF}
   end;
 
 implementation
 
 { TProviderListBox }
-
-{$IF DEFINED(MSWINDOWS)}
-
 
 constructor TProviderListBox.Create;
 begin
@@ -48,6 +47,7 @@ begin
 
   ListBox(nil);
   MaxLogLines(0);
+  ModeInsert(tmLast);
 end;
 
 constructor TProviderListBox.Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
@@ -70,11 +70,13 @@ begin
   FMaxLogLines := AValue;
 end;
 
-{$ENDIF}
-
+function TProviderListBox.ModeInsert(const AValue: TProviderListBoxModeInsert): TProviderListBox;
+begin
+  Result := Self;
+  FModeInsert := AValue;
+end;
 
 procedure TProviderListBox.Save(const ACache: TArray<TLoggerItem>);
-{$IF DEFINED(MSWINDOWS)}
 var
   LItem: TLoggerItem;
   LLog: string;
@@ -109,7 +111,14 @@ begin
                 Exit;
 
               FListBox.Items.BeginUpdate;
-              FListBox.AddItem(LLog, nil);
+
+              case FModeInsert of
+                tmFirst:
+                  FListBox.Items.Insert(0, LLog);
+
+                tmLast:
+                  FListBox.Items.Add(LLog);
+              end;
             end);
 
           if FMaxLogLines > 0 then
@@ -131,15 +140,21 @@ begin
         finally
           if not(csDestroying in FListBox.ComponentState) then
           begin
-            FListBox.Items.EndUpdate;
-
             TThread.Synchronize(nil,
               procedure
               begin
                 if (csDestroying in FListBox.ComponentState) then
                   Exit;
 
-                FListBox.ItemIndex := FListBox.Items.Count - 1;
+                FListBox.Items.EndUpdate;
+
+                case FModeInsert of
+                  tmFirst:
+                    FListBox.ItemIndex := 0;
+
+                  tmLast:
+                    FListBox.ItemIndex := FListBox.Items.Count - 1;
+                end;
               end);
           end;
         end;
@@ -164,12 +179,5 @@ begin
       end;
   end;
 end;
-{$ELSE}
-
-
-begin
-end;
-{$ENDIF}
-
 
 end.
