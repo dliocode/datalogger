@@ -363,13 +363,13 @@ end.
 
 ## Disable LogType
 
-É possível desabilitar vários tipo de log, com base no ```TLoggerType```.
+É possível desabilitar vários tipos de log, com base no ```TLoggerType```.
 
 SetDisableLogType valor padrão = ```[]```
 
 ### SetDisableLogType
 
-* Quando desabilitado será exibido somente as opção que não estão desabilitadas.
+* Quando desabilitado será exibido somente as opções que não estão desabilitadas.
 * Ex: ``` Logger.SetDisableLogType([TLoggerType.Info, TLoggerType.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal ```.
 
 ```delphi
@@ -402,7 +402,7 @@ end.
 
 ## Only LogType
 
-É possível habilitar vários tipo de log, com base no ```TLoggerType```.
+É possível habilitar vários tipos de log, com base no ```TLoggerType```.
 
 SetOnlyLogType valor padrão = ```[TLoggerType.All]```
 
@@ -440,7 +440,7 @@ end.
 
 ## Log Exception
 
-É possível capturar alguma exceção gerada pelos providers
+É possível capturar exceções geradas pelos _providers_
 
 SetLogException valor padrão = ```nil```
 
@@ -602,14 +602,13 @@ end.
 
 ## Transaction
 
-É possível trabalhar com _Transaction_, da mesma forma que é usado em outros componentes com conexão com o banco de dados.
+É possível trabalhar com _Transaction_, da mesma forma que é usado em outros componentes com conexão de banco de dados.
 
 A utilização deste procedimento pode ser aplicado a seguinte situação;
 
 Vamos contar uma pesquena história:
 
 > Temos uma _procedure_ que está fazendo uma execução, em cada etapa é gerado várias informações log, por costume sempre salvamos essas informações, isso faz que o nosso arquivo texto por exemplo, porém esse arquivo pode ficar grande demais. <br /> Agora imagina poder salvar os dados somente se houve algum erro durante a execução.
-
 
 ### Como habilitar
 
@@ -623,11 +622,11 @@ Inicia uma nova transação.
 
 ### CommitTransaction
 
-Confirma o registra de todos os logs na transação;
+Confirma o registra de todos os logs na transação.
 
 ### RollbackTransaction
 
-Cancela todos os logs gerados na transação;
+Cancela todos os logs gerados na transação.
 
 ### Exemplo com Transação Simples
 
