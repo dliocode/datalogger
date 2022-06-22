@@ -14,7 +14,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   Redis.Commons, Redis.Client, Redis.NetLib.INDY,
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
   TProviderRedis = class(TDataLoggerProvider)
@@ -30,6 +30,9 @@ type
     function Port(const AValue: Integer): TProviderRedis;
     function KeyPrefix(const AValue: string): TProviderRedis;
     function MaxSize(const AValue: Int64): TProviderRedis;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
   end;
@@ -72,11 +75,62 @@ begin
   FMaxSize := AValue;
 end;
 
+procedure TProviderRedis.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    Host(LJO.GetValue<string>('host', FHost));
+    Port(LJO.GetValue<Integer>('port', FPort));
+    KeyPrefix(LJO.GetValue<string>('key_prefix', FKeyPrefix));
+    MaxSize(LJO.GetValue<Integer>('max_size', FMaxSize));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderRedis.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('host', FHost);
+    LJO.AddPair('port', FPort);
+    LJO.AddPair('key_prefix', FKeyPrefix);
+    LJO.AddPair('max_size', FMaxSize);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);
 var
   LRedisClient: IRedisClient;
   LConnected: Boolean;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LKey: string;
   LItem: TLoggerItem;
   LLog: string;
@@ -96,7 +150,7 @@ begin
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -124,17 +178,20 @@ begin
             end;
           end;
 
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
@@ -145,5 +202,13 @@ begin
   except
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderRedis);
 
 end.

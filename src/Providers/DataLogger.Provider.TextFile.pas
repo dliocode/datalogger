@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.IOUtils, System.SysUtils, System.Classes, System.Zip;
+  System.IOUtils, System.SysUtils, System.Classes, System.Zip, System.JSON;
 
 type
   TProviderTextFileExecuteCompress = reference to procedure(const ADirLogFileName: string; const AFileName: string; var ARemoveFile: Boolean);
@@ -55,6 +55,9 @@ type
     function CleanOnStart(const AValue: Boolean): TProviderTextFile;
     function FormatDateTime(const AValue: string): TProviderTextFile;
     function Encoding(const AValue: TEncoding): TProviderTextFile;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
     constructor Create(
@@ -171,11 +174,70 @@ begin
   FEncoding := AValue
 end;
 
+procedure TProviderTextFile.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    LogDir(LJO.GetValue<string>('log_dir', FLogDir));
+    PrefixFileName(LJO.GetValue<string>('prefix_filename', FPrefixFileName));
+    Extension(LJO.GetValue<string>('extension', FExtension));
+    MaxFileSizeInKiloByte(LJO.GetValue<Int64>('max_file_size_in_kilo_byte', FMaxFileSizeInKiloByte));
+    MaxBackupFileCount(LJO.GetValue<Int64>('max_backup_file_count', FMaxBackupFileCount));
+    Compress(LJO.GetValue<Boolean>('compress', FCompress));
+    CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
+    FormatDateTime(LJO.GetValue<string>('format_datetime', FFormatDateTime));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderTextFile.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('log_dir', FLogDir);
+    LJO.AddPair('prefix_filename', FPrefixFileName);
+    LJO.AddPair('extension', FExtension);
+    LJO.AddPair('max_file_size_in_kilo_byte', FMaxFileSizeInKiloByte);
+    LJO.AddPair('max_backup_file_count', FMaxBackupFileCount);
+    LJO.AddPair('compress', FCompress);
+    LJO.AddPair('clean_on_start', FCleanOnStart);
+    LJO.AddPair('format_datetime', FFormatDateTime);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);
 var
   LItem: TLoggerItem;
   LFileName: string;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LLog: string;
 begin
   LFileName := GetLogFileName(0);
@@ -193,18 +255,21 @@ begin
   if not FCleanOnRun then
     if FCleanOnStart then
     begin
-      LRetryCount := 0;
+      LRetriesCount := 0;
 
       while True do
         try
           if TFile.Exists(LFileName) then
             TFile.Delete(LFileName);
         except
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             raise;
         end;
 
@@ -262,7 +327,7 @@ var
   LLogFileName: string;
   LFileStream: TFileStream;
   LFileAccessMode: Word;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
 begin
   LLogFileName := GetLogFileName(0);
 
@@ -270,7 +335,7 @@ begin
   if not TFile.Exists(LLogFileName) then
     LFileAccessMode := LFileAccessMode or fmCreate;
 
-  LRetryCount := 0;
+  LRetriesCount := 0;
 
   while True do
     try
@@ -290,11 +355,11 @@ begin
     except
       on E: Exception do
       begin
-        Inc(LRetryCount);
+        Inc(LRetriesCount);
 
         Sleep(50);
 
-        if LRetryCount >= FMaxRetry then
+        if LRetriesCount >= FMaxRetries then
           raise;
       end;
     end;
@@ -317,9 +382,9 @@ end;
 
 procedure TProviderTextFile.MoveFile(const ASourceFileName: string; const ADestFileName: string);
 var
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
 begin
-  LRetryCount := 0;
+  LRetriesCount := 0;
 
   while True do
     try
@@ -328,11 +393,11 @@ begin
     except
       on Exception do
       begin
-        Inc(LRetryCount);
+        Inc(LRetriesCount);
 
         Sleep(50);
 
-        if LRetryCount >= FMaxRetry then
+        if LRetriesCount >= FMaxRetries then
           raise EDataLoggerException.CreateFmt('Cannot rename %s to %s', [ASourceFileName, ADestFileName]);
       end;
     end;
@@ -442,5 +507,13 @@ begin
     LZipFile.Free;
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderTextFile);
 
 end.

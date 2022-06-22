@@ -16,7 +16,7 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Vcl.SvcMgr, Winapi.Windows,
 {$ENDIF}
-  System.SysUtils, System.Types;
+  System.SysUtils, System.Types, System.JSON;
 
 type
   TProviderEventLog = class(TDataLoggerProvider)
@@ -26,6 +26,9 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function Name(const AValue: string): TProviderEventLog;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
   end;
@@ -51,11 +54,56 @@ begin
     FName := AValue;
 end;
 
+procedure TProviderEventLog.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    Name(LJO.GetValue<string>('name', FName));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderEventLog.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('name', FName);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderEventLog.Save(const ACache: TArray<TLoggerItem>);
 {$IF DEFINED(MSWINDOWS)}
 var
   LEventLogger: TEventLogger;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
   LEventType: DWord;
@@ -85,7 +133,7 @@ begin
         LEventType := EVENTLOG_INFORMATION_TYPE;
       end;
 
-      LRetryCount := 0;
+      LRetriesCount := 0;
 
       while True do
         try
@@ -94,17 +142,20 @@ begin
         except
           on E: Exception do
           begin
-            Inc(LRetryCount);
+            Inc(LRetriesCount);
 
             Sleep(50);
 
             if Assigned(FLogException) then
-              FLogException(Self, LItem, E, LRetryCount);
+              FLogException(Self, LItem, E, LRetriesCount);
 
             if Self.Terminated then
               Exit;
 
-            if LRetryCount >= FMaxRetry then
+            if LRetriesCount = -1 then
+              Break;
+
+            if LRetriesCount >= FMaxRetries then
               Break;
           end;
         end;
@@ -119,5 +170,13 @@ end;
 begin
 end;
 {$ENDIF}
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderEventLog);
 
 end.

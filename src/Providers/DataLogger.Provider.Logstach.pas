@@ -18,7 +18,7 @@ uses
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
   DataLogger.Types,
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
 {$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
@@ -37,6 +37,9 @@ type
     function URL(const AValue: string): TProviderLogstach;
     function Port(const AValue: Integer): TProviderLogstach;
     function Index(const AValue: string): TProviderLogstach;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
   end;
@@ -73,6 +76,55 @@ begin
   FIndex := AValue;
 end;
 
+procedure TProviderLogstach.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    URL(LJO.GetValue<string>('url', inherited URL));
+    Port(LJO.GetValue<Integer>('port', FPort));
+    Index(LJO.GetValue<string>('index', FIndex));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderLogstach.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('port', FPort);
+    LJO.AddPair('index', FIndex);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderLogstach.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
@@ -97,5 +149,13 @@ begin
   end;
   InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderLogstach);
 
 end.

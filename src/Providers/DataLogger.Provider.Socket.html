@@ -1,0 +1,690 @@
+<!-- https://github.com/dliocode/datalogger -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataLogger - Socket</title>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+</head>
+
+<!-- https://github.com/dliocode/datalogger -->
+
+<body style="background: #252627">
+  <h3 class="text-center mt-4 text-white">DataLogger - Socket</h3>
+
+  <hr />
+
+  <div class="container" style="min-width: 320px; max-width: 550px;">
+
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="input-group">
+          <label class="input-group-text">Host</label>
+          <input type="text" class="form-control" id="host" value="ws://localhost:55666">
+          <button class="btn btn-success" type="button" id="btnConnect" onclick=WS()>Connect</button>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div id="status" class="text-center text-white">No connection..</div>
+      </div>
+
+      <div class="col-12">
+        <div class="row my-3 align-items-center">
+          <div class="col-9">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTableColumns">Show/Hide Columns</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearMessages()">Clear Messages</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="saveLog()">Save Log (CSV)</button>
+          </div>
+
+          <div class="col-3">
+            <div class="form-check float-end">
+              <input class="form-check-input" type="checkbox" value="" id="checkAutoScroll" checked>
+              <label class="form-check-label text-white" for="checkAutoScroll">
+                AutoScroll
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalTableColumns" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Show/Hide Columns</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsTimeStamp" checked>
+                <label class="form-check-label" for="showHideColumnsTimeStamp">TimeStamp</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsName" checked>
+                <label class="form-check-label" for="showHideColumnsName">Name</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsSequence" checked>
+                <label class="form-check-label" for="showHideColumnsSequence">Sequence</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsThreadID" checked>
+                <label class="form-check-label" for="showHideColumnsThreadID">Thread ID</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsType" checked>
+                <label class="form-check-label" for="showHideColumnsType">Type</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsTag" checked>
+                <label class="form-check-label" for="showHideColumnsTag">Tag</label>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsMessage" checked>
+                <label class="form-check-label" for="showHideColumnsMessage">Message</label>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsAppName" checked>
+                <label class="form-check-label" for="showHideColumnsAppName">App Name</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsAppVersion" checked>
+                <label class="form-check-label" for="showHideColumnsAppVersion">App Version</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsAppPath" checked>
+                <label class="form-check-label" for="showHideColumnsAppPath">App Path</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsAppSize" checked>
+                <label class="form-check-label" for="showHideColumnsAppSize">App Size</label>
+              </div>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsComputerName" checked>
+                <label class="form-check-label" for="showHideColumnsComputerName">Computer Name</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsUserName" checked>
+                <label class="form-check-label" for="showHideColumnsUserName">UserName</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsOSVersion" checked>
+                <label class="form-check-label" for="showHideColumnsOSVersion">OSVersion</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsProcessID" checked>
+                <label class="form-check-label" for="showHideColumnsProcessID">ProcessID</label>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsIPLocal" checked>
+                <label class="form-check-label" for="showHideColumnsIPLocal">IPLocal</label>
+              </div>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="saveChangeColumns()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-4 mt-4">
+    <div class="container-fluid" style="min-width: 320px">
+      <div class="input-group mb-3">
+        <input id="search" type="text" class="form-control" aria-describedby="search-text">
+        <button class="btn btn-primary" type="button" onclick="filterTable()">Search</button>
+      </div>
+
+      <div id="containerTable" class="table-responsive text-nowrap" style="max-height: 65vh; overflow: auto;">
+        <table id="listMessage" class="table table-dark table-striped table-bordered table-sm">
+          <thead>
+            <tr class="header">
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 175px" class="text-center">TimeStamp</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1;" class="text-center">Name</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Sequence</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Thread ID</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Type</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 200px" class="text-center">Tag</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1;" class="text-center">Message</th>
+
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 250px" class="text-center">App Name</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 150px" class="text-center">App Version</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1;" class="text-center">App Path</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 150px" class="text-center">App Size</th>
+
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 200px" class="text-center">Computer Name</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 200px" class="text-center">Username</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 200px" class="text-center">OS Version</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Process ID</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 175px" class="text-center">IP Local</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <span id="records" class="text-white">Records: 0</span>
+    </div>
+
+    <footer class="footer fixed-bottom p-2" style="bottom: 0;">
+      <div class="text-center">
+        <a class="btn btn-danger" href="https://github.com/dliocode/datalogger" target="_blank">
+          <svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github">
+            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+          </svg>
+          <span class="text-white">DataLogger</span>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <script type="text/javascript">
+    const modalTableColumns = document.getElementById('modalTableColumns')
+    const checkAutoScroll = document.getElementById('checkAutoScroll');
+    const containerTable = document.getElementById('containerTable');
+    const socketStatus = document.getElementById('status');
+    const inputSearch = document.getElementById('search');
+    const listMessage = document.getElementById('listMessage');
+    const btnConnect = document.getElementById('btnConnect');
+    const inputHost = document.getElementById('host');
+    const records = document.getElementById('records');
+
+    const showHideColumnsTimeStamp = document.getElementById('showHideColumnsTimeStamp');
+    const showHideColumnsName = document.getElementById('showHideColumnsName');
+    const showHideColumnsSequence = document.getElementById('showHideColumnsSequence');
+    const showHideColumnsThreadID = document.getElementById('showHideColumnsThreadID');
+    const showHideColumnsType = document.getElementById('showHideColumnsType');
+    const showHideColumnsTag = document.getElementById('showHideColumnsTag');
+    const showHideColumnsMessage = document.getElementById('showHideColumnsMessage');
+    const showHideColumnsAppName = document.getElementById('showHideColumnsAppName');
+    const showHideColumnsAppVersion = document.getElementById('showHideColumnsAppVersion');
+    const showHideColumnsAppPath = document.getElementById('showHideColumnsAppPath');
+    const showHideColumnsAppSize = document.getElementById('showHideColumnsAppSize');
+    const showHideColumnsComputerName = document.getElementById('showHideColumnsComputerName');
+    const showHideColumnsUserName = document.getElementById('showHideColumnsUserName');
+    const showHideColumnsOSVersion = document.getElementById('showHideColumnsOSVersion');
+    const showHideColumnsProcessID = document.getElementById('showHideColumnsProcessID');
+    const showHideColumnsIPLocal = document.getElementById('showHideColumnsIPLocal');
+
+    loadHost();
+    loadChangeColumns();
+
+    var socket;
+    var myTimeout;
+    var dataLogger = [];
+
+    function WS() {
+      if (btnConnect.textContent === 'Connect') {
+        WSConnect();
+      } else {
+        WSDisconnect();
+      }
+
+      function styleConnect() {
+        btnConnect.textContent = 'Connect';
+        btnConnect.className = 'btn btn-success';
+      }
+
+      function styleDisconnect() {
+        btnConnect.className = 'btn btn-danger';
+        btnConnect.textContent = 'Disconnect';
+      }
+
+      function styleConnecting() {
+        btnConnect.className = 'btn btn-warning';
+        btnConnect.textContent = 'Connecting';
+      }
+
+      function styleStatusNotConnection() {
+        socketStatus.innerHTML = 'No connection..';
+      }
+
+      function styleStatusErrorConnection() {
+        socketStatus.innerHTML = 'Error connection..';
+      }
+
+      function styleStatusConnectionSuccessful() {
+        socketStatus.innerHTML = 'Connection successful..';
+      }
+
+      function styleStatusConnection() {
+        socketStatus.innerHTML = 'Connecting..';
+      }
+
+      function WSConnect() {
+        const host = inputHost.value;
+
+        if (!host) return;
+
+        styleStatusConnection();
+        styleConnecting();
+
+        socket = new WebSocket(host);
+
+        socket.onopen = (message) => {
+          socket.send('OK');
+
+          styleStatusConnectionSuccessful();
+          styleDisconnect();
+
+          localStorage.setItem('datalogger_socket_host', host);
+
+          myTimeout = setInterval(() => {
+            if (socket.readyState == WebSocket.OPEN) socket.send('OK');
+          }, 10000)
+        }
+
+        socket.onmessage = (message) => {
+          if (!message) return;
+
+          let data = JSON.parse(message.data);
+          if (!data) return;
+
+          dataLogger.push(data);
+
+          records.innerHTML = 'Records: ' + dataLogger.length
+
+          setDataTable(data);
+          filterTable()
+        }
+
+        socket.onclose = (message) => {
+          styleStatusNotConnection();
+          styleConnect();
+        }
+
+        socket.onerror = (message) => {
+          styleStatusErrorConnection();
+          styleConnect();
+        }
+      }
+
+      function WSDisconnect() {
+        if (socket.readyState == WebSocket.OPEN) {
+          if (socket.bufferedAmount === 0) {
+            socket.close();
+
+            styleStatusNotConnection();
+            styleConnect();
+
+            clearTimeout(myTimeout);
+          }
+        }
+      }
+    }
+
+    function filterTable() {
+      let keyword = inputSearch.value.toUpperCase();
+
+      // Verifica se está querendo pesquisar por   
+
+      let tr = listMessage.getElementsByTagName("tr");
+      for (let i = 0; i < tr.length; i++) {
+        let allColumns = tr[i].getElementsByTagName("td");
+
+        for (let j = 0; j < allColumns.length; j++) {
+          const cell = allColumns[j];
+
+          if (cell) {
+            if (cell.style.display === 'none') continue;
+
+            const cellValue = (cell.textContent || cell.innerText).toUpperCase();
+
+            if (cellValue.indexOf(keyword) > -1) {
+              tr[i].style.display = ""; // show
+              break;
+            } else {
+              tr[i].style.display = "none"; // hide
+            }
+          }
+        }
+      }
+    }
+
+    function setDataTable(data) {
+      const tableRef = listMessage.getElementsByTagName('tbody')[0];
+      let newRow = tableRef.insertRow(-1);
+
+      let cell;
+      cell = newRow.insertCell(0);
+      cell.innerHTML = (new Date(data.log_timestamp).toLocaleString());
+      cell.style.display = showHideColumnsTimeStamp.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(1);
+      cell.innerHTML = data.log_name;
+      cell.style.display = showHideColumnsName.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(2);
+      cell.innerHTML = data.log_sequence;
+      cell.style.display = showHideColumnsSequence.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(3);
+      cell.innerHTML = data.log_thread_id;
+      cell.style.display = showHideColumnsThreadID.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(4);
+      cell.innerHTML = data.log_type;
+      cell.style.display = showHideColumnsType.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(5);
+      cell.innerHTML = data.log_tag;
+      cell.style.display = showHideColumnsTag.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(6);
+      cell.innerHTML = data.log_message;
+      cell.style.display = showHideColumnsMessage.checked ? '' : 'none';
+
+      cell = newRow.insertCell(7);
+      cell.innerHTML = data.log_app_name;
+      cell.style.display = showHideColumnsAppName.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(8);
+      cell.innerHTML = data.log_app_version;
+      cell.style.display = showHideColumnsAppVersion.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(9);
+      cell.innerHTML = data.log_app_path;
+      cell.style.display = showHideColumnsAppPath.checked ? '' : 'none';
+
+      cell = newRow.insertCell(10);
+      cell.innerHTML = data.log_app_size;
+      cell.style.display = showHideColumnsAppSize.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(11);
+      cell.innerHTML = data.log_computer_name;
+      cell.style.display = showHideColumnsComputerName.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(12);
+      cell.innerHTML = data.log_username;
+      cell.style.display = showHideColumnsUserName.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(13);
+      cell.innerHTML = data.log_os_version;
+      cell.style.display = showHideColumnsOSVersion.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(14);
+      cell.innerHTML = data.log_process_id;
+      cell.style.display = showHideColumnsProcessID.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      cell = newRow.insertCell(15);
+      cell.innerHTML = data.log_ip_local;
+      cell.style.display = showHideColumnsIPLocal.checked ? '' : 'none';
+      cell.className = 'text-center';
+
+      if (checkAutoScroll.checked) {
+        if (containerTable.scrollHeight > 0)
+          containerTable.scrollTop = containerTable.scrollHeight;
+      }
+    }
+
+    function clearMessages() {
+      let tableRef = listMessage.getElementsByTagName('tbody')[0];
+      tableRef.innerHTML = '';
+
+      dataLogger = [];
+      records.innerHTML = 'Records: 0';
+    }
+
+    function loadHost() {
+      const host = localStorage.getItem('datalogger_socket_host');
+      if (!host) return;
+
+      inputHost.value = host;
+    }
+
+    function loadChangeColumns() {
+      const dataString = localStorage.getItem('datalogger_socket_columns');
+      if (!dataString) return;
+
+      const data = JSON.parse(dataString);
+
+      showHideColumnsTimeStamp.checked = data.showHideColumnsTimeStamp;
+      showHideColumnsName.checked = data.showHideColumnsName;
+      showHideColumnsSequence.checked = data.showHideColumnsSequence;
+      showHideColumnsThreadID.checked = data.showHideColumnsThreadID;
+      showHideColumnsType.checked = data.showHideColumnsType;
+      showHideColumnsTag.checked = data.showHideColumnsTag;
+      showHideColumnsMessage.checked = data.showHideColumnsMessage;
+      showHideColumnsAppName.checked = data.showHideColumnsAppName;
+      showHideColumnsAppVersion.checked = data.showHideColumnsAppVersion;
+      showHideColumnsAppPath.checked = data.showHideColumnsAppPath;
+      showHideColumnsAppSize.checked = data.showHideColumnsAppSize;
+      showHideColumnsComputerName.checked = data.showHideColumnsComputerName;
+      showHideColumnsUserName.checked = data.showHideColumnsUserName;
+      showHideColumnsOSVersion.checked = data.showHideColumnsOSVersion;
+      showHideColumnsProcessID.checked = data.showHideColumnsProcessID;
+      showHideColumnsIPLocal.checked = data.showHideColumnsIPLocal;
+
+
+      function changeDiplay(cols, tagCompare) {
+        for (let col = 0; col < cols.length; col++) {
+          const cell = cols[col];
+
+          if (cell.tagName !== tagCompare) continue;
+
+          switch (col) {
+            case 0:
+              cell.style.display = showHideColumnsTimeStamp.checked ? '' : 'none';
+              break;
+            case 1:
+              cell.style.display = showHideColumnsName.checked ? '' : 'none';
+              break;
+            case 2:
+              cell.style.display = showHideColumnsSequence.checked ? '' : 'none';
+              break;
+            case 3:
+              cell.style.display = showHideColumnsThreadID.checked ? '' : 'none';
+              break;
+            case 4:
+              cell.style.display = showHideColumnsType.checked ? '' : 'none';
+              break;
+            case 5:
+              cell.style.display = showHideColumnsTag.checked ? '' : 'none';
+              break;
+            case 6:
+              cell.style.display = showHideColumnsMessage.checked ? '' : 'none';
+              break;
+            case 7:
+              cell.style.display = showHideColumnsAppName.checked ? '' : 'none';
+              break;
+            case 8:
+              cell.style.display = showHideColumnsAppVersion.checked ? '' : 'none';
+              break;
+            case 9:
+              cell.style.display = showHideColumnsAppPath.checked ? '' : 'none';
+              break;
+            case 10:
+              cell.style.display = showHideColumnsAppSize.checked ? '' : 'none';
+              break;
+            case 11:
+              cell.style.display = showHideColumnsComputerName.checked ? '' : 'none';
+              break;
+            case 12:
+              cell.style.display = showHideColumnsUserName.checked ? '' : 'none';
+              break;
+            case 13:
+              cell.style.display = showHideColumnsOSVersion.checked ? '' : 'none';
+              break;
+            case 14:
+              cell.style.display = showHideColumnsProcessID.checked ? '' : 'none';
+              break;
+            case 15:
+              cell.style.display = showHideColumnsIPLocal.checked ? '' : 'none';
+              break;
+          }
+        }
+      }
+
+      let rows = listMessage.getElementsByTagName('tr');
+      for (let row = 0; row < rows.length; row++) {
+        let cols = rows[row].children;
+        changeDiplay(cols, 'TH')
+        changeDiplay(cols, 'TD')
+      }
+    }
+
+    function saveChangeColumns() {
+      const data = {};
+
+      data.showHideColumnsTimeStamp = showHideColumnsTimeStamp.checked;
+      data.showHideColumnsName = showHideColumnsName.checked;
+      data.showHideColumnsSequence = showHideColumnsSequence.checked;
+      data.showHideColumnsThreadID = showHideColumnsThreadID.checked;
+      data.showHideColumnsType = showHideColumnsType.checked;
+      data.showHideColumnsTag = showHideColumnsTag.checked;
+      data.showHideColumnsMessage = showHideColumnsMessage.checked;
+      data.showHideColumnsAppName = showHideColumnsAppName.checked;
+      data.showHideColumnsAppVersion = showHideColumnsAppVersion.checked;
+      data.showHideColumnsAppPath = showHideColumnsAppPath.checked;
+      data.showHideColumnsAppSize = showHideColumnsAppSize.checked;
+      data.showHideColumnsComputerName = showHideColumnsComputerName.checked;
+      data.showHideColumnsUserName = showHideColumnsUserName.checked;
+      data.showHideColumnsOSVersion = showHideColumnsOSVersion.checked;
+      data.showHideColumnsProcessID = showHideColumnsProcessID.checked;
+      data.showHideColumnsIPLocal = showHideColumnsIPLocal.checked;
+
+      localStorage.setItem('datalogger_socket_columns', JSON.stringify(data));
+
+      loadChangeColumns();
+    }
+
+    function saveLog() {
+      function downloadCSVFile(csv, filename) {
+        const csv_file = new Blob(['\ufeff' + csv], { type: "text/csv;charset=utf-8" });
+        const download_link = document.createElement("a");
+
+        const fileURL = window.URL.createObjectURL(csv_file);
+        download_link.download = filename;
+        download_link.href = fileURL;
+        download_link.style.display = "none";
+        document.body.appendChild(download_link);
+        download_link.click();
+
+        setTimeout(() => {
+          window.URL.revokeObjectURL(fileURL)
+          download_link.remove()
+        }, 100)
+      }
+
+      function setValue(data, cols, tagCompare) {
+        const rowValues = [];
+
+        for (let col = 0; col < cols.length; col++) {
+          const cell = cols[col];
+
+          if (!cell) continue;
+          if (cell.tagName !== tagCompare) continue;
+          if (cell.style.display === 'none') continue;
+
+          const cellValue = cell.textContent || cell.innerText;
+          rowValues.push(cellValue);
+        }
+
+        if (rowValues.length > 0) data.push(rowValues.join(';'));
+      }
+
+      const data = [];
+
+      let rows = listMessage.getElementsByTagName('tr');
+      for (let row = 0; row < rows.length; row++) {
+        let cols = rows[row].children;
+
+        setValue(data, cols, 'TH');
+        setValue(data, cols, 'TD');
+      }
+
+      if (data.length <= 1) return;
+      downloadCSVFile(data.join("\n"), 'datalogger.csv');
+    }
+
+  </script>
+</body>
+
+</html>
+
+<!-- https://github.com/dliocode/datalogger -->

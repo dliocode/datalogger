@@ -39,6 +39,9 @@ type
     function BearerToken(const AValue: string): TProviderMattermost;
     function ChannelId(const AValue: string): TProviderMattermost;
 
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
+
     constructor Create; overload;
   end;
 
@@ -71,6 +74,55 @@ function TProviderMattermost.BearerToken(const AValue: string): TProviderMatterm
 begin
   Result := Self;
   inherited BearerToken(AValue);
+end;
+
+procedure TProviderMattermost.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    URL(LJO.GetValue<string>('url', inherited URL));
+    BearerToken(LJO.GetValue<string>('token', inherited Token));
+    ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderMattermost.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('token', inherited Token);
+    LJO.AddPair('channel_id', FChannelId);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderMattermost.Save(const ACache: TArray<TLoggerItem>);
@@ -110,5 +162,13 @@ begin
 
   InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderMattermost);
 
 end.

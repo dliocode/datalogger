@@ -20,7 +20,7 @@ uses
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
   DataLogger.Types,
-  System.SysUtils, System.NetEncoding;
+  System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo;
 
 type
   TTelegramParseMode = (tpNone, tpHTML, tpMarkdown);
@@ -43,6 +43,9 @@ type
     function BotToken(const AValue: string): TProviderTelegram;
     function ChatId(const AValue: string): TProviderTelegram;
     function ParseMode(const AValue: TTelegramParseMode): TProviderTelegram;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
     constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); overload; deprecated 'Use TProviderTelegram.Create.BotToken(''AAAAA'').ChatId(''00000000'').ParseMode(tpMarkdown) - This function will be removed in future versions';
@@ -93,6 +96,58 @@ function TProviderTelegram.ParseMode(const AValue: TTelegramParseMode): TProvide
 begin
   Result := Self;
   FParseMode := AValue;
+end;
+
+procedure TProviderTelegram.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+  LValue: string;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    BotToken(LJO.GetValue<string>('bot_token', FBotToken));
+    ChatId(LJO.GetValue<string>('chat_id', FChatId));
+
+    LValue := GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode));
+    ParseMode(TTelegramParseMode(GetEnumValue(TypeInfo(TTelegramParseMode), LJO.GetValue<string>('parse_mode', LValue))));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderTelegram.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('bot_token', FBotToken);
+    LJO.AddPair('chat_id', FChatId);
+    LJO.AddPair('parse_mode', GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode)));
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);
@@ -193,5 +248,13 @@ begin
 
   InternalSave(TRESTMethod.tlmGet, LItemREST);
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderTelegram);
 
 end.

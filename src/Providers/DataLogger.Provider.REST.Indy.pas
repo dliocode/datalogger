@@ -11,8 +11,8 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.SysUtils, System.Classes, System.Threading,
-  IdHTTP, IdSSLOpenSSL;
+  IdHTTP, IdSSLOpenSSL,
+  System.SysUtils, System.Classes, System.Threading, System.JSON, System.TypInfo;
 
 type
   TIdHTTP = IdHTTP.TIdHTTP;
@@ -44,9 +44,13 @@ type
     function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTIndy;
     function BearerToken(const AValue: string): TProviderRESTIndy;
-    function Token(const AValue: string): TProviderRESTIndy;
+    function Token(const AValue: string): TProviderRESTIndy; overload;
+    function Token: string; overload;
     function Method(const AValue: TRESTMethod): TProviderRESTIndy;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = ''); overload; deprecated 'Use TProviderRESTIndy.Create.URL('').ContentType(''application/json'').BearerToken(''aaaa'') - This function will be removed in future versions';
@@ -113,13 +117,22 @@ end;
 function TProviderRESTIndy.BearerToken(const AValue: string): TProviderRESTIndy;
 begin
   Result := Self;
-  FToken := 'Bearer ' + AValue;
+
+  if AValue.Trim.ToLower.Contains('bearer ') then
+    Token(AValue)
+  else
+    FToken := 'Bearer ' + AValue;
 end;
 
 function TProviderRESTIndy.Token(const AValue: string): TProviderRESTIndy;
 begin
   Result := Self;
   FToken := AValue;
+end;
+
+function TProviderRESTIndy.Token: string;
+begin
+  Result := FToken;
 end;
 
 function TProviderRESTIndy.Method(const AValue: TRESTMethod): TProviderRESTIndy;
@@ -132,6 +145,60 @@ function TProviderRESTIndy.ExecuteFinally(const AExecuteFinally: TExecuteFinally
 begin
   Result := Self;
   FExecuteFinally := AExecuteFinally;
+end;
+
+procedure TProviderRESTIndy.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+  LValue: string;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    URL(LJO.GetValue<string>('url', FURL));
+    ContentType(LJO.GetValue<string>('content_type', FContentType));
+    Token(LJO.GetValue<string>('token', FToken));
+
+    LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
+    Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderRESTIndy.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('url', FURL);
+    LJO.AddPair('content_type', FContentType);
+    LJO.AddPair('token', FToken);
+    LJO.AddPair('method', GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod)));
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderRESTIndy.Save(const ACache: TArray<TLoggerItem>);
@@ -188,7 +255,7 @@ end;
 
 procedure TProviderRESTIndy.HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
 var
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LURL: string;
   LHTTP: TIdHTTP;
   LSSL: TIdSSLIOHandlerSocketOpenSSL;
@@ -244,7 +311,7 @@ begin
 
     LHTTP.IOHandler := LSSL;
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -267,17 +334,20 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, AItemREST.LogItem, E, LRetryCount);
+            FLogException(Self, AItemREST.LogItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
@@ -294,5 +364,13 @@ begin
       FExecuteFinally(AItemREST.LogItem, LResponseContent);
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderRESTIndy);
 
 end.

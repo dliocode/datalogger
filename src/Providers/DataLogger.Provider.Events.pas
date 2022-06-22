@@ -98,7 +98,7 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
   end;
 
 var
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LItem: TLoggerItem;
 begin
   if not Assigned(FConfig) then
@@ -112,7 +112,7 @@ begin
     if LItem.&Type = TLoggerType.All then
       Continue;
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -139,17 +139,20 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end
@@ -228,5 +231,13 @@ begin
   Result := Self;
   FOnFatal := AEvent;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderEvents);
 
 end.

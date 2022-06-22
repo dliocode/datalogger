@@ -12,7 +12,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   IdSMTP, IdMessage,
-  System.SysUtils, System.Classes;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderEmail = class(TDataLoggerProvider)
@@ -28,6 +28,9 @@ type
     function FromAddress(const AValue: string): TProviderEmail;
     function ToAddress(const AValue: string): TProviderEmail;
     function Subject(const AValue: string): TProviderEmail;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
   end;
@@ -70,12 +73,61 @@ begin
   FSubject := AValue;
 end;
 
+procedure TProviderEmail.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    FromAddress(LJO.GetValue<string>('from_address', FFromAddress));
+    ToAddress(LJO.GetValue<string>('to_address', FToAddress));
+    Subject(LJO.GetValue<string>('subject', FSubject));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderEmail.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('from_address', FFromAddress);
+    LJO.AddPair('to_address', FToAddress);
+    LJO.AddPair('subject', FSubject);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderEmail.Save(const ACache: TArray<TLoggerItem>);
 var
   LIdMessage: TIdMessage;
   LToAddress: TArray<string>;
   LEmail: string;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
   LString: TStringList;
@@ -112,7 +164,7 @@ begin
       LString.Free;
     end;
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -125,17 +177,20 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
@@ -149,5 +204,13 @@ begin
     LIdMessage.Free;
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderEmail);
 
 end.

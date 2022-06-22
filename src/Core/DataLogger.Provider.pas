@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Types,
-  System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo;
 
 type
   TDataLoggerProvider = class(TThread)
@@ -38,13 +38,14 @@ type
     FLogFormat: string;
     FFormatTimestamp: string;
     FLogException: TOnLogException;
-    FMaxRetry: Integer;
+    FMaxRetries: Integer;
 
     procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
-
     procedure Lock;
     procedure UnLock;
+    procedure ToJSONInternal(const AJO: TJSONObject);
+    procedure SetJSONInternal(const AJO: TJSONObject);
   public
     function SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
@@ -52,7 +53,7 @@ type
     function SetDisableLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
     function SetOnlyLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
     function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
-    function SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
+    function SetMaxRetries(const AMaxRetries: Integer): TDataLoggerProvider;
     function SetInitialMessage(const AMessage: string): TDataLoggerProvider;
     function SetFinalMessage(const AMessage: string): TDataLoggerProvider;
 
@@ -67,13 +68,16 @@ type
     function Clear: TDataLoggerProvider;
     function CountLogInCache: Int64;
 
+    procedure SetJSON(const AJSON: string); virtual; abstract;
+    function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
+
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
     function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
     function NotifyEvent: TDataLoggerProvider;
 
     constructor Create;
-    procedure AfterConstruction; override; final;
-    procedure BeforeDestruction; override; final;
+    procedure AfterConstruction; override;
+    procedure BeforeDestruction; override;
   end;
 
 implementation
@@ -99,12 +103,12 @@ begin
   FInTransaction := False;
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
-  SetFormatTimestamp('yyyy-mm-dd hh:nn:ss:zzz');
+  SetFormatTimestamp('yyyy-mm-dd hh:nn:ss.zzz');
   SetLogLevel(TLoggerType.All);
   SetDisableLogType([]);
   SetOnlyLogType([TLoggerType.All]);
   SetLogException(nil);
-  SetMaxRetry(5);
+  SetMaxRetries(5);
   UseTransaction(False);
   AutoCommit([], tcBlock);
 
@@ -184,10 +188,10 @@ begin
   FLogException := AException;
 end;
 
-function TDataLoggerProvider.SetMaxRetry(const AMaxRetry: Integer): TDataLoggerProvider;
+function TDataLoggerProvider.SetMaxRetries(const AMaxRetries: Integer): TDataLoggerProvider;
 begin
   Result := Self;
-  FMaxRetry := AMaxRetry;
+  FMaxRetries := AMaxRetries;
 end;
 
 function TDataLoggerProvider.SetInitialMessage(const AMessage: string): TDataLoggerProvider;
@@ -396,6 +400,144 @@ end;
 procedure TDataLoggerProvider.UnLock;
 begin
   FCriticalSection.Release;
+end;
+
+procedure TDataLoggerProvider.SetJSONInternal(const AJO: TJSONObject);
+var
+  LJOInternal: TJSONObject;
+  LValue: string;
+  LLoggerType: TLoggerType;
+  LJSONValue: TJSONValue;
+  LJSONObjectValue: TJSONValue;
+  I: Integer;
+begin
+  if not Assigned(AJO) then
+    Exit;
+
+  if not Assigned(AJO.Get('internal')) then
+    Exit;
+
+  LJOInternal := AJO.GetValue<TJSONObject>('internal');
+
+  SetLogFormat(LJOInternal.GetValue<string>('log_format', FLogFormat));
+  SetFormatTimestamp(LJOInternal.GetValue<string>('format_timestamp', FFormatTimestamp));
+
+  LValue := FLogLevel.ToString;
+  FLogLevel.SetName(LJOInternal.GetValue<string>('log_level', LValue));
+
+  // Disable Log Type
+  LJSONValue := LJOInternal.GetValue('disable_log_level');
+  if Assigned(LJSONValue) then
+  begin
+    SetDisableLogType([]);
+
+    for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
+    begin
+      LValue := TJSONArray(LJSONValue).Items[I].Value;
+      LLoggerType.SetName(LValue);
+
+      FDisableLogType := FDisableLogType + [LLoggerType];
+    end;
+  end;
+
+  // Only Log Type
+  LJSONValue := LJOInternal.GetValue('only_log_type');
+  if Assigned(LJSONValue) then
+  begin
+    SetOnlyLogType([]);
+
+    for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
+    begin
+      LValue := TJSONArray(LJSONValue).Items[I].Value;
+      LLoggerType.SetName(LValue);
+
+      FOnlyLogType := FOnlyLogType + [LLoggerType];
+    end;
+  end;
+
+  SetMaxRetries(LJOInternal.GetValue<Int64>('max_retry', FMaxRetries));
+  SetInitialMessage(LJOInternal.GetValue<string>('initial_message', FInitialMessage));
+  SetFinalMessage(LJOInternal.GetValue<string>('final_message', FFinalMessage));
+  UseTransaction(LJOInternal.GetValue<Boolean>('use_transaction', FUseTransaction));
+
+  // Auto Commit
+  LJSONObjectValue := LJOInternal.GetValue<TJSONObject>('auto_commit');
+  if Assigned(LJSONObjectValue) then
+  begin
+    LJSONValue := TJSONObject(LJSONObjectValue).GetValue('log_type');
+    if Assigned(LJSONValue) then
+    begin
+      FAutoCommit := [];
+
+      for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
+      begin
+        LValue := TJSONArray(LJSONValue).Items[I].Value;
+        LLoggerType.SetName(LValue);
+
+        FAutoCommit := FAutoCommit + [LLoggerType];
+      end;
+    end;
+
+    LValue := GetEnumName(TypeInfo(TLoggerType), Integer(FTypeAutoCommit));
+    SetLogLevel(TLoggerType(GetEnumValue(TypeInfo(TLoggerType), TJSONObject(LJSONObjectValue).GetValue<string>('type_commit', LValue))));
+  end;
+end;
+
+procedure TDataLoggerProvider.ToJSONInternal(const AJO: TJSONObject);
+var
+  LJOInternal: TJSONObject;
+  I: TLoggerType;
+  LJADisableLogLevel: TJSONArray;
+  LJAOnlyLogType: TJSONArray;
+  LJOAutoCommit: TJSONObject;
+  LJAAutoCommitLogType: TJSONArray;
+begin
+  if not Assigned(AJO) then
+    Exit;
+
+  LJOInternal := TJSONObject.Create;
+  AJO.AddPair('internal', LJOInternal);
+
+  LJOInternal.AddPair('log_format', FLogFormat);
+  LJOInternal.AddPair('format_timestamp', FFormatTimestamp);
+  LJOInternal.AddPair('log_level', FLogLevel.ToString);
+
+  // Disable Log Level
+  LJADisableLogLevel := TJSONArray.Create;
+  LJOInternal.AddPair('disable_log_level', LJADisableLogLevel);
+
+  if not(FDisableLogType = []) then
+    for I := Low(TLoggerType) to High(TLoggerType) do
+      if TLoggerType(I) in FDisableLogType then
+        LJADisableLogLevel.Add(TLoggerType(I).ToString);
+
+  // Only Log Type
+  LJAOnlyLogType := TJSONArray.Create;
+  LJOInternal.AddPair('only_log_type', LJAOnlyLogType);
+
+  if not(FOnlyLogType = []) then
+    for I := Low(TLoggerType) to High(TLoggerType) do
+      if TLoggerType(I) in FOnlyLogType then
+        LJAOnlyLogType.Add(TLoggerType(I).ToString);
+
+  LJOInternal.AddPair('max_retries', FMaxRetries);
+  LJOInternal.AddPair('initial_message', FInitialMessage);
+  LJOInternal.AddPair('final_message', FFinalMessage);
+  LJOInternal.AddPair('use_transaction', FUseTransaction);
+
+  // Auto Commit
+  LJOAutoCommit := TJSONObject.Create;
+  LJOInternal.AddPair('auto_commit', LJOAutoCommit);
+
+  LJAAutoCommitLogType := TJSONArray.Create;
+  LJOAutoCommit.AddPair('log_type', LJAAutoCommitLogType);
+
+  if not(FAutoCommit = []) then
+    for I := Low(TLoggerType) to High(TLoggerType) do
+      if TLoggerType(I) in FAutoCommit then
+        LJAAutoCommitLogType.Add(TLoggerType(I).ToString);
+
+  LJOAutoCommit.AddPair('type_commit', GetEnumName(TypeInfo(TLoggerTypeAutoCommit), Integer(FTypeAutoCommit)));
 end;
 
 function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;

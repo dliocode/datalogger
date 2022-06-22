@@ -24,6 +24,7 @@ type
 
   TLoggerTypeHelper = record helper for TLoggerType
   public
+    procedure SetName(const AName: string);
     function ToString: string;
   end;
 
@@ -50,14 +51,14 @@ type
   end;
 
   TLoggerLogFormat = class
-    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJSONObject;
-    class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
+    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;
+    class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): string;
     class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
     class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
     class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
   end;
 
-  TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetryCount: Integer);
+  TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
 
   TLoggerFormat = record
   const
@@ -87,6 +88,11 @@ implementation
 
 { TLoggerTypeHelper }
 
+procedure TLoggerTypeHelper.SetName(const AName: string);
+begin
+  Self := TLoggerType(GetEnumValue(TypeInfo(TLoggerType), AName));
+end;
+
 function TLoggerTypeHelper.ToString: string;
 begin
   Result := GetEnumName(TypeInfo(TLoggerType), Integer(Self));
@@ -94,13 +100,16 @@ end;
 
 { TLoggerLogFormat }
 
-class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TJSONObject;
+class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;
   procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
   begin
-    if ALogFormat.Contains(ALogKey) then
+    if AIgnoreLogFormat then
       Result.AddPair(AJSONKey, AJSONValue)
     else
-      AJSONValue.Free;
+      if ALogFormat.Contains(ALogKey) then
+        Result.AddPair(AJSONKey, AJSONValue)
+      else
+        AJSONValue.Free;
   end;
 
 var
@@ -111,11 +120,9 @@ var
 begin
   Result := TJSONObject.Create;
 
-  Result.AddPair('timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
-
+  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
   _Add(TLoggerFormat.LOG_NAME, 'log_name', TJSONString.Create(AItem.Name));
   _Add(TLoggerFormat.LOG_SEQUENCE, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
-  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_datetime', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
   _Add(TLoggerFormat.LOG_THREADID, 'log_thread_id', TJSONNumber.Create(AItem.ThreadID));
   _Add(TLoggerFormat.LOG_TYPE, 'log_type', TJSONString.Create(AItem.&Type.ToString));
   _Add(TLoggerFormat.LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
@@ -161,11 +168,11 @@ begin
   _Add(TLoggerFormat.LOG_IP_LOCAL, 'log_ip_local', TJSONString.Create(AItem.IPLocal));
 end;
 
-class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem): string;
+class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): string;
 var
   LJO: TJSONObject;
 begin
-  LJO := AsJsonObject(ALogFormat, AItem);
+  LJO := AsJsonObject(ALogFormat, AItem, AIgnoreLogFormat);
   try
     Result := LJO.ToString;
   finally

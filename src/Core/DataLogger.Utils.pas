@@ -21,7 +21,7 @@ uses
   Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
   IdStack,
-  System.IOUtils, System.SysUtils, System.Types;
+  System.IOUtils, System.SysUtils, System.Types, System.RTTI;
 
 type
   TLoggerUtils = class
@@ -50,6 +50,12 @@ type
     class function IPLocal: string;
   end;
 
+  TLoggerRTTI = class
+  private
+  public
+    class function CreateObject(const AName: string): TObject;
+  end;
+
 implementation
 
 { TLoggerUtils }
@@ -65,10 +71,12 @@ begin
 end;
 {$ELSEIF DEFINED(IOS)}
 
+
 begin
   Result := TNSString.Wrap(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle, KCFBundleIdentifierKey)).UTF8String;
 end;
 {$ELSE}
+
 
 var
   LAppPathFull: string;
@@ -88,6 +96,7 @@ begin
   Result := TPath.GetDocumentsPath;
 end;
 {$ELSE}
+
 
 var
   LAppPathFull: string;
@@ -113,6 +122,7 @@ begin
 end;
 {$ELSEIF DEFINED(IOS)}
 
+
 var
   AppKey: Pointer;
   AppBundle: NSBundle;
@@ -129,6 +139,7 @@ begin
   end;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 
 var
   LAppPathFull: string;
@@ -191,6 +202,7 @@ begin
 end;
 {$ELSE}
 
+
 begin
   Result := default (TAppVersion);
 end;
@@ -229,10 +241,12 @@ begin
 end;
 {$ELSEIF DEFINED(IOS)}
 
+
 begin
   Result := '';
 end;
 {$ELSEIF DEFINED(LINUX)}
+
 
 var
   LName: utsname;
@@ -241,6 +255,7 @@ begin
   Result := string(AnsiString(LName.nodename));
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 
 var
   LBuffer: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
@@ -254,6 +269,7 @@ begin
     Result := EmptyStr;
 end;
 {$ELSE}
+
 
 begin
   Result := EmptyStr;
@@ -282,6 +298,7 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
+
 
 begin
   Result := '';
@@ -318,6 +335,52 @@ begin
     end;
   except
   end;
+end;
+
+{ TLoggerRTTI }
+
+class function TLoggerRTTI.CreateObject(const AName: string): TObject;
+var
+  LName: string;
+  LRttiContext: TRttiContext;
+  LRttiTypes: TArray<TRttiType>;
+  LRttiType: TRttiType;
+  LFound: Boolean;
+  LRttiInstanceType: TRttiInstanceType;
+  LValue: TValue;
+begin
+  Result := nil;
+
+  if AName.Trim.IsEmpty then
+    Exit;
+
+  LName := AName.ToLower;
+
+  LRttiContext := TRttiContext.Create;
+  LRttiType := nil;
+  try
+    LRttiTypes := LRttiContext.GetTypes;
+
+    LFound := False;
+    for LRttiType in LRttiTypes do
+    begin
+      if (SameText(LName, LRttiType.Name.ToLower)) then
+      begin
+        LFound := True;
+        Break;
+      end;
+    end;
+
+    if not LFound then
+      Exit;
+
+    LRttiInstanceType := LRttiType.AsInstance;
+    LValue := LRttiInstanceType.GetMethod('Create').Invoke(LRttiInstanceType.MetaclassType, []);
+  finally
+    LRttiContext.Free;
+  end;
+
+  Result := LValue.AsObject;
 end;
 
 end.

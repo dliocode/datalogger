@@ -43,6 +43,9 @@ type
     function ChannelId(const AValue: string): TProviderSlack;
     function Username(const AValue: string): TProviderSlack;
 
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
+
     constructor Create;
   end;
 
@@ -88,6 +91,58 @@ begin
   Result := Self;
   FUsername := AValue;
 end;
+
+procedure TProviderSlack.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    ServiceName(LJO.GetValue<string>('service_name', FServiceName));
+    Channel(LJO.GetValue<string>('channel', FChannel));
+    ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
+    Username(LJO.GetValue<string>('username', FUsername));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderSlack.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('service_name', FServiceName);
+    LJO.AddPair('channel', FChannel);
+    LJO.AddPair('channel_id', FChannelId);
+    LJO.AddPair('username', FUsername);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 
 procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);
 var
@@ -136,5 +191,13 @@ begin
 
   InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderSlack);
 
 end.

@@ -49,7 +49,8 @@ type
   protected
     procedure Execute; override;
   public
-    function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
+    function AddProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger; overload;
+    function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger; overload;
     function RemoveProvider(const AProvider: TDataLoggerProvider): TDataLogger;
     function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
 
@@ -79,12 +80,14 @@ type
     function SlineBreak: TDataLogger;
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
-    function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-    function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
-    function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
+    function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
+    function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
+    function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
-    function SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+    function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
+    function SetInitialMessage(const AMessage: string): TDataLogger;
+    function SetFinalMessage(const AMessage: string): TDataLogger;
     function SetName(const AName: string): TDataLogger;
 
     function StartTransaction: TDataLogger;
@@ -94,6 +97,9 @@ type
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
+
+    procedure SetJSON(const AJSON: string);
+    function ToJSON(const AFormat: Boolean = False): string;
 
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
@@ -209,16 +215,21 @@ begin
   end;
 end;
 
-function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
+function TDataLogger.AddProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FListProviders.Add(AProvider);
+    FListProviders.AddRange(AProviders);
   finally
     UnLock;
   end;
+end;
+
+function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
+begin
+  Result := AddProvider([AProvider]);
 end;
 
 function TDataLogger.RemoveProvider(const AProvider: TDataLoggerProvider): TDataLogger;
@@ -452,7 +463,7 @@ begin
     end);
 end;
 
-function TDataLogger.SetMaxRetry(const AMaxRetry: Integer): TDataLogger;
+function TDataLogger.SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
 var
   LProviders: TArray<TDataLoggerProvider>;
 begin
@@ -463,7 +474,37 @@ begin
   TParallel.For(Low(LProviders), High(LProviders),
     procedure(Index: Integer)
     begin
-      LProviders[Index].SetMaxRetry(AMaxRetry);
+      LProviders[Index].SetMaxRetries(AMaxRetries);
+    end);
+end;
+
+function TDataLogger.SetInitialMessage(const AMessage: string): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  Result := Self;
+
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].SetInitialMessage(AMessage);
+    end);
+end;
+
+function TDataLogger.SetFinalMessage(const AMessage: string): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProvider>;
+begin
+  Result := Self;
+
+  LProviders := GetProviders;
+
+  TParallel.For(Low(LProviders), High(LProviders),
+    procedure(Index: Integer)
+    begin
+      LProviders[Index].SetFinalMessage(AMessage);
     end);
 end;
 
@@ -596,6 +637,116 @@ begin
   Lock;
   try
     Result := FListLoggerItem.Count;
+  finally
+    UnLock;
+  end;
+end;
+
+procedure TDataLogger.SetJSON(const AJSON: string);
+var
+  LProviders: TArray<TDataLoggerProvider>;
+  LJSON: string;
+  LJO: TJsonObject;
+  LJA: TJSONArray;
+  LJAName: string;
+  LProvider: TDataLoggerProvider;
+  I: Integer;
+  J: Integer;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  LProviders := GetProviders;
+
+  LJSON := AJSON.Replace(#$D#$A, '');
+
+  try
+    LJO := TJsonObject.ParseJSONValue(LJSON) as TJsonObject;
+  except
+    on E: Exception do
+      raise EDataLoggerException.Create('JSON invalid!');
+  end;
+
+  try
+    for I := Pred(LJO.Count) downto 0 do
+    begin
+      LJA := LJO.Pairs[I].JsonValue as TJSONArray;
+      LJAName := LJO.Pairs[I].JsonString.Value;
+
+      if LJA.Count = 0 then
+        Continue;
+
+      for LProvider in LProviders do
+        if LProvider.ClassName.ToLower = LJAName.ToLower then
+        begin
+          LProvider.SetJSON(LJA.Items[0].ToString);
+          LJA.Remove(0).Free;
+
+          if LJA.Count = 0 then
+            Break;
+        end;
+
+      if LJA.Count = 0 then
+        LJO.RemovePair(LJAName).Free;
+    end;
+
+    if LJO.Count = 0 then
+      Exit;
+
+    for I := 0 to Pred(LJO.Count) do
+    begin
+      LJA := LJO.Pairs[I].JsonValue as TJSONArray;
+      LJAName := LJO.Pairs[I].JsonString.Value;
+
+      for J := 0 to Pred(LJA.Count) do
+      begin
+        LProvider := TLoggerRTTI.CreateObject(LJAName) as TDataLoggerProvider;
+
+        if not Assigned(LProvider) then
+          Continue;
+
+        LProvider.SetJSON(LJA.Items[J].ToString);
+        AddProvider(LProvider);
+      end;
+    end;
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TDataLogger.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJsonObject;
+  LJA: TJSONArray;
+  LProviders: TArray<TDataLoggerProvider>;
+  LProvider: TDataLoggerProvider;
+begin
+  LProviders := GetProviders;
+
+  Lock;
+  try
+    LJO := TJsonObject.Create;
+    try
+      for LProvider in LProviders do
+      begin
+        if not Assigned(LJO.Get(LProvider.ClassName)) then
+        begin
+          LJA := TJSONArray.Create;
+          LJO.AddPair(LProvider.ClassName, LJA);
+        end
+        else
+          LJA := LJO.Get(LProvider.ClassName).JsonValue as TJSONArray;
+
+        LJA.Add(TJsonObject.ParseJSONValue(LProvider.ToJSON) as TJsonObject);
+      end;
+
+      if AFormat then
+        Result := LJO.Format
+      else
+        Result := LJO.ToString;
+    finally
+      LJO.Free;
+    end;
   finally
     UnLock;
   end;

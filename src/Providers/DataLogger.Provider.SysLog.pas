@@ -12,7 +12,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   IdSysLog, IdSysLogMessage,
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
   TProviderSysLog = class(TDataLoggerProvider)
@@ -23,6 +23,9 @@ type
   public
     function Host(const AValue: string): TProviderSysLog;
     function Port(const AValue: Integer): TProviderSysLog;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
     destructor Destroy; override;
@@ -59,9 +62,56 @@ begin
   FSysLog.Port := AValue;
 end;
 
+procedure TProviderSysLog.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    Host(LJO.GetValue<string>('host', FSysLog.Host));
+    Port(LJO.GetValue<Integer>('port', FSysLog.Port));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderSysLog.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('host', FSysLog.Host);
+    LJO.AddPair('port', FSysLog.Port);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);
 var
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LCache: TArray<TLoggerItem>;
   LItem: TLoggerItem;
   LLog: string;
@@ -88,16 +138,22 @@ begin
       case LItem.&Type of
         TLoggerType.Trace:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
+
         TLoggerType.Debug:
           LSysLogMessage.Severity := TIdSyslogSeverity.slDebug;
+
         TLoggerType.Info:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
+
         TLoggerType.Warn:
           LSysLogMessage.Severity := TIdSyslogSeverity.slWarning;
+
         TLoggerType.Error:
           LSysLogMessage.Severity := TIdSyslogSeverity.slError;
+
         TLoggerType.Success:
           LSysLogMessage.Severity := TIdSyslogSeverity.slNotice;
+
         TLoggerType.Fatal:
           LSysLogMessage.Severity := TIdSyslogSeverity.slCritical;
       end;
@@ -109,7 +165,7 @@ begin
       if LSysLogMessage.Msg.Text.Trim.IsEmpty then
         Exit;
 
-      LRetryCount := 0;
+      LRetriesCount := 0;
 
       while True do
         try
@@ -122,17 +178,20 @@ begin
         except
           on E: Exception do
           begin
-            Inc(LRetryCount);
+            Inc(LRetriesCount);
 
             Sleep(50);
 
             if Assigned(FLogException) then
-              FLogException(Self, LItem, E, LRetryCount);
+              FLogException(Self, LItem, E, LRetriesCount);
 
             if Self.Terminated then
               Exit;
 
-            if LRetryCount >= FMaxRetry then
+            if LRetriesCount = -1 then
+              Break;
+
+            if LRetriesCount >= FMaxRetries then
               Break;
           end;
         end;
@@ -141,5 +200,13 @@ begin
     end;
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderSysLog);
 
 end.

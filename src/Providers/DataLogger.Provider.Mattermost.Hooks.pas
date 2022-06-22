@@ -20,15 +20,16 @@ uses
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
   DataLogger.Types,
-  System.SysUtils, System.Classes, System.JSON, System.Net.URLClient, System.NetConsts, System.Net.HTTPClient;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
+  TProviderMattermostHooks =
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  TProviderMattermostHooks = class(TProviderRESTIndy)
+  class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  TProviderMattermostHooks = class(TProviderRESTNetHTTPClient)
+  class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  TProviderMattermostHooks = class(TProviderRESTHTTPClient)
+  class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
     FChannelId: string;
@@ -42,6 +43,9 @@ type
     function ChannelId(const AValue: string): TProviderMattermostHooks;
     function Username(const AValue: string): TProviderMattermostHooks;
     function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
   end;
@@ -89,6 +93,59 @@ function TProviderMattermostHooks.ModePropsCard(const AValue: Boolean): TProvide
 begin
   Result := Self;
   FModePropsCard := AValue;
+end;
+
+procedure TProviderMattermostHooks.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    URL(LJO.GetValue<string>('url', inherited URL));
+    BearerToken(LJO.GetValue<string>('token', inherited Token));
+    ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
+    Username(LJO.GetValue<string>('username', FUsername));
+    ModePropsCard(LJO.GetValue<Boolean>('mode_props_card', FModePropsCard));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderMattermostHooks.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('token', inherited Token);
+    LJO.AddPair('channel_id', FChannelId);
+    LJO.AddPair('username', FUsername);
+    LJO.AddPair('mode_props_card', FModePropsCard);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderMattermostHooks.Save(const ACache: TArray<TLoggerItem>);
@@ -180,5 +237,13 @@ begin
 
   InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderMattermostHooks);
 
 end.

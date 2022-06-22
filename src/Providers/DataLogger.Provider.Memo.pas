@@ -16,7 +16,7 @@ uses
 {$ELSE}
   Vcl.StdCtrls, Winapi.Windows, Winapi.Messages,
 {$ENDIF}
-  System.SysUtils, System.Classes;
+  System.SysUtils, System.Classes, System.JSON, System.TypInfo;
 
 type
   TMemoModeInsert = (tmFirst, tmLast);
@@ -32,6 +32,9 @@ type
     function Memo(const AValue: TCustomMemo): TProviderMemo;
     function MaxLogLines(const AValue: Integer): TProviderMemo;
     function ModeInsert(const AValue: TMemoModeInsert): TProviderMemo;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
     constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
@@ -77,11 +80,61 @@ begin
   FModeInsert := AValue;
 end;
 
+procedure TProviderMemo.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+  LValue: string;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
+
+    LValue := GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert));
+    FModeInsert := TMemoModeInsert(GetEnumValue(TypeInfo(TMemoModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderMemo.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('max_log_lines', FMaxLogLines);
+    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert)));
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderMemo.Save(const ACache: TArray<TLoggerItem>);
 var
   LItem: TLoggerItem;
   LLog: string;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LLines: Integer;
 begin
   if not Assigned(FMemo) then
@@ -97,7 +150,7 @@ begin
     else
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -178,21 +231,32 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderMemo);
 
 end.

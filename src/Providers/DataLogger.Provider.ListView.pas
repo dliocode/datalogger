@@ -16,7 +16,7 @@ uses
 {$ELSE}
   Vcl.ComCtrls,
 {$ENDIF}
-  System.SysUtils, System.Classes;
+  System.SysUtils, System.Classes, System.JSON, System.TypInfo;
 
 type
   TListViewModeInsert = (tmFirst, tmLast);
@@ -32,6 +32,9 @@ type
     function ListView(const AValue: TCustomListView): TProviderListView;
     function MaxLogLines(const AValue: Integer): TProviderListView;
     function ModeInsert(const AValue: TListViewModeInsert): TProviderListView;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
     constructor Create(const AListView: TCustomListView; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListView.Create.ListView(ListView).MaxLogLines(0) - This function will be removed in future versions';
@@ -76,11 +79,61 @@ begin
   FModeInsert := AValue;
 end;
 
+procedure TProviderListView.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+  LValue: string;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
+
+    LValue := GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert));
+    FModeInsert := TListViewModeInsert(GetEnumValue(TypeInfo(TListViewModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderListView.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('max_log_lines', FMaxLogLines);
+    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert)));
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderListView.Save(const ACache: TArray<TLoggerItem>);
 var
   LItem: TLoggerItem;
   LLog: string;
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LLines: Integer;
 begin
   if not Assigned(FListView) then
@@ -96,7 +149,7 @@ begin
     else
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -202,21 +255,32 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
   end;
 end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderListView);
 
 end.

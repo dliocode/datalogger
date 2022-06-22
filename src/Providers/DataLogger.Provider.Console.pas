@@ -14,7 +14,7 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
 {$IF DEFINED(MSWINDOWS)}
@@ -31,6 +31,9 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
+
+    procedure SetJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
   end;
@@ -52,9 +55,54 @@ begin
   FUseColorInConsole := AValue;
 end;
 
+procedure TProviderConsole.SetJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    UseColorInConsole(LJO.GetValue<Boolean>('use_color_in_console', FUseColorInConsole));
+
+    inherited SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderConsole.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('use_color_in_console', FUseColorInConsole);
+
+    inherited ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TProviderConsole.Save(const ACache: TArray<TLoggerItem>);
 var
-  LRetryCount: Integer;
+  LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
 begin
@@ -74,7 +122,7 @@ begin
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-    LRetryCount := 0;
+    LRetriesCount := 0;
 
     while True do
       try
@@ -87,17 +135,20 @@ begin
       except
         on E: Exception do
         begin
-          Inc(LRetryCount);
+          Inc(LRetriesCount);
 
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetryCount);
+            FLogException(Self, LItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
 
-          if LRetryCount >= FMaxRetry then
+          if LRetriesCount = -1 then
+            Break;
+
+          if LRetriesCount >= FMaxRetries then
             Break;
         end;
       end;
@@ -199,5 +250,13 @@ begin
   Writeln(ALog);
 end;
 {$ENDIF}
+
+procedure ForceReferenceToClass(C: TClass);
+begin
+end;
+
+initialization
+
+ForceReferenceToClass(TProviderConsole);
 
 end.
