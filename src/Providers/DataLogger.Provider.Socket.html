@@ -15,27 +15,23 @@
 <!-- https://github.com/dliocode/datalogger -->
 
 <body style="background: #252627">
-  <h3 class="text-center mt-4 text-white">DataLogger - Socket</h3>
-
-  <hr />
-
+  <h3 class="text-center my-2 text-white">DataLogger - Socket</h3>
   <div class="container" style="min-width: 320px; max-width: 550px;">
 
-    <div class="row justify-content-center">
+    <div class="row">
       <div class="col-12">
-        <div class="input-group">
-          <label class="input-group-text">Host</label>
-          <input type="text" class="form-control" id="host" value="ws://localhost:55666">
-          <button class="btn btn-success" type="button" id="btnConnect" onclick=WS()>Connect</button>
+        <div class="d-flex justify-content-center">
+          <div class="input-group input-group-sm" style="width: 320px;">
+            <label class="input-group-text">Host</label>
+            <input type="text" class="form-control" id="host" value="ws://localhost:55666">
+            <button class="btn btn-success" type="button" id="btnConnect" onclick=WS()>Connect</button>
+          </div>
         </div>
+
       </div>
 
       <div class="col-12">
-        <div id="status" class="text-center text-white">No connection..</div>
-      </div>
-
-      <div class="col-12">
-        <div class="row my-3 align-items-center">
+        <div class="row mt-2 mb-3 align-items-center">
           <div class="col-9">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTableColumns">Show/Hide Columns</button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="clearMessages()">Clear Messages</button>
@@ -50,6 +46,13 @@
               </label>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="input-group  mb-3">
+          <input id="search" type="text" class="form-control" aria-describedby="search-text">
+          <button class="btn btn-primary" type="button" onclick="filterTable()">Search</button>
         </div>
       </div>
     </div>
@@ -199,14 +202,10 @@
     </div>
   </div>
 
-  <div class="px-4 mt-4">
+  <div class="px-0-sm px-md-4">
     <div class="container-fluid" style="min-width: 320px">
-      <div class="input-group mb-3">
-        <input id="search" type="text" class="form-control" aria-describedby="search-text">
-        <button class="btn btn-primary" type="button" onclick="filterTable()">Search</button>
-      </div>
 
-      <div id="containerTable" class="table-responsive text-nowrap" style="max-height: 50vh; overflow: auto;">
+      <div id="containerTable" class="table-responsive text-nowrap" style="max-height: 65vh; overflow: auto">
         <table id="listMessage" class="table table-dark table-striped table-bordered table-sm">
           <thead>
             <tr class="header">
@@ -238,9 +237,9 @@
       <span id="records" class="text-white">Records: 0</span>
     </div>
 
-    <footer class="footer fixed-bottom p-2" style="bottom: 0;">
-      <div class="text-center">
-        <a class="btn btn-danger" href="https://github.com/dliocode/datalogger" target="_blank">
+    <footer class="fixed-bottom p-1" style="z-index: -1">
+      <div class="d-flex justify-content-center">
+        <a class="btn btn-danger btn-sm" href="https://github.com/dliocode/datalogger" target="_blank">
           <svg height="32" aria-hidden="true" viewBox="0 0 16 16" version="1.1" width="32" data-view-component="true" class="octicon octicon-mark-github">
             <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
           </svg>
@@ -254,7 +253,6 @@
     const modalTableColumns = document.getElementById('modalTableColumns')
     const checkAutoScroll = document.getElementById('checkAutoScroll');
     const containerTable = document.getElementById('containerTable');
-    const socketStatus = document.getElementById('status');
     const inputSearch = document.getElementById('search');
     const listMessage = document.getElementById('listMessage');
     const btnConnect = document.getElementById('btnConnect');
@@ -307,28 +305,11 @@
         btnConnect.textContent = 'Connecting';
       }
 
-      function styleStatusNotConnection() {
-        socketStatus.innerHTML = 'No connection..';
-      }
-
-      function styleStatusErrorConnection() {
-        socketStatus.innerHTML = 'Error connection..';
-      }
-
-      function styleStatusConnectionSuccessful() {
-        socketStatus.innerHTML = 'Connection successful..';
-      }
-
-      function styleStatusConnection() {
-        socketStatus.innerHTML = 'Connecting..';
-      }
-
       function WSConnect() {
         const host = inputHost.value;
 
         if (!host) return;
 
-        styleStatusConnection();
         styleConnecting();
 
         socket = new WebSocket(host);
@@ -336,7 +317,6 @@
         socket.onopen = (message) => {
           socket.send('OK');
 
-          styleStatusConnectionSuccessful();
           styleDisconnect();
 
           localStorage.setItem('datalogger_socket_host', host);
@@ -361,12 +341,10 @@
         }
 
         socket.onclose = (message) => {
-          styleStatusNotConnection();
           styleConnect();
         }
 
         socket.onerror = (message) => {
-          styleStatusErrorConnection();
           styleConnect();
         }
       }
@@ -376,7 +354,6 @@
           if (socket.bufferedAmount === 0) {
             socket.close();
 
-            styleStatusNotConnection();
             styleConnect();
 
             clearTimeout(myTimeout);
