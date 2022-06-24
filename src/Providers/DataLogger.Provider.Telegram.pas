@@ -123,7 +123,7 @@ begin
     LValue := GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode));
     ParseMode(TTelegramParseMode(GetEnumValue(TypeInfo(TTelegramParseMode), LJO.GetValue<string>('parse_mode', LValue))));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -139,7 +139,7 @@ begin
     LJO.AddPair('chat_id', FChatId);
     LJO.AddPair('parse_mode', GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode)));
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

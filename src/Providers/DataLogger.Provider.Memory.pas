@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.SysUtils, System.Classes;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderMemory = class(TDataLoggerProvider)
@@ -22,6 +22,9 @@ type
   public
     function Clear: TProviderMemory;
     function AsString: string;
+
+    procedure LoadFromJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
     destructor Destroy; override;
@@ -41,6 +44,69 @@ destructor TProviderMemory.Destroy;
 begin
   FStringList.Free;
   inherited;
+end;
+
+function TProviderMemory.Clear: TProviderMemory;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FStringList.Clear;
+  finally
+    UnLock;
+  end;
+end;
+
+function TProviderMemory.AsString: string;
+begin
+  Lock;
+  try
+    Result := FStringList.Text;
+  finally
+    UnLock;
+  end;
+end;
+
+procedure TProviderMemory.LoadFromJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderMemory.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderMemory.Save(const ACache: TArray<TLoggerItem>);
@@ -86,28 +152,6 @@ begin
             Break;
         end;
       end;
-  end;
-end;
-
-function TProviderMemory.Clear: TProviderMemory;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    FStringList.Clear;
-  finally
-    UnLock;
-  end;
-end;
-
-function TProviderMemory.AsString: string;
-begin
-  Lock;
-  try
-    Result := FStringList.Text;
-  finally
-    UnLock;
   end;
 end;
 

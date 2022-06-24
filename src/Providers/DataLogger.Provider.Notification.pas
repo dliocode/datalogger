@@ -83,7 +83,7 @@ begin
   try
     Title(LJO.GetValue<string>('title', FTitle), LJO.GetValue<Boolean>('include_log_type_in_title', FIncludeLogTypeInTitle));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -98,7 +98,7 @@ begin
     LJO.AddPair('title', FTitle);
     LJO.AddPair('include_log_type_in_title', FIncludeLogTypeInTitle);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

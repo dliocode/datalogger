@@ -201,7 +201,7 @@ begin
     CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
     FormatDateTime(LJO.GetValue<string>('format_datetime', FFormatDateTime));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -222,7 +222,7 @@ begin
     LJO.AddPair('clean_on_start', FCleanOnStart);
     LJO.AddPair('format_datetime', FFormatDateTime);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
@@ -53,6 +53,9 @@ type
   public
     function Config(const AValue: TEventsConfig): TProviderEvents;
 
+    procedure LoadFromJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
+
     constructor Create; overload;
     constructor Create(const AConfig: TEventsConfig); overload; deprecated 'Use TProviderEvents.Create.Config(TEventsConfig.Create.OnAny(TExecuteEvents)) - This function will be removed in future versions';
     destructor Destroy; override;
@@ -88,6 +91,47 @@ function TProviderEvents.Config(const AValue: TEventsConfig): TProviderEvents;
 begin
   Result := Self;
   FConfig := AValue;
+end;
+
+procedure TProviderEvents.LoadFromJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderEvents.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);

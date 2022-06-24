@@ -219,7 +219,7 @@ begin
     Port(LJO.GetValue<Integer>('port', FSocket.DefaultPort));
     Port(LJO.GetValue<Integer>('max_connections', FSocket.MaxConnections));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -234,7 +234,7 @@ begin
     LJO.AddPair('port', FSocket.DefaultPort);
     LJO.AddPair('max_connections', FSocket.MaxConnections);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

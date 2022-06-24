@@ -14,7 +14,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   SendEmail,
-  System.SysUtils, System.Classes;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderSendEmail = class(TDataLoggerProvider)
@@ -26,6 +26,9 @@ type
   public
     function SendEmail(const ASendEmail: TSendEmail): TProviderSendEmail; overload;
     function SendEmail: TSendEmail; overload;
+
+    procedure LoadFromJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
     destructor Destroy; override;
@@ -79,6 +82,47 @@ begin
     FSendEmail := TSendEmail.Create;
 
   Result := FSendEmail;
+end;
+
+procedure TProviderSendEmail.LoadFromJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderSendEmail.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TProviderSendEmail.Save(const ACache: TArray<TLoggerItem>);

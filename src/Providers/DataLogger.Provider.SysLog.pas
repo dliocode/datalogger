@@ -83,7 +83,7 @@ begin
     Host(LJO.GetValue<string>('host', FSysLog.Host));
     Port(LJO.GetValue<Integer>('port', FSysLog.Port));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -98,7 +98,7 @@ begin
     LJO.AddPair('host', FSysLog.Host);
     LJO.AddPair('port', FSysLog.Port);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

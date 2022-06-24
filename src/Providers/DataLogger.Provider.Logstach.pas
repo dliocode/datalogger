@@ -98,7 +98,7 @@ begin
     Port(LJO.GetValue<Integer>('port', FPort));
     Index(LJO.GetValue<string>('index', FIndex));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -114,7 +114,7 @@ begin
     LJO.AddPair('port', FPort);
     LJO.AddPair('index', FIndex);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

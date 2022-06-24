@@ -18,7 +18,7 @@ begin
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
 
   Logger
-    .Trace('My trace')
+    .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')

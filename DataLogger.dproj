@@ -151,11 +151,13 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.Mattermost.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Memo.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Memory.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Notification.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.OutputDebugString.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Redis.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.REST.HTTPClient.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.REST.Indy.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.RichEdit.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SendEmail.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Slack.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Socket.pas"/>
@@ -196,12 +198,6 @@
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule">
                     <Platform Name="OSX32">
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\DataLogger.bpl" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>DataLogger.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

@@ -40,7 +40,8 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .CustomType('danilo', 'aaaa');
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
@@ -56,7 +57,7 @@ begin
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 
  // Exibe somente com erro
- Logger.SetOnlyLogType([TLoggerType.Error]);
+ Logger.SetOnlyLogType([TLoggerType.Custom]);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

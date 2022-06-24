@@ -119,7 +119,7 @@ begin
     Username(LJO.GetValue<string>('username', FUsername));
     ModePropsCard(LJO.GetValue<Boolean>('mode_props_card', FModePropsCard));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -137,7 +137,7 @@ begin
     LJO.AddPair('username', FUsername);
     LJO.AddPair('mode_props_card', FModePropsCard);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

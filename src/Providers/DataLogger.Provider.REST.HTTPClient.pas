@@ -180,7 +180,7 @@ begin
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -197,7 +197,7 @@ begin
     LJO.AddPair('token', FToken);
     LJO.AddPair('method', GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod)));
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

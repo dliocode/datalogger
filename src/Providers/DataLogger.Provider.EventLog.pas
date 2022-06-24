@@ -74,7 +74,7 @@ begin
   try
     Name(LJO.GetValue<string>('name', FName));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -88,7 +88,7 @@ begin
   try
     LJO.AddPair('name', FName);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

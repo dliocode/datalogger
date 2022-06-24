@@ -12,15 +12,25 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   Vcl.ComCtrls, Vcl.Graphics, Winapi.Windows, Winapi.Messages,
-  System.SysUtils, System.Classes, System.JSON, System.TypInfo;
+  System.SysUtils, System.Classes, System.JSON, System.TypInfo, System.UITypes;
 
 type
+  TColor = System.UITypes.TColor;
+  TColorRec = System.UITypes.TColorRec;
   TRichEditModeInsert = (tmFirst, tmLast);
 
   TProviderRichEdit = class(TDataLoggerProvider)
   private
     FRichEdit: TCustomRichEdit;
     FUseColorInRichEdit: Boolean;
+    FColorTrace: TColor;
+    FColorDebug: TColor;
+    FColorInfo: TColor;
+    FColorSuccess: TColor;
+    FColorWarn: TColor;
+    FColorError: TColor;
+    FColorFatal: TColor;
+    FColorCustom: TColor;
     FMaxLogLines: Integer;
     FModeInsert: TRichEditModeInsert;
     FCleanOnStart: Boolean;
@@ -30,6 +40,7 @@ type
   public
     function RichEdit(const AValue: TCustomRichEdit): TProviderRichEdit;
     function UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
+    function ChangeColor(const ALogType: TLoggerType; const AColor: TColor): TProviderRichEdit;
     function MaxLogLines(const AValue: Integer): TProviderRichEdit;
     function ModeInsert(const AValue: TRichEditModeInsert): TProviderRichEdit;
     function CleanOnStart(const AValue: Boolean): TProviderRichEdit;
@@ -53,6 +64,16 @@ begin
 
   RichEdit(nil);
   UseColorInRichEdit(True);
+
+  ChangeColor(TLoggerType.Trace, $00A100AD);
+  ChangeColor(TLoggerType.Debug, $00CCD249);
+  ChangeColor(TLoggerType.Info, $000000);
+  ChangeColor(TLoggerType.Success, $000CC516);
+  ChangeColor(TLoggerType.Warn, $0074DFFF);
+  ChangeColor(TLoggerType.Error, $001D2AAA);
+  ChangeColor(TLoggerType.Fatal, $001C0FD1);
+  ChangeColor(TLoggerType.Custom, $000000);
+
   MaxLogLines(0);
   ModeInsert(tmLast);
   CleanOnStart(False);
@@ -63,6 +84,30 @@ function TProviderRichEdit.RichEdit(const AValue: TCustomRichEdit): TProviderRic
 begin
   Result := Self;
   FRichEdit := AValue;
+end;
+
+function TProviderRichEdit.ChangeColor(const ALogType: TLoggerType; const AColor: TColor): TProviderRichEdit;
+begin
+  Result := Self;
+
+  case ALogType of
+    TLoggerType.Trace:
+      FColorTrace := AColor;
+    TLoggerType.Debug:
+      FColorDebug := AColor;
+    TLoggerType.Info:
+      FColorInfo := AColor;
+    TLoggerType.Success:
+      FColorSuccess := AColor;
+    TLoggerType.Warn:
+      FColorWarn := AColor;
+    TLoggerType.Error:
+      FColorError := AColor;
+    TLoggerType.Fatal:
+      FColorFatal := AColor;
+    TLoggerType.Custom:
+      FColorCustom := AColor;
+  end;
 end;
 
 function TProviderRichEdit.MaxLogLines(const AValue: Integer): TProviderRichEdit;
@@ -103,6 +148,15 @@ begin
 
   try
     UseColorInRichEdit(LJO.GetValue<Boolean>('use_color_in_richedit', FUseColorInRichEdit));
+    ChangeColor(TLoggerType.Trace, StringToColor(LJO.GetValue<string>('change_color_trace', ColorToString(FColorTrace))));
+    ChangeColor(TLoggerType.Debug, StringToColor(LJO.GetValue<string>('change_color_debug', ColorToString(FColorDebug))));
+    ChangeColor(TLoggerType.Info, StringToColor(LJO.GetValue<string>('change_color_info', ColorToString(FColorInfo))));
+    ChangeColor(TLoggerType.Success, StringToColor(LJO.GetValue<string>('change_color_success', ColorToString(FColorSuccess))));
+    ChangeColor(TLoggerType.Warn, StringToColor(LJO.GetValue<string>('change_color_warn', ColorToString(FColorWarn))));
+    ChangeColor(TLoggerType.Error, StringToColor(LJO.GetValue<string>('change_color_error', ColorToString(FColorError))));
+    ChangeColor(TLoggerType.Fatal, StringToColor(LJO.GetValue<string>('change_color_fatal', ColorToString(FColorFatal))));
+    ChangeColor(TLoggerType.Custom, StringToColor(LJO.GetValue<string>('change_color_custom', ColorToString(FColorCustom))));
+
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
 
     LValue := GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert));
@@ -110,7 +164,7 @@ begin
 
     CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -123,11 +177,19 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_richedit', FUseColorInRichEdit);
+    LJO.AddPair('change_color_trace', ColorToString(FColorTrace));
+    LJO.AddPair('change_color_debug', ColorToString(FColorDebug));
+    LJO.AddPair('change_color_info', ColorToString(FColorInfo));
+    LJO.AddPair('change_color_success', ColorToString(FColorSuccess));
+    LJO.AddPair('change_color_warn', ColorToString(FColorWarn));
+    LJO.AddPair('change_color_error', ColorToString(FColorError));
+    LJO.AddPair('change_color_fatal', ColorToString(FColorFatal));
+    LJO.AddPair('change_color_custom', ColorToString(FColorCustom));
     LJO.AddPair('max_log_lines', FMaxLogLines);
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert)));
     LJO.AddPair('clean_on_start', FCleanOnStart);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format
@@ -186,28 +248,28 @@ begin
     if FUseColorInRichEdit then
       case LItem.&Type of
         TLoggerType.Trace:
-          FRichEdit.SelAttributes.Color := $00A100AD;
+          FRichEdit.SelAttributes.Color := FColorTrace;
 
         TLoggerType.Debug:
-          FRichEdit.SelAttributes.Color := $00CCD249;
+          FRichEdit.SelAttributes.Color := FColorDebug;
 
         TLoggerType.Info:
-          if (THackCustom(FRichEdit).Color = clWindow) or (THackCustom(FRichEdit).Color = clWhite) then
-            FRichEdit.SelAttributes.Color := clBlack
-          else
-            FRichEdit.SelAttributes.Color := clWhite;
-
-        TLoggerType.Warn:
-          FRichEdit.SelAttributes.Color := $0074DFFF;
-
-        TLoggerType.Error:
-          FRichEdit.SelAttributes.Color := $001D2AAA;
+          FRichEdit.SelAttributes.Color := FColorInfo;
 
         TLoggerType.Success:
-          FRichEdit.SelAttributes.Color := $000CC516;
+          FRichEdit.SelAttributes.Color := FColorSuccess;
+
+        TLoggerType.Warn:
+          FRichEdit.SelAttributes.Color := FColorWarn;
+
+        TLoggerType.Error:
+          FRichEdit.SelAttributes.Color := FColorError;
 
         TLoggerType.Fatal:
-          FRichEdit.SelAttributes.Color := $001C0FD1;
+          FRichEdit.SelAttributes.Color := FColorFatal;
+
+        TLoggerType.Custom:
+          FRichEdit.SelAttributes.Color := FColorCustom;
       end;
 
     LRetriesCount := 0;

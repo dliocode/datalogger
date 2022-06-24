@@ -117,7 +117,7 @@ begin
 
     CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -133,7 +133,7 @@ begin
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert)));
     LJO.AddPair('clean_on_start', FCleanOnStart);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

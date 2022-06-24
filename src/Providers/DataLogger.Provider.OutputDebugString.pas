@@ -16,18 +16,61 @@ uses
 {$ELSE}
   Winapi.Windows,
 {$ENDIF}
-  System.SysUtils;
+  System.SysUtils, System.JSON;
 
 type
   TProviderOutputDebugString = class(TDataLoggerProvider)
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    procedure LoadFromJSON(const AJSON: string); override;
+    function ToJSON(const AFormat: Boolean = False): string; override;
   end;
 
 implementation
 
 { TProviderOutputDebugString }
+
+procedure TProviderOutputDebugString.LoadFromJSON(const AJSON: string);
+var
+  LJO: TJSONObject;
+begin
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  try
+    LJO := TJSONObject.ParseJSONValue(AJSON) as TJSONObject;
+  except
+    on E: Exception do
+      Exit;
+  end;
+
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    SetJSONInternal(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
+function TProviderOutputDebugString.ToJSON(const AFormat: Boolean): string;
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    ToJSONInternal(LJO);
+
+    if AFormat then
+      Result := LJO.Format
+    else
+      Result := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+end;
 
 procedure TProviderOutputDebugString.Save(const ACache: TArray<TLoggerItem>);
 var

@@ -98,7 +98,7 @@ begin
     KeyPrefix(LJO.GetValue<string>('key_prefix', FKeyPrefix));
     MaxSize(LJO.GetValue<Integer>('max_size', FMaxSize));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -115,7 +115,7 @@ begin
     LJO.AddPair('key_prefix', FKeyPrefix);
     LJO.AddPair('max_size', FMaxSize);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

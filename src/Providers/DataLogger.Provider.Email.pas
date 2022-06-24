@@ -95,7 +95,7 @@ begin
     ToAddress(LJO.GetValue<string>('to_address', FToAddress));
     Subject(LJO.GetValue<string>('subject', FSubject));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -111,7 +111,7 @@ begin
     LJO.AddPair('to_address', FToAddress);
     LJO.AddPair('subject', FSubject);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format

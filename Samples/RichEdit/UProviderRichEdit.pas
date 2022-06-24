@@ -29,6 +29,7 @@ implementation
 
 {$R *.dfm}
 
+
 uses
   DataLogger, DataLogger.Provider.RichEdit;
 
@@ -41,7 +42,8 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .CustomType('My Custom', 'My Fatal');
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
@@ -51,14 +53,15 @@ begin
   Logger.AddProvider(
     TProviderRichEdit.Create
     .RichEdit(RichEdit1)
-//    .UseColorInRichEdit(True)
-//    .MaxLogLines(10)
-//    .ModeInsert(tmFirst)
-//    .CleanOnStart(False)
+    // .ChangeColor(TLoggerType.Debug, TColorRec.Hotpink)
+    // .UseColorInRichEdit(True)
+    // .MaxLogLines(10)
+    // .ModeInsert(tmFirst)
+    // .CleanOnStart(False)
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

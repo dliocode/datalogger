@@ -98,7 +98,7 @@ begin
     BearerToken(LJO.GetValue<string>('token', inherited Token));
     ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
 
-    inherited SetJSONInternal(LJO);
+    SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
@@ -114,7 +114,7 @@ begin
     LJO.AddPair('token', inherited Token);
     LJO.AddPair('channel_id', FChannelId);
 
-    inherited ToJSONInternal(LJO);
+    ToJSONInternal(LJO);
 
     if AFormat then
       Result := LJO.Format
