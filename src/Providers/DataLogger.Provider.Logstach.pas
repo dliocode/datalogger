@@ -38,7 +38,7 @@ type
     function Port(const AValue: Integer): TProviderLogstach;
     function Index(const AValue: string): TProviderLogstach;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -76,7 +76,7 @@ begin
   FIndex := AValue;
 end;
 
-procedure TProviderLogstach.SetJSON(const AJSON: string);
+procedure TProviderLogstach.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

@@ -43,7 +43,7 @@ type
     function ChannelId(const AValue: string): TProviderSlack;
     function Username(const AValue: string): TProviderSlack;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -92,7 +92,7 @@ begin
   FUsername := AValue;
 end;
 
-procedure TProviderSlack.SetJSON(const AJSON: string);
+procedure TProviderSlack.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

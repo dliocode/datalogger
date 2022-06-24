@@ -29,7 +29,7 @@ type
     function ToAddress(const AValue: string): TProviderEmail;
     function Subject(const AValue: string): TProviderEmail;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -73,7 +73,7 @@ begin
   FSubject := AValue;
 end;
 
-procedure TProviderEmail.SetJSON(const AJSON: string);
+procedure TProviderEmail.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

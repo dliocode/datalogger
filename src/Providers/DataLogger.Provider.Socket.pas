@@ -39,7 +39,7 @@ type
     function IsActive: Boolean;
     function ClientCount: Integer;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -198,7 +198,7 @@ begin
   end;
 end;
 
-procedure TProviderSocket.SetJSON(const AJSON: string);
+procedure TProviderSocket.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

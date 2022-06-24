@@ -24,7 +24,7 @@ type
     function Host(const AValue: string): TProviderSysLog;
     function Port(const AValue: Integer): TProviderSysLog;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -62,7 +62,7 @@ begin
   FSysLog.Port := AValue;
 end;
 
-procedure TProviderSysLog.SetJSON(const AJSON: string);
+procedure TProviderSysLog.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

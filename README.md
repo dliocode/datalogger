@@ -70,9 +70,11 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | [Mattermost](https://mattermost.com/)| DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook)|
 | Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL)|
 | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory)|
+| Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification)|
 | OutputDebugString| DataLogger.Provider.OutputDebugString| [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) |
 | [Redis](https://github.com/danieleteti/delphiredisclient)| DataLogger.Provider.Redis| [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) |
 | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST)|
+| RichEdit| DataLogger.Provider.RichEdit| [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) |
 | [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) |
 | [Slack](https://slack.com/)| DataLogger.Provider.Slack| [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) |
 | Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket)|
@@ -99,8 +101,8 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
-
+    .Fatal('My Fatal')
+    .CustomType('My Custom Type', 'My message with custom type');
   Readln;
 end.
 ```
@@ -124,7 +126,28 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .CustomType('My Custom Type', 'My message with custom type');
+  Readln;
+end.
+```
+
+## CustomType
+
+O _CustomType_ é uma forma de criar seu próprio _type_.
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Provider.Console;
+
+begin
+  Logger.AddProvider(TProviderConsole.Create);
+  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+
+  Logger.CustomType('My Custom Type', 'My Message with custom type!');
+
+  // Output: 2022-12-01 09:00:05.500 [My Custom Type] My Message with custom type!	
 
   Readln;
 end.
@@ -324,7 +347,7 @@ SetLogLevel valor padrão = ```TLoggerType.All```
 ### LoggerType / Level
 
 * Quando definido um level, será exibido somente a opção escolhida e seus tipos superiores.
-* Ex: ``` Logger.SetLogLevel(TLoggerType.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal ```.
+* Ex: ``` Logger.SetLogLevel(TLoggerType.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
 
 ```
   TLoggerType.All = Utilizado para operações internas 
@@ -334,7 +357,8 @@ SetLogLevel valor padrão = ```TLoggerType.All```
   TLoggerType.Success = Level 4
   TLoggerType.Warn = Level 5
   TLoggerType.Error = Level 6
-  TLoggerType.Fatal= Level 7
+  TLoggerType.Fatal = Level 7
+  TLoggerType.Custom = Level 8
 ```
 
 ```delphi
@@ -370,7 +394,7 @@ SetDisableLogType valor padrão = ```[]```
 ### SetDisableLogType
 
 * Quando desabilitado será exibido somente as opções que não estão desabilitadas.
-* Ex: ``` Logger.SetDisableLogType([TLoggerType.Info, TLoggerType.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal ```.
+* Ex: ``` Logger.SetDisableLogType([TLoggerType.Info, TLoggerType.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal / Custom ```.
 
 ```delphi
 uses

@@ -39,7 +39,7 @@ type
     function BearerToken(const AValue: string): TProviderMattermost;
     function ChannelId(const AValue: string): TProviderMattermost;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -76,7 +76,7 @@ begin
   inherited BearerToken(AValue);
 end;
 
-procedure TProviderMattermost.SetJSON(const AJSON: string);
+procedure TProviderMattermost.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

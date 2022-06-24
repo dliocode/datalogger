@@ -27,7 +27,7 @@ type
   public
     function Name(const AValue: string): TProviderEventLog;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -54,7 +54,7 @@ begin
     FName := AValue;
 end;
 
-procedure TProviderEventLog.SetJSON(const AJSON: string);
+procedure TProviderEventLog.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

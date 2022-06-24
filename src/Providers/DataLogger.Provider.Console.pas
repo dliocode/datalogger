@@ -32,7 +32,7 @@ type
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -55,7 +55,7 @@ begin
   FUseColorInConsole := AValue;
 end;
 
-procedure TProviderConsole.SetJSON(const AJSON: string);
+procedure TProviderConsole.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -126,10 +126,10 @@ begin
 
     while True do
       try
-        if not FUseColorInConsole then
-          Writeln(LLog)
+        if FUseColorInConsole then
+          WriteColor(LItem.&Type, LLog)
         else
-          WriteColor(LItem.&Type, LLog);
+          Writeln(LLog);
 
         Break;
       except

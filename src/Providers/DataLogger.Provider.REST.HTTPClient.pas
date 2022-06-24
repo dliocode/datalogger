@@ -53,7 +53,7 @@ type
     function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -154,7 +154,7 @@ begin
   FExecuteFinally := AExecuteFinally;
 end;
 
-procedure TProviderRESTHTTPClient.SetJSON(const AJSON: string);
+procedure TProviderRESTHTTPClient.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
   LValue: string;

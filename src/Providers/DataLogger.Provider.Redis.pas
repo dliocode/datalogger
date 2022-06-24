@@ -31,7 +31,7 @@ type
     function KeyPrefix(const AValue: string): TProviderRedis;
     function MaxSize(const AValue: Int64): TProviderRedis;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -75,7 +75,7 @@ begin
   FMaxSize := AValue;
 end;
 
-procedure TProviderRedis.SetJSON(const AJSON: string);
+procedure TProviderRedis.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

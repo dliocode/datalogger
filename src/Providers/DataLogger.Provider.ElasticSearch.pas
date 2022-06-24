@@ -38,7 +38,7 @@ type
     function Port(const AValue: Integer): TProviderElasticSearch;
     function Index(const AValue: string): TProviderElasticSearch;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -76,7 +76,7 @@ begin
   FIndex := AValue;
 end;
 
-procedure TProviderElasticSearch.SetJSON(const AJSON: string);
+procedure TProviderElasticSearch.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

@@ -36,7 +36,7 @@ type
     function ModeInsert(const AValue: TListViewModeInsert): TProviderListView;
     function CleanOnStart(const AValue: Boolean): TProviderListView;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -81,7 +81,7 @@ begin
   FCleanOnStart := AValue;
 end;
 
-procedure TProviderListView.SetJSON(const AJSON: string);
+procedure TProviderListView.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
   LValue: string;

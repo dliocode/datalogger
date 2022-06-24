@@ -36,7 +36,7 @@ type
     function ModeInsert(const AValue: TMemoModeInsert): TProviderMemo;
     function CleanOnStart(const AValue: Boolean): TProviderMemo;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -91,7 +91,7 @@ begin
   FCleanOnStart := AValue;
 end;
 
-procedure TProviderMemo.SetJSON(const AJSON: string);
+procedure TProviderMemo.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
   LValue: string;
@@ -175,9 +175,6 @@ begin
 
     while True do
       try
-        if (csDestroying in FMemo.ComponentState) then
-          Exit;
-
         try
           TThread.Synchronize(nil,
             procedure

@@ -56,7 +56,7 @@ type
     function FormatDateTime(const AValue: string): TProviderTextFile;
     function Encoding(const AValue: TEncoding): TProviderTextFile;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
@@ -174,7 +174,7 @@ begin
   FEncoding := AValue
 end;
 
-procedure TProviderTextFile.SetJSON(const AJSON: string);
+procedure TProviderTextFile.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

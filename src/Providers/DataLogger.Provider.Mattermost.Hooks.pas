@@ -44,7 +44,7 @@ type
     function Username(const AValue: string): TProviderMattermostHooks;
     function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
 
-    procedure SetJSON(const AJSON: string); override;
+    procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
@@ -95,7 +95,7 @@ begin
   FModePropsCard := AValue;
 end;
 
-procedure TProviderMattermostHooks.SetJSON(const AJSON: string);
+procedure TProviderMattermostHooks.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin

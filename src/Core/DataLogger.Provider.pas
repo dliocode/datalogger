@@ -68,7 +68,7 @@ type
     function Clear: TDataLoggerProvider;
     function CountLogInCache: Int64;
 
-    procedure SetJSON(const AJSON: string); virtual; abstract;
+    procedure LoadFromJSON(const AJSON: string); virtual; abstract;
     function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
 
     function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
@@ -455,7 +455,7 @@ begin
     end;
   end;
 
-  SetMaxRetries(LJOInternal.GetValue<Int64>('max_retry', FMaxRetries));
+  SetMaxRetries(LJOInternal.GetValue<Int64>('max_retries', FMaxRetries));
   SetInitialMessage(LJOInternal.GetValue<string>('initial_message', FInitialMessage));
   SetFinalMessage(LJOInternal.GetValue<string>('final_message', FFinalMessage));
   UseTransaction(LJOInternal.GetValue<Boolean>('use_transaction', FUseTransaction));
