@@ -59,6 +59,7 @@ begin
     .ListBox(ListBox1)
 //    .MaxLogLines(10)
 //    .ModeInsert(tmFirst)
+//    .CleanOnStart(False)
     );
 
   // Log Format

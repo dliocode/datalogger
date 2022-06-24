@@ -39,7 +39,7 @@ constructor TProviderSendEmail.Create;
 begin
   inherited Create;
 
-  FSendEmail := nil;
+  SendEmail(nil);
   FModeCustom := False;
 end;
 

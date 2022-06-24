@@ -17,8 +17,8 @@ uses
 type
   TProviderSocket = class(TDataLoggerProvider)
   private
-    FSocket: TIdCustomTCPServer;
     FListClients: TDictionary<string, TIdContext>;
+    FSocket: TIdCustomTCPServer;
     FCheckHeartBeat: TThread;
 
     procedure OnConnect(AContext: TIdContext);
@@ -76,9 +76,8 @@ constructor TProviderSocket.Create;
 begin
   inherited Create;
 
-  FSocket := TDataLoggerSocketServer.Create;
   FListClients := TDictionary<string, TIdContext>.Create;
-
+  FSocket := TDataLoggerSocketServer.Create;
   FSocket.OnConnect := OnConnect;
   FSocket.OnDisconnect := OnDisconnect;
   TDataLoggerSocketServer(FSocket).OnExecute := OnExecute;
@@ -401,7 +400,7 @@ begin
                 Continue;
               end;
 
-              if SecondsBetween(Now, TMyData(LContext.Data).LastRecvTime) >= 15 then
+              if SecondsBetween(Now, TMyData(LContext.Data).LastRecvTime) >= 20 then
               begin
                 FListClients.Remove(LIDs[I]);
                 Continue;

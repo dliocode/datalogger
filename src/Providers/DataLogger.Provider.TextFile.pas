@@ -75,17 +75,17 @@ constructor TProviderTextFile.Create;
 begin
   inherited Create;
 
-  FLogDir := '.';
-  FPrefixFileName := '';
-  FExtension := '.txt';
-  FMaxFileSizeInKiloByte := 0;
-  FMaxBackupFileCount := 0;
-  FCompress := False;
-  FCompressCustom := nil;
-  FCleanOnStart := False;
+  LogDir('.');
+  PrefixFileName('');
+  Extension('.txt');
+  MaxFileSizeInKiloByte(0);
+  MaxBackupFileCount(0);
+  Compress(False);
+  CompressCustom(nil);
+  CleanOnStart(False);
   FCleanOnRun := False;
-  FFormatDateTime := 'yyyy-mm-dd';
-  FEncoding := TEncoding.UTF8;
+  FormatDateTime('yyyy-mm-dd');
+  Encoding(TEncoding.UTF8);
 
   FWriter := nil;
   FRotateInternal := 0;
@@ -261,6 +261,8 @@ begin
         try
           if TFile.Exists(LFileName) then
             TFile.Delete(LFileName);
+
+          Break;
         except
           Inc(LRetriesCount);
 
@@ -428,7 +430,10 @@ begin
     LRotateInternal := FRotateInternal;
   end
   else
+  begin
+    FRotateInternal := 0;
     LRotateInternal := FMaxBackupFileCount;
+  end;
 
   LRenamedFileName := GetLogFileName(LRotateInternal);
   if FCompress then

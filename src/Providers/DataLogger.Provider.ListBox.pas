@@ -26,18 +26,20 @@ type
     FListBox: TCustomListBox;
     FMaxLogLines: Integer;
     FModeInsert: TListBoxModeInsert;
+    FCleanOnStart: Boolean;
+    FCleanOnRun: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function ListBox(const AValue: TCustomListBox): TProviderListBox;
     function MaxLogLines(const AValue: Integer): TProviderListBox;
     function ModeInsert(const AValue: TListBoxModeInsert): TProviderListBox;
+    function CleanOnStart(const AValue: Boolean): TProviderListBox;
 
     procedure SetJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
-    constructor Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0); overload; deprecated 'Use TProviderListBox.Create.ListBox(ListBox).MaxLogLines(0) - This function will be removed in future versions';
+    constructor Create;
   end;
 
 implementation
@@ -51,14 +53,8 @@ begin
   ListBox(nil);
   MaxLogLines(0);
   ModeInsert(tmLast);
-end;
-
-constructor TProviderListBox.Create(const AListBox: TCustomListBox; const AMaxLogLines: Integer = 0);
-begin
-  Create;
-
-  ListBox(AListBox);
-  MaxLogLines(AMaxLogLines);
+  CleanOnStart(False);
+  FCleanOnRun := False;
 end;
 
 function TProviderListBox.ListBox(const AValue: TCustomListBox): TProviderListBox;
@@ -77,6 +73,12 @@ function TProviderListBox.ModeInsert(const AValue: TListBoxModeInsert): TProvide
 begin
   Result := Self;
   FModeInsert := AValue;
+end;
+
+function TProviderListBox.CleanOnStart(const AValue: Boolean): TProviderListBox;
+begin
+  Result := Self;
+  FCleanOnStart := AValue;
 end;
 
 procedure TProviderListBox.SetJSON(const AJSON: string);
@@ -103,6 +105,8 @@ begin
     LValue := GetEnumName(TypeInfo(TListBoxModeInsert), Integer(FModeInsert));
     FModeInsert := TListBoxModeInsert(GetEnumValue(TypeInfo(TListBoxModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
 
+    CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
+
     inherited SetJSONInternal(LJO);
   finally
     LJO.Free;
@@ -117,6 +121,7 @@ begin
   try
     LJO.AddPair('max_log_lines', FMaxLogLines);
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TListBoxModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('clean_on_start', FCleanOnStart);
 
     inherited ToJSONInternal(LJO);
 
@@ -141,6 +146,13 @@ begin
 
   if Length(ACache) = 0 then
     Exit;
+
+  if not FCleanOnRun then
+    if FCleanOnStart then
+    begin
+      FListBox.Clear;
+      FCleanOnRun := True;
+    end;
 
   for LItem in ACache do
   begin

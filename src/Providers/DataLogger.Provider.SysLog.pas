@@ -40,8 +40,8 @@ begin
   inherited Create;
 
   FSysLog := TIdSysLog.Create(nil);
-  FSysLog.Host := '';
-  FSysLog.Port := 514;
+  Host('');
+  Port(514);
 end;
 
 destructor TProviderSysLog.Destroy;

@@ -323,7 +323,7 @@
 
           myTimeout = setInterval(() => {
             if (socket.readyState == WebSocket.OPEN) socket.send('OK');
-          }, 10000)
+          }, 5000)
         }
 
         socket.onmessage = (message) => {

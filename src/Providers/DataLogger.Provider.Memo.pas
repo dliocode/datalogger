@@ -26,12 +26,15 @@ type
     FMemo: TCustomMemo;
     FMaxLogLines: Integer;
     FModeInsert: TMemoModeInsert;
+    FCleanOnStart: Boolean;
+    FCleanOnRun: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function Memo(const AValue: TCustomMemo): TProviderMemo;
     function MaxLogLines(const AValue: Integer): TProviderMemo;
     function ModeInsert(const AValue: TMemoModeInsert): TProviderMemo;
+    function CleanOnStart(const AValue: Boolean): TProviderMemo;
 
     procedure SetJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -51,6 +54,8 @@ begin
   Memo(nil);
   MaxLogLines(0);
   ModeInsert(tmLast);
+  CleanOnStart(False);
+  FCleanOnRun := False;
 end;
 
 constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast);
@@ -80,6 +85,12 @@ begin
   FModeInsert := AValue;
 end;
 
+function TProviderMemo.CleanOnStart(const AValue: Boolean): TProviderMemo;
+begin
+  Result := Self;
+  FCleanOnStart := AValue;
+end;
+
 procedure TProviderMemo.SetJSON(const AJSON: string);
 var
   LJO: TJSONObject;
@@ -104,6 +115,8 @@ begin
     LValue := GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert));
     FModeInsert := TMemoModeInsert(GetEnumValue(TypeInfo(TMemoModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
 
+    CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
+
     inherited SetJSONInternal(LJO);
   finally
     LJO.Free;
@@ -118,6 +131,7 @@ begin
   try
     LJO.AddPair('max_log_lines', FMaxLogLines);
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('clean_on_start', FCleanOnStart);
 
     inherited ToJSONInternal(LJO);
 
@@ -142,6 +156,13 @@ begin
 
   if Length(ACache) = 0 then
     Exit;
+
+  if not FCleanOnRun then
+    if FCleanOnStart then
+    begin
+      FMemo.Lines.Clear;
+      FCleanOnRun := True;
+    end;
 
   for LItem in ACache do
   begin
