@@ -21,6 +21,7 @@ type
   TOnLogException = DataLogger.Types.TOnLogException;
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
+  EDataLoggerException = DataLogger.Types.EDataLoggerException;
 
   TDataLogger = class sealed(TThread)
   strict private
@@ -821,7 +822,7 @@ begin
     LLogItem.ComputerName := TLoggerUtils.ComputerName;
     LLogItem.Username := TLoggerUtils.Username;
     LLogItem.OSVersion := TLoggerUtils.OS;
-    LLogItem.ProcessID := TLoggerUtils.ProcessID.ToString;
+    LLogItem.ProcessID := TLoggerUtils.ProcessID;
     LLogItem.IPLocal := TLoggerUtils.IPLocal;
 
     FListLoggerItem.Add(LLogItem);

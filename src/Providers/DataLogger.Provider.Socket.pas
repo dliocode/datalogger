@@ -20,6 +20,7 @@ type
     FListClients: TDictionary<string, TIdContext>;
     FSocket: TIdCustomTCPServer;
     FCheckHeartBeat: TThread;
+    FAutoStart: Boolean;
 
     procedure OnConnect(AContext: TIdContext);
     procedure OnDisconnect(AContext: TIdContext);
@@ -32,6 +33,7 @@ type
     function Port(const AValue: Integer): TProviderSocket;
     function MaxConnection(const AValue: Integer): TProviderSocket;
     function InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
+    function AutoStart(const AValue: Boolean): TProviderSocket;
 
     function Start: TProviderSocket;
     function Stop: TProviderSocket;
@@ -88,9 +90,16 @@ begin
   inherited;
 
   Port(55666);
+  AutoStart(False);
   MaxConnection(0);
 
   CheckHeartBeat;
+end;
+
+function TProviderSocket.AutoStart(const AValue: Boolean): TProviderSocket;
+begin
+  Result := Self;
+  FAutoStart := AValue;
 end;
 
 procedure TProviderSocket.BeforeDestruction;
@@ -217,7 +226,8 @@ begin
 
   try
     Port(LJO.GetValue<Integer>('port', FSocket.DefaultPort));
-    Port(LJO.GetValue<Integer>('max_connections', FSocket.MaxConnections));
+    AutoStart(LJO.GetValue<Boolean>('auto_start', FAutoStart));
+    MaxConnection(LJO.GetValue<Integer>('max_connections', FSocket.MaxConnections));
 
     SetJSONInternal(LJO);
   finally
@@ -232,6 +242,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('port', FSocket.DefaultPort);
+    LJO.AddPair('auto_start', FAutoStart);
     LJO.AddPair('max_connections', FSocket.MaxConnections);
 
     ToJSONInternal(LJO);
@@ -253,6 +264,12 @@ var
 begin
   if Length(ACache) = 0 then
     Exit;
+
+  if FAutoStart then
+    Start
+  else
+    if not IsActive then
+      Exit;
 
   Lock;
   try

@@ -308,7 +308,7 @@ begin
         TDirectory.CreateDirectory(FLogDir);
 
   if Trim(FLogDir).IsEmpty then
-    LFileName := TPath.Combine(FLogDir, FPrefixFileName)
+    LFileName := TPath.Combine(IncludeTrailingPathDelimiter('.'), FPrefixFileName)
   else
     LFileName := TPath.Combine(IncludeTrailingPathDelimiter(FLogDir), FPrefixFileName);
 

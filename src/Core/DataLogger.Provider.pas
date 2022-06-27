@@ -58,10 +58,10 @@ type
     function SetFinalMessage(const AMessage: string): TDataLoggerProvider;
 
     function UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
-    function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+    function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
     function StartTransaction(const AUseLock: Boolean = True): TDataLoggerProvider;
-    function CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
-    function RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+    function CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
+    function RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
     function InTransaction: Boolean;
     function CountTransaction: Integer;
 
@@ -110,7 +110,7 @@ begin
   SetLogException(nil);
   SetMaxRetries(5);
   UseTransaction(False);
-  AutoCommit([], tcBlock);
+  AutoCommit([], TLoggerTypeAutoCommit.tcBlock);
 
   Start;
 end;
@@ -225,7 +225,7 @@ begin
   FUseTransaction := AUseTransaction;
 end;
 
-function TDataLoggerProvider.AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+function TDataLoggerProvider.AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
 begin
   Result := Self;
   FAutoCommit := ALogTypes;
@@ -257,7 +257,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
+function TDataLoggerProvider.CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
 var
   LCountTransaction: Integer;
   LCurrent: TList<TLoggerItem>;
@@ -300,7 +300,7 @@ begin
         Break;
       end;
 
-      if ATypeCommit = tcBlock then
+      if ATypeCommit = TLoggerTypeAutoCommit.tcBlock then
         Break;
     end;
   finally
@@ -309,7 +309,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = tcBlock): TDataLoggerProvider;
+function TDataLoggerProvider.RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
 var
   LCountTransaction: Integer;
 begin
@@ -342,7 +342,7 @@ begin
         Break;
       end;
 
-      if ATypeCommit = tcBlock then
+      if ATypeCommit = TLoggerTypeAutoCommit.tcBlock then
         Break;
     end;
   finally

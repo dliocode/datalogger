@@ -17,11 +17,13 @@ uses
   System.SysUtils, System.JSON;
 
 type
+{$SCOPEDENUMS ON}
 {$IF DEFINED(MSWINDOWS)}
   TColor = (Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White);
 {$ELSE}
   TColor = (Black, DarkRed, DarkGreen, DarkYellow, DarkBlue, DarkMagenta, DarkCyan, Gray, DarkGray, Red, Green, Yellow, Blue, Magenta, Cyan, White);
 {$ENDIF}
+{$SCOPEDENUMS OFF}
 
   TProviderConsole = class(TDataLoggerProvider)
   strict private

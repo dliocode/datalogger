@@ -19,7 +19,9 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.TypInfo;
 
 type
+{$SCOPEDENUMS ON}
   TListViewModeInsert = (tmFirst, tmLast);
+{$SCOPEDENUMS OFF}
 
   TProviderListView = class(TDataLoggerProvider)
   private
@@ -52,7 +54,7 @@ begin
 
   ListView(nil);
   MaxLogLines(0);
-  ModeInsert(tmLast);
+  ModeInsert(TListViewModeInsert.tmLast);
   CleanOnStart(False);
   FCleanOnRun := False;
 end;
@@ -177,7 +179,7 @@ begin
               FListView.Items.BeginUpdate;
 
               case FModeInsert of
-                tmFirst:
+                TListViewModeInsert.tmFirst:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FListView.Items.AddItem(0).IndexTitle := LLog;
@@ -186,7 +188,7 @@ begin
 {$ENDIF}
                   end;
 
-                tmLast:
+                TListViewModeInsert.tmLast:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FListView.Items.Add.IndexTitle := LLog;
@@ -208,23 +210,23 @@ begin
                 LLines := FListView.Items.Count;
 
                 case FModeInsert of
-                  tmFirst:
-                  begin
-                    while LLines > FMaxLogLines do
+                  TListViewModeInsert.tmFirst:
                     begin
-                      FListView.Items.Delete(Pred(FListView.Items.Count));
-                      LLines := FListView.Items.Count;
+                      while LLines > FMaxLogLines do
+                      begin
+                        FListView.Items.Delete(Pred(FListView.Items.Count));
+                        LLines := FListView.Items.Count;
+                      end;
                     end;
-                  end;
 
-                  tmLast:
-                  begin
-                    while LLines > FMaxLogLines do
+                  TListViewModeInsert.tmLast:
                     begin
-                      FListView.Items.Delete(0);
-                      LLines := FListView.Items.Count;
+                      while LLines > FMaxLogLines do
+                      begin
+                        FListView.Items.Delete(0);
+                        LLines := FListView.Items.Count;
+                      end;
                     end;
-                  end;
                 end;
               end);
           end;
@@ -240,7 +242,7 @@ begin
                 FListView.Items.EndUpdate;
 
                 case FModeInsert of
-                  tmFirst:
+                  TListViewModeInsert.tmFirst:
                     begin
 {$IF DEFINED(DATALOGGER_FMX)}
                       FListView.ScrollTo(0);
@@ -249,7 +251,7 @@ begin
 {$ENDIF}
                     end;
 
-                  tmLast:
+                  TListViewModeInsert.tmLast:
                     begin
 {$IF DEFINED(DATALOGGER_FMX)}
                       FListView.ScrollTo(Pred(FListView.Items.Count));

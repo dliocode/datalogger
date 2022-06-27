@@ -1,7 +1,7 @@
 object Form2: TForm2
   Left = 0
   Top = 0
-  Caption = 'DataLogger - Redis'
+  Caption = 'DataLogger - RabbitMQ'
   ClientHeight = 61
   ClientWidth = 624
   Color = clBtnFace
@@ -12,6 +12,23 @@ object Form2: TForm2
   Font.Style = []
   OnCreate = FormCreate
   TextHeight = 15
+  object Panel1: TPanel
+    Left = 0
+    Top = 21
+    Width = 624
+    Height = 41
+    Align = alTop
+    TabOrder = 0
+    object btnMakeLog: TButton
+      Left = 272
+      Top = 6
+      Width = 75
+      Height = 25
+      Caption = 'Make Log'
+      TabOrder = 0
+      OnClick = btnMakeLogClick
+    end
+  end
   object pnlInfo: TPanel
     Left = 0
     Top = 0
@@ -30,24 +47,7 @@ object Form2: TForm2
     Font.Style = [fsBold]
     ParentBackground = False
     ParentFont = False
-    TabOrder = 0
-    OnClick = pnlInfoClick
-  end
-  object Panel1: TPanel
-    Left = 0
-    Top = 21
-    Width = 624
-    Height = 41
-    Align = alTop
     TabOrder = 1
-    object btnMakeLog: TButton
-      Left = 272
-      Top = 6
-      Width = 75
-      Height = 25
-      Caption = 'Make Log'
-      TabOrder = 0
-      OnClick = btnMakeLogClick
-    end
+    OnClick = pnlInfoClick
   end
 end

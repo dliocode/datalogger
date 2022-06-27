@@ -1,0 +1,14 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-06-27T10:32:57.3562307-03:00",
+	"installedModules": {
+		"https://github.com/danieleteti/delphistompclient": {
+			"name": "delphistompclient",
+			"version": "master",
+			"hash": "cb6937b7758328924988f916cc4ddbbb",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}

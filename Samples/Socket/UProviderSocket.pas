@@ -44,14 +44,21 @@ var
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
-  Logger
-    .Trace('My trace')
-    .Debug('My Debug')
-    .Info('My Info')
-    .Warn('My Warn')
-    .Error('My Error')
-    .Success('My Success')
-    .Fatal('My Fatal');
+  TThread.CreateAnonymousThread(
+  procedure
+  var
+    I: Integer;
+  begin
+    for I := 0 to 100 do
+      Logger
+        .Trace('My trace')
+        .Debug('My Debug')
+        .Info('My Info')
+        .Warn('My Warn')
+        .Error('My Error')
+        .Success('My Success')
+        .Fatal('My Fatal');
+  end).Start;
 end;
 
 procedure TForm2.btnOpenPreviewClick(Sender: TObject);
@@ -84,6 +91,7 @@ begin
   Logger.AddProvider(
     FSocket
       .Port(55666)
+      .AutoStart(True)
       .MaxConnection(0) // 0 - unlimited
     );
 

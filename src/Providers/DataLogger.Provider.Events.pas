@@ -30,6 +30,7 @@ type
     FOnWarn: TExecuteEvents;
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
+    FOnCustom: TExecuteEvents;
     procedure Init;
   public
     function OnAny(const AEvent: TExecuteEvents): TEventsConfig;
@@ -40,6 +41,7 @@ type
     function OnWarn(const AEvent: TExecuteEvents): TEventsConfig;
     function OnError(const AEvent: TExecuteEvents): TEventsConfig;
     function OnFatal(const AEvent: TExecuteEvents): TEventsConfig;
+    function OnCustom(const AEvent: TExecuteEvents): TEventsConfig;
 
     constructor Create;
     destructor Destroy; override;
@@ -175,6 +177,8 @@ begin
             _Execute(FConfig.FOnSuccess, LItem);
           TLoggerType.Fatal:
             _Execute(FConfig.FOnFatal, LItem);
+          TLoggerType.Custom:
+            _Execute(FConfig.FOnCustom, LItem);
         end;
 
         _Execute(FConfig.FOnAny, LItem);
@@ -271,6 +275,12 @@ begin
 end;
 
 function TEventsConfig.OnFatal(const AEvent: TExecuteEvents): TEventsConfig;
+begin
+  Result := Self;
+  FOnFatal := AEvent;
+end;
+
+function TEventsConfig.OnCustom(const AEvent: TExecuteEvents): TEventsConfig;
 begin
   Result := Self;
   FOnFatal := AEvent;

@@ -23,7 +23,9 @@ uses
   System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo;
 
 type
+{$SCOPEDENUMS ON}
   TTelegramParseMode = (tpNone, tpHTML, tpMarkdown);
+{$SCOPEDENUMS OFF}
 
 {$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
 
@@ -48,7 +50,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
-    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown); overload; deprecated 'Use TProviderTelegram.Create.BotToken(''AAAAA'').ChatId(''00000000'').ParseMode(tpMarkdown) - This function will be removed in future versions';
+    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = TTelegramParseMode.tpMarkdown); overload; deprecated 'Use TProviderTelegram.Create.BotToken(''AAAAA'').ChatId(''00000000'').ParseMode(tpMarkdown) - This function will be removed in future versions';
   end;
 
 implementation
@@ -58,8 +60,8 @@ implementation
 const
   TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates'; // https://api.telegram.org/bot<TOKEN>/getUpdates
-  TELGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
-  TELGRAM_API_HTML = '&parse_mode=HTML';
+  TELEGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
+  TELEGRAM_API_HTML = '&parse_mode=HTML';
 
 constructor TProviderTelegram.Create;
 begin
@@ -68,10 +70,10 @@ begin
   ContentType('application/json');
   BotToken('');
   ChatId('');
-  ParseMode(tpMarkdown);
+  ParseMode(TTelegramParseMode.tpMarkdown);
 end;
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = tpMarkdown);
+constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = TTelegramParseMode.tpMarkdown);
 begin
   Create;
 
@@ -165,56 +167,59 @@ var
     I: Integer;
   begin
     case FParseMode of
-      tpHTML:
+      TTelegramParseMode.tpHTML:
         begin
-          LParseMode := TELGRAM_API_HTML;
+          LParseMode := TELEGRAM_API_HTML;
 
           case LItem.&Type of
-            All:
+            TLoggerType.All:
               ;
-            Trace:
+            TLoggerType.Trace:
               ;
-            Debug:
+            TLoggerType.Debug:
               ;
-            Info:
+            TLoggerType.Info:
               ;
-            Success:
+            TLoggerType.Success:
               ;
-            Warn:
+            TLoggerType.Warn:
               LMessage := '<u>' + LMessage + '</u>';
 
-            Error:
+            TLoggerType.Error, TLoggerType.Fatal:
               LMessage := '<b>' + LMessage + '</b>';
 
-            Fatal:
-              LMessage := '' + LMessage + '';
+            TLoggerType.Custom:
+              ;
           end;
         end;
 
-      tpMarkdown:
+      TTelegramParseMode.tpMarkdown:
         begin
-          LParseMode := TELGRAM_API_MARKDOWN;
+          LParseMode := TELEGRAM_API_MARKDOWN;
 
           // https://core.telegram.org/bots/api#formatting-options
           for I := Low(FormattingMarkdown) to High(FormattingMarkdown) do
             LMessage := LMessage.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
 
           case LItem.&Type of
-            All:
+            TLoggerType.All:
               ;
-            Trace:
+            TLoggerType.Trace:
               ;
-            Debug:
+            TLoggerType.Debug:
               ;
-            Info:
+            TLoggerType.Info:
               ;
-            Success:
+            TLoggerType.Success:
               ;
-            Warn:
+            TLoggerType.Warn:
               LMessage := '__' + LMessage + '__';
 
-            Error, Fatal:
+            TLoggerType.Error, TLoggerType.Fatal:
               LMessage := '*' + LMessage + '*';
+
+            TLoggerType.Custom:
+              ;
           end;
         end;
     end;
@@ -234,7 +239,7 @@ begin
     LParseMode := '';
     LMessage := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp).Trim;
 
-    if FParseMode <> tpNone then
+    if FParseMode <> TTelegramParseMode.tpNone then
       SerializeMessageParseMode;
 
     LLogItemREST.Stream := nil;

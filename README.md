@@ -33,8 +33,9 @@ Essas dependências se dá quando utilizado alguns _providers_
 
 | Provider | Dependence |
 |----------|------------|
-| DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/sendemail) |
+| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
 | DataLogger.Provider.Redis| [Redis](https://github.com/danieleteti/delphiredisclient) |
+| DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/sendemail) |
 
 ## Como usar
 
@@ -72,6 +73,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory)|
 | Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification)|
 | OutputDebugString| DataLogger.Provider.OutputDebugString| [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) |
+| [RabbitMQ](https://github.com/danieleteti/delphistompclient)| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ) |
 | [Redis](https://github.com/danieleteti/delphiredisclient)| DataLogger.Provider.Redis| [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) |
 | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST)|
 | RichEdit| DataLogger.Provider.RichEdit| [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) |
@@ -130,6 +132,36 @@ begin
     .CustomType('My Custom Type', 'My message with custom type');
   Readln;
 end.
+```
+
+### DataLogger Simple
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Simple,
+  DataLogger.Provider.Console;
+
+begin
+  // Defini o provider
+  Logger.AddProvider(TProviderConsole.Create);
+
+  //Defini no DataloggerSimple a instância do log a ser utilizado
+  TDataLoggerSimple.SetDataLogger(Logger);
+
+  // Só usar o modo simples;
+  Trace('My message trace');
+  Debug('My message debug');
+  Info('My message info');
+  Success('My message success');
+  Warn('My message warn');
+  Error('My message error');
+  Fatal('My message fatal');
+  CustomType('My Type', 'My message custom');
+
+  Readln;
+end.
+
 ```
 
 ## CustomType

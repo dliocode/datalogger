@@ -19,7 +19,9 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.TypInfo;
 
 type
+{$SCOPEDENUMS ON}
   TMemoModeInsert = (tmFirst, tmLast);
+{$SCOPEDENUMS OFF}
 
   TProviderMemo = class(TDataLoggerProvider)
   private
@@ -40,7 +42,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
+    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = TMemoModeInsert.tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
   end;
 
 implementation
@@ -53,12 +55,12 @@ begin
 
   Memo(nil);
   MaxLogLines(0);
-  ModeInsert(tmLast);
+  ModeInsert(TMemoModeInsert.tmLast);
   CleanOnStart(False);
   FCleanOnRun := False;
 end;
 
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = tmLast);
+constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = TMemoModeInsert.tmLast);
 begin
   Create;
 
@@ -185,10 +187,10 @@ begin
               FMemo.Lines.BeginUpdate;
 
               case FModeInsert of
-                tmFirst:
+                TMemoModeInsert.tmFirst:
                   FMemo.Lines.Insert(0, LLog);
 
-                tmLast:
+                TMemoModeInsert.tmLast:
                   FMemo.Lines.Add(LLog);
               end;
             end);
@@ -205,10 +207,10 @@ begin
                 while LLines > FMaxLogLines do
                 begin
                   case FModeInsert of
-                    tmFirst:
+                    TMemoModeInsert.tmFirst:
                       FMemo.Lines.Delete(Pred(LLines));
 
-                    tmLast:
+                    TMemoModeInsert.tmLast:
                       FMemo.Lines.Delete(0);
                   end;
 
@@ -226,14 +228,14 @@ begin
               FMemo.Lines.EndUpdate;
 
               case FModeInsert of
-                tmFirst:
+                TMemoModeInsert.tmFirst:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FMemo.VScrollBar.Value := FMemo.VScrollBar.Min;
 {$ENDIF}
                   end;
 
-                tmLast:
+                TMemoModeInsert.tmLast:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FMemo.VScrollBar.Value := FMemo.VScrollBar.Max;

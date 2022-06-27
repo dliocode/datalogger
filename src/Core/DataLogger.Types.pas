@@ -17,10 +17,13 @@ type
   EDataLoggerException = class(Exception)
   end;
 
+{$SCOPEDENUMS ON}
+
   TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
   TLoggerTypes = set of TLoggerType;
 
   TLoggerTypeAutoCommit = (tcAll, tcBlock);
+{$SCOPEDENUMS OFF}
 
   TLoggerTypeHelper = record helper for TLoggerType
   public
@@ -104,13 +107,10 @@ end;
 class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;
   procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
   begin
-    if AIgnoreLogFormat then
+    if ALogFormat.Contains(ALogKey) or AIgnoreLogFormat then
       Result.AddPair(AJSONKey, AJSONValue)
     else
-      if ALogFormat.Contains(ALogKey) then
-        Result.AddPair(AJSONKey, AJSONValue)
-      else
-        AJSONValue.Free;
+      AJSONValue.Free;
   end;
 
 var
@@ -141,7 +141,7 @@ begin
           begin
             LKey := Format('${%s}', [LJO.Pairs[I].JsonString.Value]);
 
-            if ALogFormat.Contains(LKey) then
+            if ALogFormat.Contains(LKey) or AIgnoreLogFormat then
             begin
               LValue := LJO.Pairs[I].JsonValue.Clone as TJSONValue;
               Result.AddPair(LJO.Pairs[I].JsonString.Value, LValue);

@@ -38,6 +38,13 @@ type
       ProductName: string;
       ProductVersion: string;
     end;
+  private
+    class var FAppName: string;
+    class var FAppPath: string;
+    class var FAppVersion: TAppVersion;
+    class var FAppSize: string;
+    class var FOS: string;
+    class var FProcessId: string;
   public
     class function AppName: string;
     class function AppPath: string;
@@ -46,7 +53,7 @@ type
     class function ComputerName: string;
     class function Username: string;
     class function OS: string;
-    class function ProcessId: Integer;
+    class function ProcessId: string;
     class function IPLocal: string;
   end;
 
@@ -65,15 +72,25 @@ var
   LPackageManager: JPackageManager;
   LPackageName: JString;
 begin
+  if not Trim(FAppName).IsEmpty then
+    Exit(FAppName);
+
   LPackageManager := TAndroidHelper.Activity.getPackageManager;
   LPackageName := TAndroidHelper.Context.getPackageName;
   Result := JStringToString(LPackageManager.getPackageInfo(LPackageName, 0).applicationInfo.loadLabel(LPackageManager).toString);
+
+  FAppName := Result;
 end;
 {$ELSEIF DEFINED(IOS)}
 
 
 begin
+  if not Trim(FAppName).IsEmpty then
+    Exit(FAppName);
+
   Result := TNSString.Wrap(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle, KCFBundleIdentifierKey)).UTF8String;
+
+  FAppName := Result;
 end;
 {$ELSE}
 
@@ -81,11 +98,17 @@ end;
 var
   LAppPathFull: string;
 begin
+  if not Trim(FAppName).IsEmpty then
+    Exit(FAppName);
+
   if IsLibrary then
     LAppPathFull := GetModuleName(0)
   else
     LAppPathFull := ParamStr(0);
+
   Result := TPath.GetFileNameWithoutExtension(LAppPathFull);
+
+  FAppName := Result;
 end;
 {$ENDIF}
 
@@ -93,7 +116,12 @@ end;
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
+  if not Trim(FAppPath).IsEmpty then
+    Exit(FAppPath);
+
   Result := TPath.GetDocumentsPath;
+
+  FAppPath := Result;
 end;
 {$ELSE}
 
@@ -101,12 +129,17 @@ end;
 var
   LAppPathFull: string;
 begin
+  if not Trim(FAppPath).IsEmpty then
+    Exit(FAppPath);
+
   if IsLibrary then
     LAppPathFull := GetModuleName(0)
   else
     LAppPathFull := ParamStr(0);
 
   Result := TPath.GetDirectoryName(LAppPathFull);
+
+  FAppPath := Result;
 end;
 {$ENDIF}
 
@@ -116,6 +149,9 @@ class function TLoggerUtils.AppVersion: TAppVersion;
 var
   LPackageInfo: JPackageInfo;
 begin
+  if not Trim(FAppPath).IsEmpty then
+    Exit(FAppPath);
+
   LPackageInfo := TAndroidHelper.Activity.getPackageManager.getPackageInfo(TAndroidHelper.Context.getPackageName(), TJPackageManager.JavaClass.GET_ACTIVITIES);
   Result.FileVersion := IntToStr(LPackageInfo.VersionCode);
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
@@ -128,6 +164,9 @@ var
   AppBundle: NSBundle;
   BuildStr: NSString;
 begin
+  if not Trim(FAppVersion.FileVersion).IsEmpty then
+    Exit(FAppVersion);
+
   try
     AppKey := (StrToNSStr('CFBundleVersion') as ILocalObject).GetObjectID;
     AppBundle := TNSBundle.Wrap(TNSBundle.OCClass.mainBundle);
@@ -137,6 +176,8 @@ begin
   except
     Result.FileVersion := TNSString.Wrap(CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle, kCFBundleVersionKey)).UTF8String;
   end;
+
+  FAppVersion := Result;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
 
@@ -151,6 +192,9 @@ var
   LP: Pointer;
   LLen: cardinal;
 begin
+  if not Trim(FAppVersion.FileVersion).IsEmpty then
+    Exit(FAppVersion);
+
   Result := Default (TAppVersion);
 
   try
@@ -199,6 +243,8 @@ begin
     end;
   except
   end;
+
+  FAppVersion := Result;
 end;
 {$ELSE}
 
@@ -211,9 +257,11 @@ end;
 
 class function TLoggerUtils.AppSize: Double;
 var
-  LSearchRec: TSearchRec;
   LAppPathFull: string;
 begin
+  if not Trim(FAppSize).IsEmpty then
+    Exit(StrToFloatDef(FAppSize, 0));
+
   Result := 0;
 
   try
@@ -222,14 +270,12 @@ begin
     else
       LAppPathFull := ParamStr(0);
 
-    Result := 0;
-
-    if FindFirst(LAppPathFull, faAnyFile, LSearchRec) = 0 then
-      Result := LSearchRec.Size / 1024; // Kb
-
-    FindClose(LSearchRec);
+    Result := TFile.GetSize(LAppPathFull);
+    Result := Result / 1024; // Kb
   except
   end;
+
+  FAppSize := Result.toString;
 end;
 
 class function TLoggerUtils.ComputerName: string;
@@ -308,18 +354,31 @@ end;
 
 class function TLoggerUtils.OS: string;
 begin
+  if not Trim(FOS).IsEmpty then
+    Exit(FOS);
+
   Result := TOSVersion.toString;
+
+  FOS := Result;
 end;
 
-class function TLoggerUtils.ProcessId: Integer;
+class function TLoggerUtils.ProcessId: string;
+var
+  LProcessId: Integer;
 begin
+  if not Trim(FProcessId).IsEmpty then
+    Exit(FProcessId);
+
 {$IF DEFINED(MSWINDOWS)}
-  Result := GetCurrentProcessId;
+  LProcessId := GetCurrentProcessId;
 {$ELSEIF DEFINED(LINUX)}
-  Result := getpid;
+  LProcessId := getpid;
 {$ELSE}
-  Result := 0;
+  LProcessId := 0;
 {$ENDIF}
+  Result := LProcessId.toString;
+
+  FProcessId := Result;
 end;
 
 class function TLoggerUtils.IPLocal: string;
@@ -382,5 +441,14 @@ begin
 
   Result := LValue.AsObject;
 end;
+
+initialization
+
+TLoggerUtils.FAppName := '';
+TLoggerUtils.FAppPath := '';
+TLoggerUtils.FAppVersion := Default (TLoggerUtils.TAppVersion);
+TLoggerUtils.FAppSize := '';
+TLoggerUtils.FOS := '';
+TLoggerUtils.FProcessId := '';
 
 end.

@@ -10,6 +10,14 @@
 			"failed": false,
 			"changed": false
 		},
+		"https://github.com/danieleteti/delphistompclient": {
+			"name": "delphistompclient",
+			"version": "master",
+			"hash": "cb6937b7758328924988f916cc4ddbbb",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
 		"https://github.com/dliocode/sendemail": {
 			"name": "sendemail",
 			"version": "1.0.13",

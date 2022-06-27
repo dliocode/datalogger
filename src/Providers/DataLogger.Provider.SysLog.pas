@@ -156,6 +156,9 @@ begin
 
         TLoggerType.Fatal:
           LSysLogMessage.Severity := TIdSyslogSeverity.slCritical;
+
+        TLoggerType.Custom:
+          LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
       end;
 
       LSysLogMessage.Msg.Text := LItem.Message;

@@ -32,25 +32,20 @@
 
       <div class="col-12">
         <div class="row mt-2 mb-3 align-items-center">
-          <div class="col-9">
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTableColumns">Show/Hide Columns</button>
+          <div class="col-10">
             <button type="button" class="btn btn-secondary btn-sm" onclick="clearMessages()">Clear Messages</button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="saveLog()">Save Log (CSV)</button>
           </div>
-
-          <div class="col-3">
-            <div class="form-check float-end">
-              <input class="form-check-input" type="checkbox" value="" id="checkAutoScroll" checked>
-              <label class="form-check-label text-white" for="checkAutoScroll">
-                AutoScroll
-              </label>
+          <div class="col-auto">
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalOptions">Options</button>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-12">
-        <div class="input-group  mb-3">
+        <div class="input-group mb-3">
           <input id="search" type="text" class="form-control" aria-describedby="search-text">
           <button class="btn btn-primary" type="button" onclick="filterTable()">Search</button>
         </div>
@@ -58,7 +53,62 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modalTableColumns" tabindex="-1">
+  <div class="modal fade modal-fullscreen-sm-down" id="modalOptions" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Options</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="row mb-2 align-items-center">
+            <div class="col-6">
+              <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalTableColumns">Show/Hide Columns</button>
+            </div>
+
+            <div class="col-6">
+              <div class="d-flex justify-content-center">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="checkAutoScroll" checked>
+                  <label class="form-check-label" for="checkAutoScroll">
+                    AutoScroll
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-6">
+              <div class="form-floating">
+                <input type="text" class="form-control" id="maxline" value="1000">
+                <label for="maxline">Max Lines</label>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="form-floating">
+                <select class="form-select" id="modeinsertlog">
+                  <option value="0">First Line</option>
+                  <option value="1" selected>End Line</option>
+                </select>
+                <label for="modeinsertlog">Mode Insert Log</label>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="SaveOptions()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade modal-fullscreen-sm-down" id="modalTableColumns" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
@@ -258,6 +308,8 @@
     const btnConnect = document.getElementById('btnConnect');
     const inputHost = document.getElementById('host');
     const records = document.getElementById('records');
+    const inputMaxLine = document.getElementById('maxline');
+    const inputModeInsertLog = document.getElementById('modeinsertlog');
 
     const showHideColumnsTimeStamp = document.getElementById('showHideColumnsTimeStamp');
     const showHideColumnsName = document.getElementById('showHideColumnsName');
@@ -276,12 +328,16 @@
     const showHideColumnsProcessID = document.getElementById('showHideColumnsProcessID');
     const showHideColumnsIPLocal = document.getElementById('showHideColumnsIPLocal');
 
-    loadHost();
-    loadChangeColumns();
+    function Init() {
+      loadHost();
+      loadChangeColumns();
+      LoadOptions();
+    }
+
+    Init();
 
     var socket;
     var myTimeout;
-    var dataLogger = [];
 
     function WS() {
       if (btnConnect.textContent === 'Connect') {
@@ -319,7 +375,7 @@
 
           styleDisconnect();
 
-          localStorage.setItem('datalogger_socket_host', host);
+          localStorage.setItem('datalogger_host', host);
 
           myTimeout = setInterval(() => {
             if (socket.readyState == WebSocket.OPEN) socket.send('OK');
@@ -331,10 +387,6 @@
 
           let data = JSON.parse(message.data);
           if (!data) return;
-
-          dataLogger.push(data);
-
-          records.innerHTML = 'Records: ' + dataLogger.length
 
           setDataTable(data);
           filterTable()
@@ -392,7 +444,16 @@
 
     function setDataTable(data) {
       const tableRef = listMessage.getElementsByTagName('tbody')[0];
-      let newRow = tableRef.insertRow(-1);
+
+      let newRow;
+
+      if (inputModeInsertLog.value === '0') {
+        // First Line
+        newRow = tableRef.insertRow(0);
+      } else {
+        // EndLine
+        newRow = tableRef.insertRow(-1);
+      }
 
       let cell;
       cell = newRow.insertCell(0);
@@ -474,9 +535,38 @@
       cell.className = 'text-center';
 
       if (checkAutoScroll.checked) {
-        if (containerTable.scrollHeight > 0)
-          containerTable.scrollTop = containerTable.scrollHeight;
+        if (inputModeInsertLog.value === '0') {
+          // First Line          
+        } else {
+          // EndLine
+          if (containerTable.scrollHeight > 0)
+            containerTable.scrollTop = containerTable.scrollHeight;
+        }
       }
+
+      let tr = listMessage.getElementsByTagName("tr");
+      let countLines = tr.length;
+      let maxLine = inputMaxLine.value;
+
+      if ((maxLine !== '') && (maxLine > 0))
+        if (countLines > maxLine) {
+          // MaxLine remove
+          while ((countLines - 1) > maxLine) {
+
+            if (inputModeInsertLog.value === '0') {
+              // First Line
+              listMessage.deleteRow(tr.length - 1);
+            } else {
+              // EndLine
+              listMessage.deleteRow(1);
+            }
+
+            countLines = tr.length;
+          }
+        }
+
+      // refresh total records  
+      records.innerHTML = 'Records: ' + (countLines - 1)
     }
 
     function clearMessages() {
@@ -488,14 +578,14 @@
     }
 
     function loadHost() {
-      const host = localStorage.getItem('datalogger_socket_host');
+      const host = localStorage.getItem('datalogger_host');
       if (!host) return;
 
       inputHost.value = host;
     }
 
     function loadChangeColumns() {
-      const dataString = localStorage.getItem('datalogger_socket_columns');
+      const dataString = localStorage.getItem('datalogger_columns');
       if (!dataString) return;
 
       const data = JSON.parse(dataString);
@@ -605,7 +695,7 @@
       data.showHideColumnsProcessID = showHideColumnsProcessID.checked;
       data.showHideColumnsIPLocal = showHideColumnsIPLocal.checked;
 
-      localStorage.setItem('datalogger_socket_columns', JSON.stringify(data));
+      localStorage.setItem('datalogger_columns', JSON.stringify(data));
 
       loadChangeColumns();
     }
@@ -659,6 +749,32 @@
       downloadCSVFile(data.join("\n"), 'datalogger.csv');
     }
 
+    function LoadOptions() {
+      const dataString = localStorage.getItem('datalogger_options');
+      if (!dataString) return;
+
+      const data = JSON.parse(dataString);
+
+      if (data.maxLine == '') data.maxLine = 0;
+
+      inputMaxLine.value = data.maxLine;
+      inputModeInsertLog.value = data.modeInsertLog;
+    }
+
+    function SaveOptions() {
+      const data = {};
+
+      let maxLine = inputMaxLine.value;
+
+      if (maxLine == '') maxLine = 0;
+
+      data.maxLine = maxLine;
+      data.modeInsertLog = inputModeInsertLog.value;
+
+      localStorage.setItem('datalogger_options', JSON.stringify(data));
+
+      LoadOptions();
+    }   
   </script>
 </body>
 

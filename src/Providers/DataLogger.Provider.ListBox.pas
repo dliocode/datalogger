@@ -19,7 +19,9 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.TypInfo;
 
 type
+{$SCOPEDENUMS ON}
   TListBoxModeInsert = (tmFirst, tmLast);
+{$SCOPEDENUMS OFF}
 
   TProviderListBox = class(TDataLoggerProvider)
   private
@@ -52,7 +54,7 @@ begin
 
   ListBox(nil);
   MaxLogLines(0);
-  ModeInsert(tmLast);
+  ModeInsert(TListBoxModeInsert.tmLast);
   CleanOnStart(False);
   FCleanOnRun := False;
 end;
@@ -178,10 +180,10 @@ begin
               FListBox.Items.BeginUpdate;
 
               case FModeInsert of
-                tmFirst:
+                TListBoxModeInsert.tmFirst:
                   FListBox.Items.Insert(0, LLog);
 
-                tmLast:
+                TListBoxModeInsert.tmLast:
                   FListBox.Items.Add(LLog);
               end;
             end);
@@ -197,7 +199,7 @@ begin
                 LLines := FListBox.Items.Count;
 
                 case FModeInsert of
-                  tmFirst:
+                  TListBoxModeInsert.tmFirst:
                     begin
                       while LLines > FMaxLogLines do
                       begin
@@ -206,7 +208,7 @@ begin
                       end;
                     end;
 
-                  tmLast:
+                  TListBoxModeInsert.tmLast:
                     begin
                       while LLines > FMaxLogLines do
                       begin
@@ -229,10 +231,10 @@ begin
                 FListBox.Items.EndUpdate;
 
                 case FModeInsert of
-                  tmFirst:
+                  TListBoxModeInsert.tmFirst:
                     FListBox.ItemIndex := 0;
 
-                  tmLast:
+                  TListBoxModeInsert.tmLast:
                     FListBox.ItemIndex := FListBox.Items.Count - 1;
                 end;
               end);
