@@ -31,6 +31,10 @@ type
     function ToString: string;
   end;
 
+  TLoggerInternalItem = record
+    TypeSlineBreak: Boolean;
+  end;
+
   TLoggerItem = record
     Name: string;
     Sequence: Int64;
@@ -52,6 +56,8 @@ type
     OSVersion: string;
     ProcessId: string;
     IPLocal: string;
+
+    InternalItem: TLoggerInternalItem;
   end;
 
   TLoggerLogFormat = class

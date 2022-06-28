@@ -122,7 +122,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.&Type = TLoggerType.All then
+    if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
     LName := FTitle;

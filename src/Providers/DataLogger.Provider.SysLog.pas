@@ -122,7 +122,7 @@ begin
 
   for LItem in LCache do
   begin
-    if LItem.&Type = TLoggerType.All then
+    if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);

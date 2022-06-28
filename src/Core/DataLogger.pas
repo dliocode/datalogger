@@ -38,7 +38,7 @@ type
     constructor Create;
     procedure Start;
 
-    function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string): TDataLogger; overload;
+    function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string; const ATypeSlineBreak: Boolean): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
@@ -372,12 +372,12 @@ end;
 
 function TDataLogger.CustomType(const ATypeCustom: string; const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, AMessage, '', ATag, ATypeCustom);
+  Result := AddCache(TLoggerType.Custom, AMessage, '', ATag, ATypeCustom, False);
 end;
 
 function TDataLogger.CustomType(const ATypeCustom: string; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, '', AMessage.ToString, ATag, ATypeCustom);
+  Result := AddCache(TLoggerType.Custom, '', AMessage.ToString, ATag, ATypeCustom, False);
 end;
 
 function TDataLogger.&Type(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger;
@@ -392,7 +392,7 @@ end;
 
 function TDataLogger.SlineBreak: TDataLogger;
 begin
-  Result := AddCache(TLoggerType.All, '', '');
+  Result := AddCache(TLoggerType.All, '', '', '', '', True);
 end;
 
 function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
@@ -765,9 +765,8 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string): TDataLogger;
+function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string; const ATypeSlineBreak: Boolean): TDataLogger;
 var
-  LIsCustomType: Boolean;
   LLogItem: TLoggerItem;
 begin
   Result := Self;
@@ -777,9 +776,7 @@ begin
 
   Lock;
   try
-    LIsCustomType := Ord(AType) = -1;
-
-    if not LIsCustomType then
+    if not ATypeSlineBreak then
     begin
       if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
         Exit;
@@ -790,13 +787,13 @@ begin
       if not(AType in FOnlyLogType) then
         if Ord(FLogLevel) > Ord(AType) then
           Exit;
-    end;
 
-    if not(AType = TLoggerType.All) then
-    begin
-      if FSequence = 18446744073709551615 then
-        FSequence := 0;
-      Inc(FSequence);
+      if not(AType = TLoggerType.All) then
+      begin
+        if FSequence = 18446744073709551615 then
+          FSequence := 0;
+        Inc(FSequence);
+      end;
     end;
 
     LLogItem := default (TLoggerItem);
@@ -825,6 +822,8 @@ begin
     LLogItem.ProcessID := TLoggerUtils.ProcessID;
     LLogItem.IPLocal := TLoggerUtils.IPLocal;
 
+    LLogItem.InternalItem.TypeSlineBreak := ATypeSlineBreak;
+
     FListLoggerItem.Add(LLogItem);
   finally
     FEvent.SetEvent;
@@ -834,12 +833,12 @@ end;
 
 function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger;
 begin
-  Result := AddCache(AType, AMessage, '', ATag, '');
+  Result := AddCache(AType, AMessage, '', ATag, '', False);
 end;
 
 function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger;
 begin
-  Result := AddCache(AType, '', AMessage.ToString, ATag, '');
+  Result := AddCache(AType, '', AMessage.ToString, ATag, '', False);
 end;
 
 function TDataLogger.ExtractCache: TArray<TLoggerItem>;
