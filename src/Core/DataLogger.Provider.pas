@@ -206,19 +206,6 @@ begin
   FFinalMessage := AMessage;
 end;
 
-function TDataLoggerProvider.Clear: TDataLoggerProvider;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    FListLoggerItem.Clear;
-    FListLoggerItem.TrimExcess;
-  finally
-    UnLock;
-  end;
-end;
-
 function TDataLoggerProvider.UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
 begin
   Result := Self;
@@ -370,6 +357,19 @@ begin
   end;
 end;
 
+function TDataLoggerProvider.Clear: TDataLoggerProvider;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FListLoggerItem.Clear;
+    FListLoggerItem.TrimExcess;
+  finally
+    UnLock;
+  end;
+end;
+
 function TDataLoggerProvider.CountLogInCache: Int64;
 begin
   Lock;
@@ -378,6 +378,69 @@ begin
   finally
     UnLock;
   end;
+end;
+
+function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;
+var
+  I: Integer;
+  LItem: TLoggerItem;
+  LMessage: string;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    try
+      for I := Low(AValues) to High(AValues) do
+      begin
+        LItem := AValues[I];
+
+        if not LItem.InternalItem.TypeSlineBreak then
+        begin
+          if (TLoggerType.All in FDisableLogType) or (LItem.&Type in FDisableLogType) then
+            Continue;
+
+          if not(TLoggerType.All in FOnlyLogType) and not(LItem.&Type in FOnlyLogType) then
+            Continue;
+
+          if not(LItem.&Type in FOnlyLogType) then
+            if Ord(FLogLevel) > Ord(LItem.&Type) then
+              Continue;
+        end;
+
+        LMessage := LItem.Message;
+        try
+          if not FInitialMessage.Trim.IsEmpty then
+            LMessage := FInitialMessage + LMessage;
+
+          if not FFinalMessage.Trim.IsEmpty then
+            LMessage := LMessage + FFinalMessage;
+        finally
+          LItem.Message := LMessage;
+        end;
+
+        FListLoggerItem.Add(LItem);
+
+        if not LItem.InternalItem.TypeSlineBreak then
+          if FUseTransaction and FInTransaction then
+            if LItem.&Type in FAutoCommit then
+            begin
+              CommitTransaction(FTypeAutoCommit, False);
+              StartTransaction(False);
+            end;
+      end;
+    finally
+      if not FUseTransaction or not FInTransaction then
+        FEvent.SetEvent;
+    end;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider.AddCache(const AValue: TLoggerItem): TDataLoggerProvider;
+begin
+  Result := AddCache([AValue]);
 end;
 
 function TDataLoggerProvider.NotifyEvent: TDataLoggerProvider;
@@ -538,65 +601,6 @@ begin
         LJAAutoCommitLogType.Add(TLoggerType(I).ToString);
 
   LJOAutoCommit.AddPair('type_commit', GetEnumName(TypeInfo(TLoggerTypeAutoCommit), Integer(FTypeAutoCommit)));
-end;
-
-function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;
-var
-  I: Integer;
-  LItem: TLoggerItem;
-  LMessage: string;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    try
-      for I := Low(AValues) to High(AValues) do
-      begin
-        LItem := AValues[I];
-
-        if (TLoggerType.All in FDisableLogType) or (LItem.&Type in FDisableLogType) then
-          Continue;
-
-        if not(TLoggerType.All in FOnlyLogType) and not(LItem.&Type in FOnlyLogType) then
-          Continue;
-
-        if not(LItem.&Type in FOnlyLogType) then
-          if Ord(FLogLevel) > Ord(LItem.&Type) then
-            Continue;
-
-        LMessage := LItem.Message;
-        try
-          if not FInitialMessage.Trim.IsEmpty then
-            LMessage := FInitialMessage + LMessage;
-
-          if not FFinalMessage.Trim.IsEmpty then
-            LMessage := LMessage + FFinalMessage;
-        finally
-          LItem.Message := LMessage;
-        end;
-
-        FListLoggerItem.Add(LItem);
-
-        if FUseTransaction and FInTransaction then
-          if LItem.&Type in FAutoCommit then
-          begin
-            CommitTransaction(FTypeAutoCommit, False);
-            StartTransaction(False);
-          end;
-      end;
-    finally
-      if not FUseTransaction or not FInTransaction then
-        FEvent.SetEvent;
-    end;
-  finally
-    UnLock;
-  end;
-end;
-
-function TDataLoggerProvider.AddCache(const AValue: TLoggerItem): TDataLoggerProvider;
-begin
-  Result := AddCache([AValue]);
 end;
 
 function TDataLoggerProvider.ExtractCache: TArray<TLoggerItem>;
