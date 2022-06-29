@@ -350,8 +350,9 @@ begin
         FWriter.OwnStream;
 
         Break;
-      finally
+      except
         LFileStream.Free;
+        raise;
       end;
     except
       on E: Exception do
