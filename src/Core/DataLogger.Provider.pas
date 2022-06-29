@@ -14,13 +14,17 @@ uses
   System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo;
 
 type
+  TDataLoggerListItem = TList<TLoggerItem>;
+  TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
+
   TDataLoggerProvider = class(TThread)
   private
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
-    FListLoggerBase: TList<TLoggerItem>;
-    FListTransaction: TObjectDictionary<Integer, TList<TLoggerItem>>;
-    FListLoggerItem: TList<TLoggerItem>;
+
+    FListLoggerBase: TDataLoggerListItem;
+    FListTransaction: TDataLoggerListItemTransaction;
+    FListLoggerItem: TDataLoggerListItem;
 
     FLogLevel: TLoggerType;
     FDisableLogType: TLoggerTypes;
@@ -96,9 +100,9 @@ begin
 
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
-  FListLoggerBase := TList<TLoggerItem>.Create;
+  FListLoggerBase := TDataLoggerListItem.Create;
   FListLoggerItem := FListLoggerBase;
-  FListTransaction := TObjectDictionary < Integer, TList < TLoggerItem >>.Create([doOwnsValues]);
+  FListTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
 
   FInTransaction := False;
 
@@ -236,7 +240,7 @@ begin
     if LCountTransaction = 0 then
       FInTransaction := True;
 
-    FListLoggerItem := TList<TLoggerItem>.Create;
+    FListLoggerItem := TDataLoggerListItem.Create;
     FListTransaction.Add(LCountTransaction + 1, FListLoggerItem);
   finally
     if AUseLock then
@@ -247,7 +251,7 @@ end;
 function TDataLoggerProvider.CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
 var
   LCountTransaction: Integer;
-  LCurrent: TList<TLoggerItem>;
+  LCurrent: TDataLoggerListItem;
   LCurrentValues: TArray<TLoggerItem>;
 begin
   Result := Self;
@@ -280,7 +284,8 @@ begin
       begin
         FListLoggerItem := FListLoggerBase;
         FListLoggerItem.AddRange(LCurrentValues);
-        FEvent.SetEvent;
+
+//        FEvent.SetEvent;
 
         FInTransaction := False;
 
