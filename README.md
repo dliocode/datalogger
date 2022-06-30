@@ -20,22 +20,38 @@ DataLogger foi projetado para ser uma biblioteca simples de log com suporte a v�
 
 Support: developer.dlio@gmail.com
 
-## Instalação
+## ⚙️ Instalação
 
 ### Para instalar em seu projeto usando [boss](https://github.com/HashLoad/boss):
 ```sh
 $ boss install github.com/dliocode/datalogger
 ```
 
-## Dependências
+## 📌 Índice
 
-Essas dependências se dá quando utilizado alguns _providers_
-
-| Provider | Dependence |
-|----------|------------|
-| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
-| DataLogger.Provider.Redis| [Redis](https://github.com/danieleteti/delphiredisclient) |
-| DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/sendemail) |
+* [Como usar](#como-usar)
+* [Providers](#providers)
+* [Dependências](#dependencias)
+* [Exemplos](#exemplos)
+  * [Uso Padrão](#uso-padrao)
+  * [Criar uma nova instância do DataLogger](#criar-uma-nova-instancia-do-datalogger)
+  * [DataLogger Simple](#datalogger-simple)
+  * [CustomType](#customtype)
+  * [Formato do Log](#formato-do-log)
+    * [FormatLog Constant](#formatlog-constant)
+    * [Como definir um formato](#como-definir-um-formato)
+    * [Como definir um formato em providers específicos](#como-definir-um-formato-em-providers-especificos)
+    * [Como mudar o formato do TimeStamp](#como-mudar-o-formato-do-timestamp)
+    * [Tipos de Tag para criar o formato do log](#tipos-de-tag-para-criar-o-formato-do-log)
+  * [LogLevel](#loglevel)
+  * [Disable LogType](#disable-logtype)
+  * [Only LogType](#only-logtype)
+  * [Log Exception](#log-exception)
+  * [Max Retries](#max-retries)
+  * [InitialMessage](#initialmessage)
+  * [finalMessage](#finalmessage)
+  * [Name](#name)
+  * [Transaction](#transaction)
 
 ## Como usar
 
@@ -51,7 +67,7 @@ O primeiro destina-se apenas a ser um log compartilhado conveniente para ser usa
 uses DataLogger;
 ``` 
 
-### Provider
+## Providers
 
 Um **_provider_** serve essencialmente para armazenar seus logs. 
 Cada instância de um TDataLogger pode ter vários **_providers_** configurados.
@@ -83,6 +99,17 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog)|
 | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram)|
 | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) |
+
+
+## Dependências
+
+Essas dependências se dá quando utilizado alguns _providers_
+
+| Provider | Dependence |
+|----------|------------|
+| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
+| DataLogger.Provider.Redis| [Redis](https://github.com/danieleteti/delphiredisclient) |
+| DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/sendemail) |
 
 ## Exemplos
 
@@ -662,9 +689,9 @@ end.
 
 A utilização deste procedimento pode ser aplicado a seguinte situação;
 
-Vamos contar uma pesquena história:
+Vamos contar uma pequena história:
 
-> Temos uma _procedure_ que está fazendo uma execução, em cada etapa é gerado várias informações log, por costume sempre salvamos essas informações, isso faz que o nosso arquivo texto por exemplo, porém esse arquivo pode ficar grande demais. <br /> Agora imagina poder salvar os dados somente se houve algum erro durante a execução.
+> Temos uma _procedure_ que está fazendo uma execução, em cada etapa é gerado várias informações de log, por costume sempre salvamos essas informações, isso faz com que o nosso arquivo de texto por exemplo fique muito grande demais. <br /> Agora imagina poder salvar os dados somente se houve algum erro durante a execução ou quando necessário realmente salvar os dados.
 
 ### Como habilitar
 
