@@ -49,7 +49,7 @@ begin
 
   Logger.AddProvider(
     TProviderDiscordHooks.Create
-    .URL('https://discord.com/api/webhooks/<ID_CHANNEL>/<HASH>') // Add url webhook discord
+    .URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>') // Add url webhook discord
     .Username('DataLogger')
     .AvatarURL('')
     );

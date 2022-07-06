@@ -50,10 +50,7 @@ begin
 
   Logger.AddProvider(
     TProviderSlack.Create
-    .ServiceName('T00000000')
-    .Channel('#channel-it-will-post-to')
-//    .ChannelId('C00000000') // or ChannelId
-    .Username('username')
+    .URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX') // Add url webhook slack
     );
 
   // Log Format

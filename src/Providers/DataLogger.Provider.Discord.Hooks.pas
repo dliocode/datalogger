@@ -55,7 +55,7 @@ constructor TProviderDiscordHooks.Create;
 begin
   inherited Create;
 
-  URL('');
+  URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>');
   Username('DataLogger');
   AvatarURL('');
   ContentType('application/json');
