@@ -35,7 +35,7 @@ type
     FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
-    procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
+    procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -230,7 +230,7 @@ begin
   InternalSaveAsync(FMethod, LItemREST);
 end;
 
-procedure TProviderRESTNetHTTPClient.InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
+procedure TProviderRESTNetHTTPClient.InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
 var
   I: Integer;
 begin
@@ -238,7 +238,10 @@ begin
     Exit;
 
   for I := Low(ALogItemREST) to High(ALogItemREST) do
+  begin
     HTTP(AMethod, ALogItemREST[I]);
+    Sleep(ASleep);
+  end;
 end;
 
 procedure TProviderRESTNetHTTPClient.InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
@@ -320,7 +323,7 @@ begin
 
         LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
 
-        if not(LResponse.StatusCode in [200, 201]) then
+        if not(LResponse.StatusCode in [200, 201, 204]) then
           raise EDataLoggerException.Create(LResponseContent);
 
         Break;
@@ -337,7 +340,7 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount = -1 then
+          if LRetriesCount <= 0 then
             Break;
 
           if LRetriesCount >= FMaxRetries then

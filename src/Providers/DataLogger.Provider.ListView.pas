@@ -278,7 +278,7 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount = -1 then
+          if LRetriesCount <= 0 then
             Break;
 
           if LRetriesCount >= FMaxRetries then

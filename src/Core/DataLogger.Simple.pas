@@ -39,6 +39,11 @@ function &Type(const AType: TLoggerType; const AMessage: string; const ATag: str
 function &Type(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
 function SlineBreak: TDataLogger;
 
+function StartTransaction: TDataLogger;
+function CommitTransaction: TDataLogger;
+function RollbackTransaction: TDataLogger;
+function InTransaction: Boolean;
+
 implementation
 
 var
@@ -47,9 +52,9 @@ var
 function GetDataLogger: TDataLogger;
 begin
   if not Assigned(FDataLogger) then
-    raise EDataLoggerException.Create('DataLogger not defined. Use TDataLoggerSimple.SetDataLogger!');
-
-  Result := FDataLogger;
+    Result := Logger
+  else
+    Result := FDataLogger;
 end;
 
 function SetDataLogger(const ADataLogger: TDataLogger): TDataLogger;
@@ -186,6 +191,26 @@ end;
 function SlineBreak: TDataLogger;
 begin
   Result := GetDataLogger.SlineBreak;
+end;
+
+function StartTransaction: TDataLogger;
+begin
+  Result := GetDataLogger.StartTransaction;
+end;
+
+function CommitTransaction: TDataLogger;
+begin
+  Result := GetDataLogger.CommitTransaction;
+end;
+
+function RollbackTransaction: TDataLogger;
+begin
+  Result := GetDataLogger.RollbackTransaction;
+end;
+
+function InTransaction: Boolean;
+begin
+  Result := GetDataLogger.InTransaction;
 end;
 
 { TDataLoggerSimple }

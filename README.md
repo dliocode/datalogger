@@ -77,6 +77,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 | Nome | Uses | Samples |
 |------|------|---------|
 | Console| DataLogger.Provider.Console| [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) |
+| [Discord](https://discord.com/developers/docs/resources/webhook)| DataLogger.Provider.Discord.Hook| [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) |
 | [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch| [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) |
 | Email| DataLogger.Provider.Email| [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) |
 | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog)|
