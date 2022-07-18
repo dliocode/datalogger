@@ -41,6 +41,7 @@ contains
   DataLogger.Utils in 'src\Core\DataLogger.Utils.pas',
   DataLogger.Simple in 'src\Core\DataLogger.Simple.pas',
   DataLogger.Provider.Console in 'src\Providers\DataLogger.Provider.Console.pas',
+  DataLogger.Provider.Discord.Hooks in 'src\Providers\DataLogger.Provider.Discord.Hooks.pas',
   DataLogger.Provider.ElasticSearch in 'src\Providers\DataLogger.Provider.ElasticSearch.pas',
   DataLogger.Provider.Email in 'src\Providers\DataLogger.Provider.Email.pas',
   DataLogger.Provider.EventLog in 'src\Providers\DataLogger.Provider.EventLog.pas',

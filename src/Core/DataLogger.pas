@@ -38,9 +38,9 @@ type
     constructor Create;
     procedure Start;
 
-    function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string; const ATypeSlineBreak: Boolean): TDataLogger; overload;
+    function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ACustomType: string; const ATypeSlineBreak: Boolean): TDataLogger; overload;
     function AddCache(const AType: TLoggerType; const AMessage: string; const ATag: string): TDataLogger; overload;
-    function AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger; overload;
+    function AddCache(const AType: TLoggerType; const AMessage: TJSONObject; const ATag: string): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
     procedure SaveForce;
     procedure CloseProvider;
@@ -57,29 +57,40 @@ type
 
     function Trace(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Trace(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Trace(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Debug(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Debug(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Debug(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Debug(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Info(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Info(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Info(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Info(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Success(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Success(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Success(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Success(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Warn(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Warn(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Warn(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Warn(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Error(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Error(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Error(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Error(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function Fatal(const AMessage: string; const ATag: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
-    function Fatal(const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    function CustomType(const ATypeCustom: string; const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    function CustomType(const ATypeCustom: string; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
-    function &Type(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger; overload;
-    function &Type(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger; overload;
+    function Fatal(const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
+    function CustomType(const AType: string; const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
+    function CustomType(const AType: string; const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
+    function Log(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger; overload;
+    function Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATag: string = ''): TDataLogger; overload;
+    function Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATag: string = ''): TDataLogger; overload;
+
     function SlineBreak: TDataLogger;
 
     function StartTransaction: TDataLogger;
@@ -275,7 +286,7 @@ begin
   Result := AddCache(TLoggerType.Trace, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Trace(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Trace(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Trace, AMessage, ATag);
 end;
@@ -290,7 +301,7 @@ begin
   Result := AddCache(TLoggerType.Debug, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Debug(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Debug(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Debug, AMessage, ATag);
 end;
@@ -305,7 +316,7 @@ begin
   Result := AddCache(TLoggerType.Info, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Info(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Info(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Info, AMessage, ATag);
 end;
@@ -320,7 +331,7 @@ begin
   Result := AddCache(TLoggerType.Success, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Success(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Success(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Success, AMessage, ATag);
 end;
@@ -335,7 +346,7 @@ begin
   Result := AddCache(TLoggerType.Warn, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Warn(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Warn(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Warn, AMessage, ATag);
 end;
@@ -350,7 +361,7 @@ begin
   Result := AddCache(TLoggerType.Error, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Error(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Error(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Error, AMessage, ATag);
 end;
@@ -365,27 +376,37 @@ begin
   Result := AddCache(TLoggerType.Fatal, Format(AMessage, AArgs), ATag);
 end;
 
-function TDataLogger.Fatal(const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.Fatal(const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(TLoggerType.Fatal, AMessage, ATag);
 end;
 
-function TDataLogger.CustomType(const ATypeCustom: string; const AMessage: string; const ATag: string = ''): TDataLogger;
+function TDataLogger.CustomType(const AType: string; const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, AMessage, '', ATag, ATypeCustom, False);
+  Result := AddCache(TLoggerType.Custom, AMessage, '', ATag, AType, False);
 end;
 
-function TDataLogger.CustomType(const ATypeCustom: string; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger;
+function TDataLogger.CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, '', AMessage.ToString, ATag, ATypeCustom, False);
+  Result := AddCache(TLoggerType.Custom, Format(AMessage, AArgs), '', ATag, AType, False);
 end;
 
-function TDataLogger.&Type(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger;
+function TDataLogger.CustomType(const AType: string; const AMessage: TJSONObject; const ATag: string = ''): TDataLogger;
+begin
+  Result := AddCache(TLoggerType.Custom, '', AMessage.ToString, ATag, AType, False);
+end;
+
+function TDataLogger.Log(const AType: TLoggerType; const AMessage: string; const ATag: string = ''): TDataLogger;
 begin
   Result := AddCache(AType, AMessage, ATag);
 end;
 
-function TDataLogger.&Type(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string = ''): TDataLogger;
+function TDataLogger.Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATag: string): TDataLogger;
+begin
+  Result := AddCache(AType, Format(AMessage, AArgs), ATag);
+end;
+
+function TDataLogger.Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATag: string = ''): TDataLogger;
 begin
   Result := AddCache(AType, AMessage, ATag);
 end;
@@ -659,7 +680,7 @@ procedure TDataLogger.LoadFromJSON(const AJSON: string);
 var
   LProviders: TArray<TDataLoggerProvider>;
   LJSON: string;
-  LJO: TJsonObject;
+  LJO: TJSONObject;
   LJA: TJSONArray;
   LJAName: string;
   LProvider: TDataLoggerProvider;
@@ -671,65 +692,83 @@ begin
 
   LProviders := GetProviders;
 
-  LJSON := AJSON.Replace(#$D#$A, '');
-
+  Lock;
   try
-    LJO := TJsonObject.ParseJSONValue(LJSON) as TJsonObject;
-  except
-    on E: Exception do
-      raise EDataLoggerException.Create('JSON invalid!');
-  end;
+    LJSON := AJSON.Replace(#$D#$A, '');
 
-  try
-    for I := Pred(LJO.Count) downto 0 do
-    begin
-      LJA := LJO.Pairs[I].JsonValue as TJSONArray;
-      LJAName := LJO.Pairs[I].JsonString.Value;
+    try
+      LJO := TJSONObject.ParseJSONValue(LJSON) as TJSONObject;
+    except
+      on E: Exception do
+        raise EDataLoggerException.Create('JSON invalid in LoadFromJSON!');
+    end;
 
-      if LJA.Count = 0 then
-        Continue;
-
-      for LProvider in LProviders do
-        if LProvider.ClassName.ToLower = LJAName.ToLower then
+    if Assigned(LJO) then
+      try
+        for I := Pred(LJO.Count) downto 0 do
         begin
-          LProvider.LoadFromJSON(LJA.Items[0].ToString);
-          LJA.Remove(0).Free;
+          if not(LJO.Pairs[I].JsonValue is TJSONArray) then
+            Continue;
+
+          LJA := LJO.Pairs[I].JsonValue as TJSONArray;
+          LJAName := LJO.Pairs[I].JsonString.Value;
 
           if LJA.Count = 0 then
-            Break;
+            Continue;
+
+          for LProvider in LProviders do
+            if LProvider.ClassName.ToLower = LJAName.ToLower then
+            begin
+              LProvider.LoadFromJSON(LJA.Items[0].ToString);
+              LJA.Remove(0).Free;
+
+              if LJA.Count = 0 then
+                Break;
+            end;
+
+          if LJA.Count = 0 then
+            LJO.RemovePair(LJAName).Free;
         end;
 
-      if LJA.Count = 0 then
-        LJO.RemovePair(LJAName).Free;
-    end;
+        if LJO.Count = 0 then
+          Exit;
 
-    if LJO.Count = 0 then
-      Exit;
+        for I := 0 to Pred(LJO.Count) do
+        begin
+          LJA := LJO.Pairs[I].JsonValue as TJSONArray;
+          LJAName := LJO.Pairs[I].JsonString.Value;
 
-    for I := 0 to Pred(LJO.Count) do
-    begin
-      LJA := LJO.Pairs[I].JsonValue as TJSONArray;
-      LJAName := LJO.Pairs[I].JsonString.Value;
+          for J := 0 to Pred(LJA.Count) do
+          begin
+            LProvider := TLoggerRTTI.CreateObject(LJAName) as TDataLoggerProvider;
 
-      for J := 0 to Pred(LJA.Count) do
-      begin
-        LProvider := TLoggerRTTI.CreateObject(LJAName) as TDataLoggerProvider;
+            if not Assigned(LProvider) then
+              Continue;
 
-        if not Assigned(LProvider) then
-          Continue;
+            try
+              LProvider.LoadFromJSON(LJA.Items[J].ToString);
+            except
+              on E: Exception do
+              begin
+                LProvider.Free;
+                Continue;
+              end;
+            end;
 
-        LProvider.LoadFromJSON(LJA.Items[J].ToString);
-        AddProvider(LProvider);
+            AddProvider(LProvider);
+          end;
+        end;
+      finally
+        LJO.Free;
       end;
-    end;
   finally
-    LJO.Free;
+    UnLock;
   end;
 end;
 
 function TDataLogger.ToJSON(const AFormat: Boolean): string;
 var
-  LJO: TJsonObject;
+  LJO: TJSONObject;
   LJA: TJSONArray;
   LProviders: TArray<TDataLoggerProvider>;
   LProvider: TDataLoggerProvider;
@@ -738,7 +777,7 @@ begin
 
   Lock;
   try
-    LJO := TJsonObject.Create;
+    LJO := TJSONObject.Create;
     try
       for LProvider in LProviders do
       begin
@@ -750,7 +789,7 @@ begin
         else
           LJA := LJO.Get(LProvider.ClassName).JsonValue as TJSONArray;
 
-        LJA.Add(TJsonObject.ParseJSONValue(LProvider.ToJSON) as TJsonObject);
+        LJA.Add(TJSONObject.ParseJSONValue(LProvider.ToJSON) as TJSONObject);
       end;
 
       if AFormat then
@@ -765,9 +804,8 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ATypeCustom: string; const ATypeSlineBreak: Boolean): TDataLogger;
+function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATag: string; const ACustomType: string; const ATypeSlineBreak: Boolean): TDataLogger;
 var
-  LNow: TDateTime;
   LLogItem: TLoggerItem;
 begin
   Result := Self;
@@ -777,8 +815,6 @@ begin
 
   Lock;
   try
-    LNow := Now;
-
     if not ATypeSlineBreak then
     begin
       if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
@@ -802,11 +838,11 @@ begin
     LLogItem := default (TLoggerItem);
     LLogItem.Name := FName;
     LLogItem.Sequence := FSequence;
-    LLogItem.TimeStamp := LNow;
+    LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;
     LLogItem.&Type := AType;
 
-    LLogItem.TypeString := ATypeCustom;
+    LLogItem.TypeString := ACustomType;
     if LLogItem.TypeString.Trim.IsEmpty then
       LLogItem.TypeString := AType.ToString;
 
@@ -839,7 +875,7 @@ begin
   Result := AddCache(AType, AMessage, '', ATag, '', False);
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: TJsonObject; const ATag: string): TDataLogger;
+function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: TJSONObject; const ATag: string): TDataLogger;
 begin
   Result := AddCache(AType, '', AMessage.ToString, ATag, '', False);
 end;

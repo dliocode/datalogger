@@ -141,6 +141,7 @@
         <DCCReference Include="src\Core\DataLogger.Utils.pas"/>
         <DCCReference Include="src\Core\DataLogger.Simple.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Console.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Discord.Hooks.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.ElasticSearch.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Email.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.EventLog.pas"/>

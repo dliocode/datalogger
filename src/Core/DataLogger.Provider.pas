@@ -63,6 +63,7 @@ type
 
     function UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
     function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
+
     function StartTransaction(const AUseLock: Boolean = True): TDataLoggerProvider;
     function CommitTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
     function RollbackTransaction(const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
