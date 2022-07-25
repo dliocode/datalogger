@@ -163,7 +163,12 @@ begin
     if FSocket.Active then
       Exit;
 
-    FSocket.Active := True;
+    try
+      FSocket.Active := True;
+    except
+      on E: Exception do
+        raise EDataLoggerException.CreateFmt('ProviderSocker -> Start -> Port: %d | Message: %s', [FSocket.DefaultPort, E.Message]);
+    end;
   finally
     UnLock;
   end;
