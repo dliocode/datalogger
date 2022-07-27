@@ -15,12 +15,15 @@ uses
   System.SysUtils, System.Classes, System.Generics.Collections, System.JSON, System.DateUtils, System.Threading;
 
 type
+  TProviderSocketCustomMessage = reference to function(const AItem: TLoggerItem): string;
+
   TProviderSocket = class(TDataLoggerProvider)
   private
     FListClients: TDictionary<string, TIdContext>;
     FSocket: TIdCustomTCPServer;
     FCheckHeartBeat: TThread;
     FAutoStart: Boolean;
+    FCustomMessage: TProviderSocketCustomMessage;
 
     procedure OnConnect(AContext: TIdContext);
     procedure OnDisconnect(AContext: TIdContext);
@@ -34,6 +37,7 @@ type
     function MaxConnection(const AValue: Integer): TProviderSocket;
     function InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
     function AutoStart(const AValue: Boolean): TProviderSocket;
+    function CustomMessage(const AMessage: TProviderSocketCustomMessage): TProviderSocket;
 
     function Start: TProviderSocket;
     function Stop: TProviderSocket;
@@ -90,16 +94,11 @@ begin
   inherited;
 
   Port(55666);
-  AutoStart(False);
+  AutoStart(True);
   MaxConnection(0);
+  CustomMessage(nil);
 
   CheckHeartBeat;
-end;
-
-function TProviderSocket.AutoStart(const AValue: Boolean): TProviderSocket;
-begin
-  Result := Self;
-  FAutoStart := AValue;
 end;
 
 procedure TProviderSocket.BeforeDestruction;
@@ -154,6 +153,18 @@ begin
   end;
 end;
 
+function TProviderSocket.AutoStart(const AValue: Boolean): TProviderSocket;
+begin
+  Result := Self;
+  FAutoStart := AValue;
+end;
+
+function TProviderSocket.CustomMessage(const AMessage: TProviderSocketCustomMessage): TProviderSocket;
+begin
+  Result := Self;
+  FCustomMessage := AMessage;
+end;
+
 function TProviderSocket.Start: TProviderSocket;
 begin
   Result := Self;
@@ -184,6 +195,7 @@ begin
       Exit;
 
     FSocket.Active := False;
+    AutoStart(False);
 
     FListClients.Clear;
     FListClients.TrimExcess;
@@ -290,7 +302,10 @@ begin
     if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
+    if Assigned(FCustomMessage) then
+      LLog := FCustomMessage(LItem)
+    else
+      LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
 
     TParallel.For(Low(LContexts), High(LContexts),
       procedure(I: Integer)
@@ -362,6 +377,10 @@ procedure TProviderSocket.OnExecute(AContext: TIdContext);
 var
   LMessage: string;
 begin
+  if (not Assigned(AContext)) or (not Assigned(AContext.Connection)) or (not Assigned(AContext.Connection.IOHandler)) then
+    Exit;
+
+  AContext.Connection.IOHandler.CheckForDataOnSource(10);
   LMessage := TDataLoggerSocketIOHandler(AContext.Connection.IOHandler).ReadMessage;
 
   if LMessage.Trim.IsEmpty then
@@ -501,7 +520,7 @@ begin
 
   if LHandle.Tag = -1 then
   begin
-    LHandle.CheckForDataOnSource(50);
+    LHandle.CheckForDataOnSource(10);
 
     if not LHandle.InputBufferIsEmpty then
     begin
@@ -565,6 +584,7 @@ begin
     if ReadByte = $81 then
     begin
       LReadByte := ReadByte;
+
       case LReadByte of
         $FE:
           begin
