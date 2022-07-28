@@ -32,12 +32,12 @@ type
   TProviderAxiom = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FDatasets: string;
+    FDataset: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function BearerToken(const AValue: string): TProviderAxiom;
-    function Datasets(const AValue: string): TProviderAxiom;
+    function ApiToken(const AValue: string): TProviderAxiom;
+    function Dataset(const AValue: string): TProviderAxiom;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -55,16 +55,16 @@ begin
 
   URL('');
   ContentType('application/json');
-  Datasets('');
+  Dataset('');
 end;
 
-function TProviderAxiom.Datasets(const AValue: string): TProviderAxiom;
+function TProviderAxiom.Dataset(const AValue: string): TProviderAxiom;
 begin
   Result := Self;
-  FDatasets := AValue;
+  FDataset := AValue;
 end;
 
-function TProviderAxiom.BearerToken(const AValue: string): TProviderAxiom;
+function TProviderAxiom.ApiToken(const AValue: string): TProviderAxiom;
 begin
   Result := Self;
   inherited BearerToken(AValue);
@@ -88,8 +88,8 @@ begin
     Exit;
 
   try
-    BearerToken(LJO.GetValue<string>('token', inherited Token));
-    Datasets(LJO.GetValue<string>('datasets', FDatasets));
+    BearerToken(LJO.GetValue<string>('api_token', inherited Token));
+    Dataset(LJO.GetValue<string>('dataset', FDataset));
 
     SetJSONInternal(LJO);
   finally
@@ -103,8 +103,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('token', inherited Token);
-    LJO.AddPair('datasets', FDatasets);
+    LJO.AddPair('api_token', inherited Token);
+    LJO.AddPair('dataset', FDataset);
 
     ToJSONInternal(LJO);
 
@@ -144,7 +144,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJA.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://cloud.axiom.co/api/v1/datasets/%s/ingest', [FDatasets]);
+      LLogItemREST.URL := Format('https://cloud.axiom.co/api/v1/datasets/%s/ingest', [FDataset]);
     finally
       LJA.Free;
     end;

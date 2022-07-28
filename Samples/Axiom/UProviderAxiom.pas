@@ -53,10 +53,10 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('fields_custom1', 'my_value 1');
-    LJO.AddPair('fields_custom1', 'my_value 2');
-    LJO.AddPair('fields_custom1', 'my_value 3');
-    LJO.AddPair('fields_custom1', 'my_value 4');
-    LJO.AddPair('fields_custom1', 'my_value 5');
+    LJO.AddPair('fields_custom2', 'my_value 2');
+    LJO.AddPair('fields_custom3', 'my_value 3');
+    LJO.AddPair('fields_custom4', 'my_value 4');
+    LJO.AddPair('fields_custom5', 'my_value 5');
 
     Logger.Debug(LJO);
   finally
@@ -70,8 +70,8 @@ begin
 
   Logger.AddProvider(
     TProviderAxiom.Create
-    .BearerToken('{API_TOKENS}')
-    .Datasets('{DATASETS}')
+    .ApiToken('{API_TOKEN}')
+    .Dataset('{DATASET}')
     );
 
   // Log Format
