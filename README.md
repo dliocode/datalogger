@@ -83,44 +83,47 @@ Cada instância de um TDataLogger pode ter vários **_providers_** configurados.
 
 Aqui temos uma lista de todos os _providers_ disponíveis:
 
-| Nome | Uses | Samples |
-|------|------|---------|
-| [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom| [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) |
-| Console | DataLogger.Provider.Console| [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) |
-| [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.Hook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) |
-| [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch| [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) |
-| Email| DataLogger.Provider.Email| [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) |
-| EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog)|
-| Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite)|
-| ListBox| DataLogger.Provider.ListBox| [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) |
-| ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView)|
-| [Logstach](https://www.elastic.co/pt/logstash/)| DataLogger.Provider.Logstach | [Logstach](https://github.com/dliocode/datalogger/tree/main/Samples/Logstach)|
-| [Mattermost](https://mattermost.com/)| DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook)|
-| Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL)|
-| Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory)|
-| Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification)|
-| OutputDebugString| DataLogger.Provider.OutputDebugString| [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) |
-| [RabbitMQ](https://github.com/danieleteti/delphistompclient)| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ) |
-| [Redis](https://github.com/danieleteti/delphiredisclient)| DataLogger.Provider.Redis| [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) |
-| Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST)|
-| RichEdit| DataLogger.Provider.RichEdit| [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) |
-| [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) |
-| [Slack](https://slack.com/)| DataLogger.Provider.Slack| [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) |
-| Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket)|
-| SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog)|
-| [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram)|
-| TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) |
+ | Nome | Uses | Samples | 
+ | ------ | ------ | --------- | 
+ | [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) | 
+ | Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) | 
+ | [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.Hook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) | 
+ | [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch | [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) | 
+ | Email | DataLogger.Provider.Email | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) | 
+ | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) | 
+ | Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) | 
+ | [GraphJSON](https://graphjson.com/) | DataLogger.Provider.GraphJSON | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON) | 
+ | ListBox | DataLogger.Provider.ListBox | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) | 
+ | ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) | 
+ | [Logflare](https://logflare.app/) | DataLogger.Provider.Logflare | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare) | 
+ | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach | [Logstach](https://github.com/dliocode/datalogger/tree/main/Samples/Logstach) | 
+ | [Logtail](https://betterstack.com/logtail) | DataLogger.Provider.Logtail | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail) |  
+ | [Mattermost](https://mattermost.com/) | DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook) | 
+ | Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL) | 
+ | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory) | 
+ | Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification) | 
+ | OutputDebugString | DataLogger.Provider.OutputDebugString | [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) | 
+ | [RabbitMQ](https://github.com/danieleteti/delphistompclient) | DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ) | 
+ | [Redis](https://github.com/danieleteti/delphiredisclient) | DataLogger.Provider.Redis | [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) | 
+ | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST) | 
+ | RichEdit | DataLogger.Provider.RichEdit | [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) | 
+ | [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) | 
+ | [Slack](https://slack.com/) | DataLogger.Provider.Slack | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) | 
+ | Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket) | 
+ | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) | 
+ | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
+ | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) | 
 
 
 ## Dependências
 
 Essas dependências se dá quando utilizado alguns _providers_
 
-| Provider | Dependence |
-|----------|------------|
-| DataLogger.Provider.RabbitMQ| [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
-| DataLogger.Provider.Redis| [Redis](https://github.com/danieleteti/delphiredisclient) |
-| DataLogger.Provider.SendEmail| [SendEmail](https://github.com/dliocode/sendemail) |
+ | Provider | Dependence | 
+ | ---------- | ------------ | 
+ | DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/danieleteti/delphistompclient) | 
+ | DataLogger.Provider.Redis | [Redis](https://github.com/danieleteti/delphiredisclient) | 
+ | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/sendemail) | 
 
 ## Exemplos
 

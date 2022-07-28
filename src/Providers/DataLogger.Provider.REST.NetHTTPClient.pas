@@ -16,10 +16,16 @@ uses
 type
   TNetHTTPClient = System.Net.HttpClientComponent.TNetHTTPClient;
 
+  TLogHeader = record
+    Key: string;
+    Value: string;
+  end;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;
     URL: string;
+    Header: TArray<TLogHeader>;
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
@@ -32,6 +38,7 @@ type
     FContentType: string;
     FToken: string;
     FMethod: TRESTMethod;
+    FHeader: TArray<TLogHeader>;
     FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
@@ -47,6 +54,7 @@ type
     function Token(const AValue: string): TProviderRESTNetHTTPClient; overload;
     function Token: string; overload;
     function Method(const AValue: TRESTMethod): TProviderRESTNetHTTPClient;
+    function AddHeader(const AKey: string; const AValue: string): TProviderRESTNetHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTNetHTTPClient;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -139,6 +147,18 @@ function TProviderRESTNetHTTPClient.Method(const AValue: TRESTMethod): TProvider
 begin
   Result := Self;
   FMethod := AValue;
+end;
+
+function TProviderRESTNetHTTPClient.AddHeader(const AKey, AValue: string): TProviderRESTNetHTTPClient;
+var
+  LHeader: TLogHeader;
+begin
+  Result := Self;
+
+  LHeader.Key := AKey;
+  LHeader.Value := AValue;
+
+  FHeader := FHeader + [LHeader];
 end;
 
 function TProviderRESTNetHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTNetHTTPClient;
@@ -263,6 +283,7 @@ var
   LHTTP: TNetHTTPClient;
   LResponse: IHTTPResponse;
   LResponseContent: string;
+  I: Integer;
 begin
   if Self.Terminated then
   begin
@@ -307,6 +328,12 @@ begin
     if not FToken.Trim.IsEmpty then
       LHTTP.CustomHeaders['Authorization'] := FToken;
 
+    for I := Low(FHeader) to High(FHeader) do
+      LHTTP.CustomHeaders[FHeader[I].Key] := FHeader[I].Value;
+
+    for I := Low(AItemREST.Header) to High(AItemREST.Header) do
+      LHTTP.CustomHeaders[AItemREST.Header[I].Key] := AItemREST.Header[I].Value;
+
     LRetriesCount := 0;
 
     while True do
@@ -323,7 +350,7 @@ begin
 
         LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
 
-        if not(LResponse.StatusCode in [200, 201, 204]) then
+        if not(LResponse.StatusCode in [200, 201, 202, 204]) then
           raise EDataLoggerException.Create(LResponseContent);
 
         Break;
