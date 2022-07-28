@@ -17,10 +17,16 @@ uses
 type
   TIdHTTP = IdHTTP.TIdHTTP;
 
+  TLogHeader = record
+    Key: string;
+    Value: string;
+  end;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;
     URL: string;
+    Header: TArray<TLogHeader>;
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
@@ -32,6 +38,7 @@ type
     FContentType: string;
     FToken: string;
     FMethod: TRESTMethod;
+    FHeader: TArray<TLogHeader>;
     FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
@@ -47,6 +54,7 @@ type
     function Token(const AValue: string): TProviderRESTIndy; overload;
     function Token: string; overload;
     function Method(const AValue: TRESTMethod): TProviderRESTIndy;
+    function AddHeader(const AKey: string; const AValue: string): TProviderRESTIndy;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -139,6 +147,18 @@ function TProviderRESTIndy.Method(const AValue: TRESTMethod): TProviderRESTIndy;
 begin
   Result := Self;
   FMethod := AValue;
+end;
+
+function TProviderRESTIndy.AddHeader(const AKey, AValue: string): TProviderRESTIndy;
+var
+  LHeader: TLogHeader;
+begin
+  Result := Self;
+
+  LHeader.Key := AKey;
+  LHeader.Value := AValue;
+
+  FHeader := FHeader + [LHeader];
 end;
 
 function TProviderRESTIndy.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
@@ -263,6 +283,7 @@ var
   LHTTP: TIdHTTP;
   LSSL: TIdSSLIOHandlerSocketOpenSSL;
   LResponseContent: string;
+  I: Integer;
 begin
   if Self.Terminated then
   begin
@@ -303,6 +324,12 @@ begin
     if not FToken.Trim.IsEmpty then
       LHTTP.Request.CustomHeaders.AddValue('Authorization', FToken);
 
+    for I := Low(FHeader) to High(FHeader) do
+      LHTTP.Request.CustomHeaders.Values[FHeader[I].Key] :=  FHeader[I].Value;
+
+    for I := Low(AItemREST.Header) to High(AItemREST.Header) do
+      LHTTP.Request.CustomHeaders.Values[AItemREST.Header[I].Key] := AItemREST.Header[I].Value;
+
     if LURL.ToLower.Contains('https://') then
     begin
       if not LoadOpenSSLLibrary then
@@ -330,7 +357,7 @@ begin
 
         LResponseContent := LHTTP.Response.ResponseText;
 
-        if not(LHTTP.Response.ResponseCode in [200, 201, 204]) then
+        if not(LHTTP.Response.ResponseCode in [200, 201, 202, 204]) then
           raise EDataLoggerException.Create(LResponseContent);
 
         Break;
