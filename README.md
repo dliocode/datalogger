@@ -27,6 +27,15 @@ Support: developer.dlio@gmail.com
 $ boss install github.com/dliocode/datalogger
 ```
 
+### Instalação Manual
+
+Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Compiler > Search path*
+
+```
+../src/Core
+../src/Providers
+```
+
 ## 📌 Índice
 
 * [Como usar](#como-usar)
@@ -76,8 +85,9 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
 
 | Nome | Uses | Samples |
 |------|------|---------|
-| Console| DataLogger.Provider.Console| [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) |
-| [Discord](https://discord.com/developers/docs/resources/webhook)| DataLogger.Provider.Discord.Hook| [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) |
+| [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom| [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) |
+| Console | DataLogger.Provider.Console| [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) |
+| [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.Hook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) |
 | [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch| [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) |
 | Email| DataLogger.Provider.Email| [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) |
 | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog)|
