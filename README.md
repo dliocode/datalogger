@@ -58,7 +58,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [Log Exception](#log-exception)
   * [Max Retries](#max-retries)
   * [InitialMessage](#initialmessage)
-  * [finalMessage](#finalmessage)
+  * [FinalMessage](#finalmessage)
   * [Name](#name)
   * [Transaction](#transaction)
 
@@ -114,6 +114,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) | 
  | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
  | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) | 
+ | [Twilio](https://www.twilio.com/) | DataLogger.Provider.Twilio.SMS<br />DataLogger.Provider.Twilio.WhatsApp | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio) |  
 
 
 ## Dependências
@@ -221,7 +222,7 @@ begin
 
   Logger.CustomType('My Custom Type', 'My Message with custom type!');
 
-  // Output: 2022-12-01 09:00:05.500 [My Custom Type] My Message with custom type!	
+  // Output: 2022-12-01 09:00:05:500 [My Custom Type] My Message with custom type!	
 
   Readln;
 end.
@@ -230,13 +231,16 @@ end.
 ## Formato do Log
 
 Formato de log padrão: 
+
 ```
 ${timestamp} [TID ${thread_id}] [PID ${process_id}] [SEQ ${sequence}] [${type}] [${tag}] ${message}
 ```
+
 ### FormatLog Constant
 
 Existe algumas constantes que podem ser utilizadas:
-```
+
+```delphi
 TLoggerFormat.LOG_NAME = '${name}';
 TLoggerFormat.LOG_SEQUENCE = '${sequence}';
 TLoggerFormat.LOG_TIMESTAMP = '${timestamp}';
@@ -281,8 +285,8 @@ begin
   Logger.Info('Minha mensagem no Log do tipo INFO');
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // Output: 2022-12-01 09:00:05:500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -310,19 +314,19 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output Console: 
-  // 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05:500 [INFO] Minha mensagem no Log do tipo INFO
+  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   // Output TextFile: 
-  // 2022-12-01 09:00:05.500 - Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05:500 - Minha mensagem no Log do tipo INFO
+  // 2022-12-01 09:00:05:600 - Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
 ```
 
 ### Como mudar o formato do TimeStamp
-* Formato de TimeStamp padrão: `yyyy-mm-dd hh:mm:ss.zzz`
+* Formato de TimeStamp padrão: `yyyy-mm-dd hh:mm:ss:zzz`
 
 ```delphi
 uses
@@ -357,7 +361,7 @@ end.
 ### Tipos de Tag para criar o formato do log
 * Comum 
 
-```
+```delphi
 // Exibe o nome do log. ex: Logger.SetName('SERVICE_REMOTE')
 TLoggerFormat.LOG_NAME;
 
@@ -385,7 +389,7 @@ TLoggerFormat.LOG_MESSAGE;
 
 * Especiais:
 
-```
+```delphi
 // Exibe o nome do app.
 TLoggerFormat.LOG_APPNAME;
 
@@ -423,16 +427,16 @@ SetLogLevel valor padrão = ```TLoggerType.All```
 * Quando definido um level, será exibido somente a opção escolhida e seus tipos superiores.
 * Ex: ``` Logger.SetLogLevel(TLoggerType.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
 
-```
-  TLoggerType.All = Utilizado para operações internas 
-  TLoggerType.Trace = Level 1
-  TLoggerType.Debug = Level 2
-  TLoggerType.Info = Level 3
-  TLoggerType.Success = Level 4
-  TLoggerType.Warn = Level 5
-  TLoggerType.Error = Level 6
-  TLoggerType.Fatal = Level 7
-  TLoggerType.Custom = Level 8
+```delphi
+  TLoggerType.All = 'Utilizado para operações internas'
+  TLoggerType.Trace = 'Level 1'
+  TLoggerType.Debug = 'Level 2'
+  TLoggerType.Info = 'Level 3'
+  TLoggerType.Success = 'Level 4'
+  TLoggerType.Warn = 'Level 5'
+  TLoggerType.Error = 'Level 6'
+  TLoggerType.Fatal = 'Level 7'
+  TLoggerType.Custom = 'Level 8'
 ```
 
 ```delphi
@@ -453,7 +457,7 @@ begin
   Logger.Info('Minha mensagem no Log do tipo INFO');
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // Output: 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -530,7 +534,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -572,7 +576,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -602,7 +606,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -632,7 +636,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // DLIOCODE 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // DLIOCODE 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -662,7 +666,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR DLIOCODE 
+  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR DLIOCODE 
 
   Readln;
 end.
@@ -692,7 +696,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // MyLogger 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.

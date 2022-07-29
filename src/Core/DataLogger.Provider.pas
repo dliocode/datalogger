@@ -108,7 +108,7 @@ begin
   FInTransaction := False;
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
-  SetFormatTimestamp('yyyy-mm-dd hh:nn:ss.zzz');
+  SetFormatTimestamp('yyyy-mm-dd hh:nn:ss:zzz');
   SetLogLevel(TLoggerType.All);
   SetDisableLogType([]);
   SetOnlyLogType([TLoggerType.All]);

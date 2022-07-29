@@ -11,8 +11,8 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdHTTP, IdSSLOpenSSL,
-  System.SysUtils, System.Classes, System.Threading, System.JSON, System.TypInfo;
+  IdHTTP, IdSSLOpenSSL, IdMultipartFormData,
+  System.SysUtils, System.Classes, System.Threading, System.JSON, System.TypInfo, System.NetEncoding;
 
 type
   TIdHTTP = IdHTTP.TIdHTTP;
@@ -22,11 +22,20 @@ type
     Value: string;
   end;
 
+  TLogFormData = record
+    Field: string;
+    Value: string;
+    ContentType: string;
+
+    class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
+  end;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;
     URL: string;
     Header: TArray<TLogHeader>;
+    FormData: TArray<TLogFormData>;
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
@@ -50,11 +59,15 @@ type
     function URL(const AValue: string): TProviderRESTIndy; overload;
     function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTIndy;
-    function BearerToken(const AValue: string): TProviderRESTIndy;
+
     function Token(const AValue: string): TProviderRESTIndy; overload;
     function Token: string; overload;
+    function BearerToken(const AValue: string): TProviderRESTIndy;
+    function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTIndy;
+
     function Method(const AValue: TRESTMethod): TProviderRESTIndy;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTIndy;
+
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -122,6 +135,17 @@ begin
   FContentType := AValue;
 end;
 
+function TProviderRESTIndy.Token(const AValue: string): TProviderRESTIndy;
+begin
+  Result := Self;
+  FToken := AValue;
+end;
+
+function TProviderRESTIndy.Token: string;
+begin
+  Result := FToken;
+end;
+
 function TProviderRESTIndy.BearerToken(const AValue: string): TProviderRESTIndy;
 begin
   Result := Self;
@@ -132,15 +156,11 @@ begin
     FToken := 'Bearer ' + AValue;
 end;
 
-function TProviderRESTIndy.Token(const AValue: string): TProviderRESTIndy;
+function TProviderRESTIndy.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTIndy;
 begin
   Result := Self;
-  FToken := AValue;
-end;
 
-function TProviderRESTIndy.Token: string;
-begin
-  Result := FToken;
+  FToken := 'Basic ' + TNetencoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
 end;
 
 function TProviderRESTIndy.Method(const AValue: TRESTMethod): TProviderRESTIndy;
@@ -284,6 +304,7 @@ var
   LSSL: TIdSSLIOHandlerSocketOpenSSL;
   LResponseContent: string;
   I: Integer;
+  LFormData: TIdMultiPartFormDataStream;
 begin
   if Self.Terminated then
   begin
@@ -351,8 +372,24 @@ begin
         case AMethod of
           tlmGet:
             LHTTP.Get(LURL);
+
           tlmPost:
-            LHTTP.Post(LURL, AItemREST.Stream);
+          begin
+            if Length(AItemREST.FormData) = 0 then
+              LHTTP.Post(LURL, AItemREST.Stream)
+            else
+            begin
+              LFormData := TIdMultiPartFormDataStream.Create;
+              try
+                for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
+                  LFormData.AddFormField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value, AItemREST.FormData[I].ContentType);
+
+                LHTTP.Post(LURL, LFormData);
+              finally
+                LFormData.Free;
+              end;
+            end;
+          end;
         end;
 
         LResponseContent := LHTTP.Response.ResponseText;
@@ -397,6 +434,15 @@ end;
 
 procedure ForceReferenceToClass(C: TClass);
 begin
+end;
+
+{ TLogFormData }
+
+class function TLogFormData.Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData;
+begin
+  Result.Field := AField;
+  Result.Value := AValue;
+  Result.ContentType := AContentType;
 end;
 
 initialization

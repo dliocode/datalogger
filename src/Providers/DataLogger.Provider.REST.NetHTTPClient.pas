@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  System.SysUtils, System.Classes, System.Threading, System.Net.HttpClientComponent, System.Net.HttpClient, System.JSON, System.TypInfo;
+  System.SysUtils, System.Classes, System.Threading, System.Net.HttpClientComponent, System.Net.HttpClient, System.JSON, System.TypInfo, System.NetEncoding, System.Net.Mime;
 
 type
   TNetHTTPClient = System.Net.HttpClientComponent.TNetHTTPClient;
@@ -21,11 +21,20 @@ type
     Value: string;
   end;
 
+  TLogFormData = record
+    Field: string;
+    Value: string;
+    ContentType: string;
+
+    class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
+  end;
+
   TLogItemREST = record
     Stream: TStream;
     LogItem: TLoggerItem;
     URL: string;
     Header: TArray<TLogHeader>;
+    FormData: TArray<TLogFormData>;
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
@@ -50,9 +59,12 @@ type
     function URL(const AValue: string): TProviderRESTNetHTTPClient; overload;
     function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTNetHTTPClient;
-    function BearerToken(const AValue: string): TProviderRESTNetHTTPClient;
+
     function Token(const AValue: string): TProviderRESTNetHTTPClient; overload;
     function Token: string; overload;
+    function BearerToken(const AValue: string): TProviderRESTNetHTTPClient;
+    function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTNetHTTPClient;
+
     function Method(const AValue: TRESTMethod): TProviderRESTNetHTTPClient;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTNetHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTNetHTTPClient;
@@ -122,16 +134,6 @@ begin
   FContentType := AValue;
 end;
 
-function TProviderRESTNetHTTPClient.BearerToken(const AValue: string): TProviderRESTNetHTTPClient;
-begin
-  Result := Self;
-
-  if AValue.Trim.ToLower.Contains('bearer ') then
-    Token(AValue)
-  else
-    FToken := 'Bearer ' + AValue;
-end;
-
 function TProviderRESTNetHTTPClient.Token(const AValue: string): TProviderRESTNetHTTPClient;
 begin
   Result := Self;
@@ -141,6 +143,21 @@ end;
 function TProviderRESTNetHTTPClient.Token: string;
 begin
   Result := FToken;
+end;
+
+function TProviderRESTNetHTTPClient.BearerToken(const AValue: string): TProviderRESTNetHTTPClient;
+begin
+  Result := Self;
+
+  if AValue.Trim.ToLower.Contains('bearer') then
+    Token(AValue)
+  else
+    Token('Bearer ' + AValue);
+end;
+
+function TProviderRESTNetHTTPClient.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTNetHTTPClient;
+begin
+  Result := Token('Basic ' + TNetEncoding.Base64String.Encode(Format('%s:%s', [AUsername, APassword])));
 end;
 
 function TProviderRESTNetHTTPClient.Method(const AValue: TRESTMethod): TProviderRESTNetHTTPClient;
@@ -284,6 +301,7 @@ var
   LResponse: IHTTPResponse;
   LResponseContent: string;
   I: Integer;
+  LFormData: TMultipartFormData;
 begin
   if Self.Terminated then
   begin
@@ -344,8 +362,24 @@ begin
         case AMethod of
           tlmGet:
             LResponse := LHTTP.Get(LURL);
+
           tlmPost:
-            LResponse := LHTTP.Post(LURL, AItemREST.Stream);
+          begin
+            if Length(AItemREST.FormData) = 0 then
+              LResponse := LHTTP.Post(LURL, AItemREST.Stream)
+            else
+            begin
+              LFormData := TMultipartFormData.Create;
+              try
+                for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
+                  LFormData.AddField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value, AItemREST.FormData[I].ContentType);
+
+                LResponse := LHTTP.Post(LURL, LFormData);
+              finally
+                LFormData.Free;
+              end;
+            end;
+          end;
         end;
 
         LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
@@ -387,6 +421,15 @@ end;
 
 procedure ForceReferenceToClass(C: TClass);
 begin
+end;
+
+{ TLogFormData }
+
+class function TLogFormData.Create(const AField, AValue, AContentType: string): TLogFormData;
+begin
+  Result.Field := AField;
+  Result.Value := AValue;
+  Result.ContentType := AContentType;
 end;
 
 initialization

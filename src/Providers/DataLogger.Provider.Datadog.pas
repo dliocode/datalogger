@@ -40,7 +40,6 @@ type
   public
     function ApiKey(const AValue: string): TProviderDatadog;
     function ApplicationKey(const AValue: string): TProviderDatadog;
-
     function Source(const AValue: string): TProviderDatadog;
     function Service(const AValue: string): TProviderDatadog;
 
@@ -60,7 +59,8 @@ begin
 
   URL('https://http-intake.logs.datadoghq.com/api/v2/logs');
   ContentType('application/json');
-  Source('datalogger')
+  Source('datalogger');
+  Service('');
 end;
 
 function TProviderDatadog.ApiKey(const AValue: string): TProviderDatadog;
