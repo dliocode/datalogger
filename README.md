@@ -93,6 +93,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | Email | DataLogger.Provider.Email | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) | 
  | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) | 
  | Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) | 
+ | [Firebase](https://firebase.google.com/) | DataLogger.Provider.Firebase.RealtimeDatabase | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/Firebase) | 
  | [GraphJSON](https://graphjson.com/) | DataLogger.Provider.GraphJSON | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON) | 
  | ListBox | DataLogger.Provider.ListBox | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) | 
  | ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) | 
