@@ -92,7 +92,7 @@ begin
   end;
 end;
 
-function TProviderMemory.ToJSON(const AFormat: Boolean): string;
+function TProviderMemory.ToJSON(const AFormat: Boolean = False): string;
 var
   LJO: TJSONObject;
 begin
@@ -100,10 +100,7 @@ begin
   try
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

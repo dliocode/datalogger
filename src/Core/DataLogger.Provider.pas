@@ -10,10 +10,12 @@ unit DataLogger.Provider;
 interface
 
 uses
-  DataLogger.Types,
+  DataLogger.Types, DataLogger.Utils,
   System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo;
 
 type
+  TLoggerJSON = DataLogger.Utils.TLoggerJSON;
+
   TDataLoggerListItem = TList<TLoggerItem>;
   TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
 
@@ -286,7 +288,7 @@ begin
         FListLoggerItem := FListLoggerBase;
         FListLoggerItem.AddRange(LCurrentValues);
 
-//        FEvent.SetEvent;
+        // FEvent.SetEvent;
 
         FInTransaction := False;
 
@@ -589,10 +591,10 @@ begin
       if TLoggerType(I) in FOnlyLogType then
         LJAOnlyLogType.Add(TLoggerType(I).ToString);
 
-  LJOInternal.AddPair('max_retries', FMaxRetries);
+  LJOInternal.AddPair('max_retries', TJSONNumber.Create(FMaxRetries));
   LJOInternal.AddPair('initial_message', FInitialMessage);
   LJOInternal.AddPair('final_message', FFinalMessage);
-  LJOInternal.AddPair('use_transaction', FUseTransaction);
+  LJOInternal.AddPair('use_transaction', TJSONBool.Create(FUseTransaction));
 
   // Auto Commit
   LJOAutoCommit := TJSONObject.Create;

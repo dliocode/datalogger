@@ -20,8 +20,11 @@ uses
 {$ELSEIF DEFINED(ANDROID)}
   Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
+{$IFDEF POSIX}
+  Posix.SysStat,
+{$ENDIF}
   IdStack,
-  System.IOUtils, System.SysUtils, System.Types, System.RTTI;
+  System.IOUtils, System.SysUtils, System.Types, System.RTTI, System.JSON, REST.JSON;
 
 type
   TLoggerUtils = class
@@ -63,9 +66,50 @@ type
     class function CreateObject(const AName: string): TObject;
   end;
 
+  TLoggerJSON = class
+  private
+  public
+    class function Format(const AValue: TJSONValue; const AFormat: Boolean = False): string;
+  end;
+
 implementation
 
+function GetSize(const Path: string): Int64;
+{$IFDEF MSWINDOWS}
+var
+  LPath: string;
+  LInfo: TWin32FileAttributeData;
+begin
+  if (Length(Path) < MAX_PATH) or TPath.IsExtendedPrefixed(Path) then
+    LPath := Path
+  else
+    LPath := '\\?\' + Path;
+
+  if GetFileAttributesEx(PChar(LPath), GetFileExInfoStandard, @LInfo) then
+  begin
+    Result := LInfo.nFileSizeHigh;
+    Result := Result shl 32 + LInfo.nFileSizeLow;
+  end
+  else
+  begin
+    Result := -1;
+  end;
+end;
+{$ELSE}
+var
+  LFileName: UTF8String;
+  LStatBuf: _stat;
+begin
+  LFileName := UTF8Encode(Path);
+  if stat(PAnsiChar(LFileName), LStatBuf) = 0 then
+    Result := LStatBuf.st_size
+  else
+    Result := -1;
+end;
+{$ENDIF}
+
 { TLoggerUtils }
+
 class function TLoggerUtils.AppName: string;
 {$IF DEFINED(ANDROID)}
 var
@@ -77,13 +121,12 @@ begin
 
   LPackageManager := TAndroidHelper.Activity.getPackageManager;
   LPackageName := TAndroidHelper.Context.getPackageName;
+
   Result := JStringToString(LPackageManager.getPackageInfo(LPackageName, 0).applicationInfo.loadLabel(LPackageManager).toString);
 
   FAppName := Result;
 end;
 {$ELSEIF DEFINED(IOS)}
-
-
 begin
   if not Trim(FAppName).IsEmpty then
     Exit(FAppName);
@@ -93,8 +136,6 @@ begin
   FAppName := Result;
 end;
 {$ELSE}
-
-
 var
   LAppPathFull: string;
 begin
@@ -112,7 +153,6 @@ begin
 end;
 {$ENDIF}
 
-
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
@@ -124,8 +164,6 @@ begin
   FAppPath := Result;
 end;
 {$ELSE}
-
-
 var
   LAppPathFull: string;
 begin
@@ -143,7 +181,6 @@ begin
 end;
 {$ENDIF}
 
-
 class function TLoggerUtils.AppVersion: TAppVersion;
 {$IF DEFINED(ANDROID)}
 var
@@ -153,12 +190,11 @@ begin
     Exit(FAppPath);
 
   LPackageInfo := TAndroidHelper.Activity.getPackageManager.getPackageInfo(TAndroidHelper.Context.getPackageName(), TJPackageManager.JavaClass.GET_ACTIVITIES);
+
   Result.FileVersion := IntToStr(LPackageInfo.VersionCode);
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
 end;
 {$ELSEIF DEFINED(IOS)}
-
-
 var
   AppKey: Pointer;
   AppBundle: NSBundle;
@@ -180,8 +216,6 @@ begin
   FAppVersion := Result;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
-
-
 var
   LAppPathFull: string;
   LInfoSize: DWORD;
@@ -214,6 +248,7 @@ begin
     if Assigned(LP) then
     begin
       LKey := Format('\StringFileInfo\%4.4x%4.4x', [LoWord(Longint(LP^)), HiWord(Longint(LP^))]);
+
       if VerQueryValue(LInfo, PChar(Format('%s\%s', [LKey, 'Comments'])), Pointer(LBuffer), LInfoSize) then
         Result.Comments := LBuffer;
 
@@ -247,13 +282,10 @@ begin
   FAppVersion := Result;
 end;
 {$ELSE}
-
-
 begin
   Result := default (TAppVersion);
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.AppSize: Double;
 var
@@ -270,7 +302,12 @@ begin
     else
       LAppPathFull := ParamStr(0);
 
+{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
     Result := TFile.GetSize(LAppPathFull);
+{$ELSE}
+    Result := GetSize(LAppPathFull);
+{$ENDIF}
+
     Result := Result / 1024; // Kb
   except
   end;
@@ -282,18 +319,15 @@ class function TLoggerUtils.ComputerName: string;
 {$IF DEFINED(ANDROID)}
 begin
   Result := JStringToString(TJBuild.JavaClass.MODEL);
+
   if Result.Trim.IsEmpty then
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
 {$ELSEIF DEFINED(IOS)}
-
-
 begin
   Result := '';
 end;
 {$ELSEIF DEFINED(LINUX)}
-
-
 var
   LName: utsname;
 begin
@@ -301,8 +335,6 @@ begin
   Result := string(AnsiString(LName.nodename));
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
-
-
 var
   LBuffer: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
   LSize: cardinal;
@@ -315,13 +347,10 @@ begin
     Result := EmptyStr;
 end;
 {$ELSE}
-
-
 begin
   Result := EmptyStr;
 end;
 {$ENDIF}
-
 
 // {$IFDEF MACOS}
 // function NSUserName: Pointer; cdecl; external '/System/Library/Frameworks/Foundation.framework/Foundation' name '_NSUserName';
@@ -344,13 +373,10 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
-
-
 begin
   Result := '';
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.OS: string;
 begin
@@ -376,6 +402,7 @@ begin
 {$ELSE}
   LProcessId := 0;
 {$ENDIF}
+
   Result := LProcessId.toString;
 
   FProcessId := Result;
@@ -384,7 +411,6 @@ end;
 class function TLoggerUtils.IPLocal: string;
 begin
   Result := 'INVALID';
-
   try
     TIdStack.IncUsage;
     try
@@ -414,13 +440,13 @@ begin
     Exit;
 
   LName := AName.ToLower;
-
   LRttiContext := TRttiContext.Create;
   LRttiType := nil;
+
   try
     LRttiTypes := LRttiContext.GetTypes;
-
     LFound := False;
+
     for LRttiType in LRttiTypes do
     begin
       if (SameText(LName, LRttiType.Name.ToLower)) then
@@ -440,6 +466,20 @@ begin
   end;
 
   Result := LValue.AsObject;
+end;
+
+{ TLoggerJSON }
+
+class function TLoggerJSON.Format(const AValue: TJSONValue; const AFormat: Boolean = False): string;
+begin
+  if AFormat then
+{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
+    Result := AValue.Format
+{$ELSE}
+    Result := TJSON.Format(AValue)
+{$ENDIF}
+  else
+    Result := AValue.ToString;
 end;
 
 initialization

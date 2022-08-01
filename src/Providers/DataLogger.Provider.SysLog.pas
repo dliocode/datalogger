@@ -96,14 +96,11 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('host', FSysLog.Host);
-    LJO.AddPair('port', FSysLog.Port);
+    LJO.AddPair('port', TJSONNumber.Create(FSysLog.Port));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

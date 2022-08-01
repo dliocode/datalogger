@@ -258,16 +258,13 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('port', FSocket.DefaultPort);
-    LJO.AddPair('auto_start', FAutoStart);
-    LJO.AddPair('max_connections', FSocket.MaxConnections);
+    LJO.AddPair('port', TJSONNumber.Create(FSocket.DefaultPort));
+    LJO.AddPair('auto_start', TJSONBool.Create(FAutoStart));
+    LJO.AddPair('max_connections', TJSONNumber.Create(FSocket.MaxConnections));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

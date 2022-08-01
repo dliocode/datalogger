@@ -792,10 +792,7 @@ begin
         LJA.Add(TJSONObject.ParseJSONValue(LProvider.ToJSON) as TJSONObject);
       end;
 
-      if AFormat then
-        Result := LJO.Format
-      else
-        Result := LJO.ToString;
+      Result := TLoggerJSON.Format(LJO, AFormat);
     finally
       LJO.Free;
     end;

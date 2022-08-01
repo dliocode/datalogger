@@ -137,10 +137,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -166,7 +163,7 @@ begin
       Continue;
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
-    LLog := LLog.Replace('.', ' ');  // Twilio bug SMS - Failed to receive message with dots - 2022-08-01 yyyy-mm-dd
+    LLog := LLog.Replace('.', ' '); // Twilio bug SMS - Failed to receive message with dots - 2022-08-01 yyyy-mm-dd
 
     LLogItemREST.Stream := nil;
     LLogItemREST.LogItem := LItem;

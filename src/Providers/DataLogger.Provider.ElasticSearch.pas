@@ -61,7 +61,7 @@ end;
 function TProviderElasticSearch.URL(const AValue: string): TProviderElasticSearch;
 begin
   Result := Self;
-  inherited URL(AVAlue);
+  inherited URL(AValue);
 end;
 
 function TProviderElasticSearch.Port(const AValue: Integer): TProviderElasticSearch;
@@ -111,15 +111,12 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('url', inherited URL);
-    LJO.AddPair('port', FPort);
+    LJO.AddPair('port', TJSONNumber.Create(FPort));
     LJO.AddPair('index', FIndex);
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

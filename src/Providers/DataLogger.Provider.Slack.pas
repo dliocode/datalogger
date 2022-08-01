@@ -23,20 +23,19 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderSlack =
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  class(TProviderRESTIndy)
+  TProviderSlack = class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  class(TProviderRESTNetHTTPClient)
+  TProviderSlack = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  class(TProviderRESTHTTPClient)
+  TProviderSlack = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
   protected
-    procedure Save(const ACache: TArray<TLoggerItem>); override;
+    procedure Save(const ACache: TArray<TLoggerItem>);
+      override;
   public
     function URL(const AValue: string): TProviderSlack;
-
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
@@ -97,10 +96,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -109,11 +105,9 @@ end;
 procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
-
   LItem: TLoggerItem;
   LLog: string;
   LJO: TJSONObject;
-
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];

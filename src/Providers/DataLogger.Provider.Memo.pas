@@ -131,16 +131,13 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('max_log_lines', FMaxLogLines);
+    LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert)));
-    LJO.AddPair('clean_on_start', FCleanOnStart);
+    LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

@@ -109,10 +109,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -142,7 +139,7 @@ begin
     try
       LJO.AddPair('api_key', FApiKey);
       LJO.AddPair('collection', FCollection);
-      LJO.AddPair('timestamp', DateTimeToUnix(LItem.TimeStamp, False));
+      LJO.AddPair('timestamp', TJSONNumber.Create(DateTimeToUnix(LItem.TimeStamp, False)));
       LJO.AddPair('json', LLog);
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);

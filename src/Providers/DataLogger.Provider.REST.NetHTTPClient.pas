@@ -4,7 +4,6 @@
   Github - https://github.com/dliocode
   *************************************
 }
-
 unit DataLogger.Provider.REST.NetHTTPClient;
 
 interface
@@ -14,6 +13,7 @@ uses
   System.SysUtils, System.Classes, System.Threading, System.Net.HttpClientComponent, System.Net.HttpClient, System.JSON, System.TypInfo, System.NetEncoding, System.Net.Mime;
 
 type
+  TLoggerJSON = DataLogger.Provider.TLoggerJSON;
   TNetHTTPClient = System.Net.HttpClientComponent.TNetHTTPClient;
 
   TLogHeader = record
@@ -25,7 +25,6 @@ type
     Field: string;
     Value: string;
     ContentType: string;
-
     class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
   end;
 
@@ -38,7 +37,6 @@ type
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
-
   TRESTMethod = (tlmGet, tlmPost);
 
   TProviderRESTNetHTTPClient = class(TDataLoggerProvider)
@@ -53,25 +51,20 @@ type
   protected
     procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
-
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderRESTNetHTTPClient; overload;
     function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTNetHTTPClient;
-
     function Token(const AValue: string): TProviderRESTNetHTTPClient; overload;
     function Token: string; overload;
     function BearerToken(const AValue: string): TProviderRESTNetHTTPClient;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTNetHTTPClient;
-
     function Method(const AValue: TRESTMethod): TProviderRESTNetHTTPClient;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTNetHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTNetHTTPClient;
-
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
-
     constructor Create; overload;
     constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = ''); overload; deprecated 'Use TProviderRESTNetHTTPClient.Create.URL('').ContentType(''application/json'').BearerToken(''aaaa'') - This function will be removed in future versions';
   end;
@@ -79,7 +72,6 @@ type
 implementation
 
 { TProviderRESTNetHTTPClient }
-
 constructor TProviderRESTNetHTTPClient.Create;
 begin
   inherited Create;
@@ -97,8 +89,8 @@ begin
   Create;
 
   LProtocol := 'http://';
-  LHost := AURL;
 
+  LHost := AURL;
   if not LHost.ToLower.StartsWith('http://') and not LHost.ToLower.StartsWith('https://') then
     LHost := LProtocol + AURL;
 
@@ -115,10 +107,9 @@ var
   LProtocol: string;
 begin
   Result := Self;
-
   LProtocol := 'http://';
-
   FURL := AValue;
+
   if not AValue.ToLower.StartsWith('http://') and not AValue.ToLower.StartsWith('https://') then
     FURL := LProtocol + AValue;
 end;
@@ -156,8 +147,15 @@ begin
 end;
 
 function TProviderRESTNetHTTPClient.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTNetHTTPClient;
+var
+  LBase64: TBase64Encoding;
 begin
-  Result := Token('Basic ' + TNetEncoding.Base64String.Encode(Format('%s:%s', [AUsername, APassword])));
+  LBase64 := TBase64Encoding.Create(0, '');
+  try
+    Result := Token('Basic ' + LBase64.Encode(Format('%s:%s', [AUsername, APassword])));
+  finally
+    LBase64.Free;
+  end;
 end;
 
 function TProviderRESTNetHTTPClient.Method(const AValue: TRESTMethod): TProviderRESTNetHTTPClient;
@@ -174,7 +172,6 @@ begin
 
   LHeader.Key := AKey;
   LHeader.Value := AValue;
-
   FHeader := FHeader + [LHeader];
 end;
 
@@ -206,7 +203,6 @@ begin
     URL(LJO.GetValue<string>('url', FURL));
     ContentType(LJO.GetValue<string>('content_type', FContentType));
     Token(LJO.GetValue<string>('token', FToken));
-
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 
@@ -229,10 +225,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -260,7 +253,6 @@ begin
       LLogItemREST.Stream := TLoggerLogFormat.AsStream(FLogFormat, LItem, FFormatTimestamp);
 
     LLogItemREST.LogItem := LItem;
-
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
@@ -312,6 +304,7 @@ begin
   end;
 
   LURL := AItemREST.URL;
+
   if LURL.Trim.IsEmpty then
     LURL := FURL;
 
@@ -323,7 +316,6 @@ begin
   except
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
-
     Exit
   end;
 
@@ -334,12 +326,9 @@ begin
     LHTTP.SendTimeout := 60000;
 {$ENDIF}
     LHTTP.HandleRedirects := True;
-
     LHTTP.AcceptCharSet := 'utf-8';
     LHTTP.AcceptEncoding := 'utf-8';
-
     LHTTP.UserAgent := 'DataLogger.Provider.REST.NetHTTPClient';
-
     LHTTP.ContentType := FContentType;
     LHTTP.Accept := FContentType;
 
@@ -364,22 +353,21 @@ begin
             LResponse := LHTTP.Get(LURL);
 
           tlmPost:
-          begin
-            if Length(AItemREST.FormData) = 0 then
-              LResponse := LHTTP.Post(LURL, AItemREST.Stream)
-            else
             begin
-              LFormData := TMultipartFormData.Create;
-              try
-                for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
-                  LFormData.AddField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value, AItemREST.FormData[I].ContentType);
-
-                LResponse := LHTTP.Post(LURL, LFormData);
-              finally
-                LFormData.Free;
+              if Length(AItemREST.FormData) = 0 then
+                LResponse := LHTTP.Post(LURL, AItemREST.Stream)
+              else
+              begin
+                LFormData := TMultipartFormData.Create;
+                try
+                  for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
+                    LFormData.AddField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value {$IF RTLVersion > 32}, AItemREST.FormData[I].ContentType{$ENDIF});
+                  LResponse := LHTTP.Post(LURL, LFormData);
+                finally
+                  LFormData.Free;
+                end;
               end;
             end;
-          end;
         end;
 
         LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
@@ -424,7 +412,6 @@ begin
 end;
 
 { TLogFormData }
-
 class function TLogFormData.Create(const AField, AValue, AContentType: string): TLogFormData;
 begin
   Result.Field := AField;
