@@ -32,7 +32,8 @@ requires
   vcl,
   IndySystem,
   IndyProtocols,
-  IndyCore;
+  IndyCore,
+  RESTComponents;
 
 contains
   DataLogger in 'src\Core\DataLogger.pas',
@@ -74,6 +75,7 @@ contains
   DataLogger.Provider.Slack in 'src\Providers\DataLogger.Provider.Slack.pas',
   DataLogger.Provider.SysLog in 'src\Providers\DataLogger.Provider.SysLog.pas',
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
-  DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas';
+  DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',
+  DataLogger.Provider.MongoDB.Cloud in 'src\Providers\DataLogger.Provider.MongoDB.Cloud.pas';
 
 end.

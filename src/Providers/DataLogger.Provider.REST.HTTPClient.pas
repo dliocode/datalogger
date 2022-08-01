@@ -173,13 +173,27 @@ end;
 
 function TProviderRESTHTTPClient.AddHeader(const AKey: string; const AValue: string): TProviderRESTHTTPClient;
 var
+  LIsFound: Boolean;
   LHeader: TLogHeader;
+  I: Integer;
 begin
   Result := Self;
 
+  LIsFound := False;
+
   LHeader.Key := AKey;
   LHeader.Value := AValue;
-  FHeader := FHeader + [LHeader];
+
+  for I := Low(FHeader) to High(FHeader) do
+    if FHeader[I].Key = AKey then
+    begin
+      FHeader[I].Value := AValue;
+      LIsFound := True;
+      Break;
+    end;
+
+  if not LIsFound then
+    FHeader := FHeader + [LHeader];
 end;
 
 function TProviderRESTHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
