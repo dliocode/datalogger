@@ -111,16 +111,13 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('host', FHost);
-    LJO.AddPair('port', FPort);
+    LJO.AddPair('port', TJSONNumber.Create(FPort));
     LJO.AddPair('key_prefix', FKeyPrefix);
     LJO.AddPair('max_size', FMaxSize);
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

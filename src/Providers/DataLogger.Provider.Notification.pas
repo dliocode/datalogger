@@ -96,14 +96,11 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('title', FTitle);
-    LJO.AddPair('include_log_type_in_title', FIncludeLogTypeInTitle);
+    LJO.AddPair('include_log_type_in_title', TJSONBool.Create(FIncludeLogTypeInTitle));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

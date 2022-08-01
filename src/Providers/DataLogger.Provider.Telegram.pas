@@ -28,7 +28,6 @@ type
 {$SCOPEDENUMS OFF}
 
 {$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
-
   TProviderTelegram = class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
   TProviderTelegram = class(TProviderRESTNetHTTPClient)
@@ -143,10 +142,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

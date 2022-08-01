@@ -23,13 +23,12 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderDiscordHooks =
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  class(TProviderRESTIndy)
+  TProviderDiscordHooks = class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  class(TProviderRESTNetHTTPClient)
+  TProviderDiscordHooks = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  class(TProviderRESTHTTPClient)
+  TProviderDiscordHooks = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
     FUsername: string;
@@ -119,10 +118,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

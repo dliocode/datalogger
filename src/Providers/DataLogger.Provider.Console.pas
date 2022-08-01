@@ -167,14 +167,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('use_color_in_console', FUseColorInConsole);
+    LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColorInConsole));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

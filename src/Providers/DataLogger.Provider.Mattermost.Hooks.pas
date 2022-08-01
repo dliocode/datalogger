@@ -135,14 +135,11 @@ begin
     LJO.AddPair('token', inherited Token);
     LJO.AddPair('channel_id', FChannelId);
     LJO.AddPair('username', FUsername);
-    LJO.AddPair('mode_props_card', FModePropsCard);
+    LJO.AddPair('mode_props_card', TJSONBool.Create(FModePropsCard));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

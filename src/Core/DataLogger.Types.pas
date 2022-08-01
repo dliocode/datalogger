@@ -181,7 +181,11 @@ var
 begin
   LJO := AsJsonObject(ALogFormat, AItem, AIgnoreLogFormat);
   try
+{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
     Result := LJO.ToString;
+{$ELSE}
+    Result := LJO.ToJSON;
+{$ENDIF}
   finally
     LJO.Free;
   end;

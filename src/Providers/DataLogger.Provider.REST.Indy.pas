@@ -15,6 +15,7 @@ uses
   System.SysUtils, System.Classes, System.Threading, System.JSON, System.TypInfo, System.NetEncoding;
 
 type
+  TLoggerJSON = DataLogger.Provider.TLoggerJSON;
   TIdHTTP = IdHTTP.TIdHTTP;
 
   TLogHeader = record
@@ -232,10 +233,7 @@ begin
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -346,7 +344,7 @@ begin
       LHTTP.Request.CustomHeaders.AddValue('Authorization', FToken);
 
     for I := Low(FHeader) to High(FHeader) do
-      LHTTP.Request.CustomHeaders.Values[FHeader[I].Key] :=  FHeader[I].Value;
+      LHTTP.Request.CustomHeaders.Values[FHeader[I].Key] := FHeader[I].Value;
 
     for I := Low(AItemREST.Header) to High(AItemREST.Header) do
       LHTTP.Request.CustomHeaders.Values[AItemREST.Header[I].Key] := AItemREST.Header[I].Value;
@@ -374,22 +372,22 @@ begin
             LHTTP.Get(LURL);
 
           tlmPost:
-          begin
-            if Length(AItemREST.FormData) = 0 then
-              LHTTP.Post(LURL, AItemREST.Stream)
-            else
             begin
-              LFormData := TIdMultiPartFormDataStream.Create;
-              try
-                for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
-                  LFormData.AddFormField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value, AItemREST.FormData[I].ContentType);
+              if Length(AItemREST.FormData) = 0 then
+                LHTTP.Post(LURL, AItemREST.Stream)
+              else
+              begin
+                LFormData := TIdMultiPartFormDataStream.Create;
+                try
+                  for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
+                    LFormData.AddFormField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value, AItemREST.FormData[I].ContentType);
 
-                LHTTP.Post(LURL, LFormData);
-              finally
-                LFormData.Free;
+                  LHTTP.Post(LURL, LFormData);
+                finally
+                  LFormData.Free;
+                end;
               end;
             end;
-          end;
         end;
 
         LResponseContent := LHTTP.Response.ResponseText;

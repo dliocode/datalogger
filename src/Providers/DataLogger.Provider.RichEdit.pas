@@ -176,7 +176,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('use_color_in_richedit', FUseColorInRichEdit);
+    LJO.AddPair('use_color_in_richedit', TJSONBool.Create(FUseColorInRichEdit));
     LJO.AddPair('change_color_trace', ColorToString(FColorTrace));
     LJO.AddPair('change_color_debug', ColorToString(FColorDebug));
     LJO.AddPair('change_color_info', ColorToString(FColorInfo));
@@ -185,16 +185,13 @@ begin
     LJO.AddPair('change_color_error', ColorToString(FColorError));
     LJO.AddPair('change_color_fatal', ColorToString(FColorFatal));
     LJO.AddPair('change_color_custom', ColorToString(FColorCustom));
-    LJO.AddPair('max_log_lines', FMaxLogLines);
+    LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert)));
-    LJO.AddPair('clean_on_start', FCleanOnStart);
+    LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

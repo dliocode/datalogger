@@ -121,17 +121,14 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('host', FHost);
-    LJO.AddPair('port', FPort);
+    LJO.AddPair('port', TJSONNumber.Create(FPort));
     LJO.AddPair('virtual_host', FVirtualHost);
     LJO.AddPair('client_id', FClientID);
     LJO.AddPair('topic_name', FTopicName);
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;

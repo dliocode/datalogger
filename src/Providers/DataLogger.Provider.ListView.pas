@@ -4,7 +4,6 @@
   Github - https://github.com/dliocode
   *************************************
 }
-
 unit DataLogger.Provider.ListView;
 
 interface
@@ -37,10 +36,8 @@ type
     function MaxLogLines(const AValue: Integer): TProviderListView;
     function ModeInsert(const AValue: TListViewModeInsert): TProviderListView;
     function CleanOnStart(const AValue: Boolean): TProviderListView;
-
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
-
     constructor Create;
   end;
 
@@ -103,7 +100,6 @@ begin
 
   try
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
-
     LValue := GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert));
     FModeInsert := TListViewModeInsert(GetEnumValue(TypeInfo(TListViewModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
     CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
@@ -120,16 +116,13 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('max_log_lines', FMaxLogLines);
+    LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
     LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert)));
-    LJO.AddPair('clean_on_start', FCleanOnStart);
+    LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
 
-    if AFormat then
-      Result := LJO.Format
-    else
-      Result := LJO.ToString;
+    Result := TLoggerJSON.Format(LJO, AFormat);
   finally
     LJO.Free;
   end;
@@ -176,7 +169,11 @@ begin
               if (csDestroying in FListView.ComponentState) then
                 Exit;
 
+{$IF DEFINED(DATALOGGER_FMX)}
+              FListView.BeginUpdate;
+{$ELSE}
               FListView.Items.BeginUpdate;
+{$ENDIF}
 
               case FModeInsert of
                 TListViewModeInsert.tmFirst:
@@ -239,7 +236,11 @@ begin
                 if (csDestroying in FListView.ComponentState) then
                   Exit;
 
+{$IF DEFINED(DATALOGGER_FMX)}
+                FListView.EndUpdate;
+{$ELSE}
                 FListView.Items.EndUpdate;
+{$ENDIF}
 
                 case FModeInsert of
                   TListViewModeInsert.tmFirst:
@@ -263,7 +264,6 @@ begin
               end);
           end;
         end;
-
         Break;
       except
         on E: Exception do
