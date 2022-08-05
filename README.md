@@ -94,6 +94,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) | 
  | Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) | 
  | [Firebase](https://firebase.google.com/) | DataLogger.Provider.Firebase.RealtimeDatabase | [Firebase](https://github.com/dliocode/datalogger/tree/main/Samples/Firebase) | 
+ | [Grafana](https://grafana.com/) | DataLogger.Provider.Grafana.Loki<br />DataLogger.Provider.Grafana.OnCall.WebHook | [Grafana](https://github.com/dliocode/datalogger/tree/main/Samples/Grafana) |  
  | [GraphJSON](https://graphjson.com/) | DataLogger.Provider.GraphJSON | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON) | 
  | ListBox | DataLogger.Provider.ListBox | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) | 
  | ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) | 

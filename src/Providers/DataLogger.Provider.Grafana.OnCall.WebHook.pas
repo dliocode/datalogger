@@ -5,16 +5,17 @@
   *************************************
 }
 
-// https://api.slack.com/messaging/webhooks
+// https://grafana.com/
+// https://grafana.com/docs/oncall/latest/integrations/add-webhook-integration/
 
-unit DataLogger.Provider.Slack;
+unit DataLogger.Provider.Grafana.OnCall.WebHook;
 
 interface
 
 uses
-{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
+{$IF DEFINED(DATALOGGER_GRAFANAONCALL_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_GRAFANAONCALL_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -23,18 +24,18 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  TProviderSlack = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  TProviderSlack = class(TProviderRESTNetHTTPClient)
+{$IF DEFINED(DATALOGGER_GRAFANAONCALL_USE_INDY)}
+  TProviderGrafanaOnCall = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_GRAFANAONCALL_USE_NETHTTPCLIENT)}
+  TProviderGrafanaOnCallWebHook = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  TProviderSlack = class(TProviderRESTHTTPClient)
+  TProviderGrafanaOnCallWebHook = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderSlack;
+    function URL(const AValue: string): TProviderGrafanaOnCallWebHook;
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
@@ -43,23 +44,23 @@ type
 
 implementation
 
-{ TProviderSlack }
+{ TProviderGrafanaOnCallWebHook }
 
-constructor TProviderSlack.Create;
+constructor TProviderGrafanaOnCallWebHook.Create;
 begin
   inherited Create;
 
-  URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
+  URL('https://a-prod-us-central-0.grafana.net/integrations/v1/webhook/xxxxxxxxxxxxxxxxxxx/');
   ContentType('application/json');
 end;
 
-function TProviderSlack.URL(const AValue: string): TProviderSlack;
+function TProviderGrafanaOnCallWebHook.URL(const AValue: string): TProviderGrafanaOnCallWebHook;
 begin
   Result := Self;
   inherited URL(AValue);
 end;
 
-procedure TProviderSlack.LoadFromJSON(const AJSON: string);
+procedure TProviderGrafanaOnCallWebHook.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -85,7 +86,7 @@ begin
   end;
 end;
 
-function TProviderSlack.ToJSON(const AFormat: Boolean): string;
+function TProviderGrafanaOnCallWebHook.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -101,12 +102,11 @@ begin
   end;
 end;
 
-procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderGrafanaOnCallWebHook.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LLog: string;
-  LJO: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -119,18 +119,11 @@ begin
     if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
 
-    LJO := TJSONObject.Create;
-    try
-      LJO.AddPair('text', LLog);
-
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := inherited URL;
-    finally
-      LJO.Free;
-    end;
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := inherited URL;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
@@ -144,6 +137,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderSlack);
+ForceReferenceToClass(TProviderGrafanaOnCallWebHook);
 
 end.
