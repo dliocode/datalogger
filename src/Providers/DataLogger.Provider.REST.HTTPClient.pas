@@ -68,10 +68,11 @@ type
     function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
+
     constructor Create; overload;
-    constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = ''); overload; deprecated 'Use TProviderRESTHTTPClient.Create.URL('').ContentType(''application/json'').BearerToken(''aaaa'') - This function will be removed in future versions';
   end;
 
 implementation
@@ -85,27 +86,6 @@ begin
   ContentType('text/plain');
   Token('');
   Method(tlmPost);
-end;
-
-constructor TProviderRESTHTTPClient.Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = '');
-var
-  LProtocol: string;
-  LHost: string;
-begin
-  Create;
-  LProtocol := 'http://';
-  LHost := AURL;
-
-  if not LHost.ToLower.StartsWith('http://') and not LHost.ToLower.StartsWith('https://') then
-    LHost := LProtocol + AURL;
-
-  URL(LHost);
-  Token(AToken);
-  ContentType(AContentType);
-
-  if FContentType.Trim.IsEmpty then
-    ContentType('text/plain');
-
   ExecuteFinally(nil);
 end;
 

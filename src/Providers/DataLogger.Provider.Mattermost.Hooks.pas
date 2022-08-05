@@ -23,24 +23,22 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderMattermostHooks =
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  class(TProviderRESTIndy)
+  TProviderMattermostHooks = class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  class(TProviderRESTNetHTTPClient)
+  TProviderMattermostHooks = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  class(TProviderRESTHTTPClient)
+  TProviderMattermostHooks = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FChannelId: string;
+    FChannelName: string;
     FUsername: string;
     FModePropsCard: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderMattermostHooks;
-    function BearerToken(const AValue: string): TProviderMattermostHooks;
-    function ChannelId(const AValue: string): TProviderMattermostHooks;
+    function ChannelName(const AValue: string): TProviderMattermostHooks;
     function Username(const AValue: string): TProviderMattermostHooks;
     function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
 
@@ -60,7 +58,7 @@ begin
 
   URL('http://localhost');
   ContentType('application/json');
-  ChannelId('');
+  ChannelName('');
   Username('');
   ModePropsCard(False);
 end;
@@ -71,16 +69,10 @@ begin
   inherited URL(AValue);
 end;
 
-function TProviderMattermostHooks.BearerToken(const AValue: string): TProviderMattermostHooks;
+function TProviderMattermostHooks.ChannelName(const AValue: string): TProviderMattermostHooks;
 begin
   Result := Self;
-  inherited BearerToken(AValue);
-end;
-
-function TProviderMattermostHooks.ChannelId(const AValue: string): TProviderMattermostHooks;
-begin
-  Result := Self;
-  FChannelId := AValue;
+  FChannelName := AValue;
 end;
 
 function TProviderMattermostHooks.Username(const AValue: string): TProviderMattermostHooks;
@@ -114,8 +106,7 @@ begin
 
   try
     URL(LJO.GetValue<string>('url', inherited URL));
-    BearerToken(LJO.GetValue<string>('token', inherited Token));
-    ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
+    ChannelName(LJO.GetValue<string>('channel_name', FChannelName));
     Username(LJO.GetValue<string>('username', FUsername));
     ModePropsCard(LJO.GetValue<Boolean>('mode_props_card', FModePropsCard));
 
@@ -132,8 +123,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('url', inherited URL);
-    LJO.AddPair('token', inherited Token);
-    LJO.AddPair('channel_id', FChannelId);
+    LJO.AddPair('channel_name', FChannelName);
     LJO.AddPair('username', FUsername);
     LJO.AddPair('mode_props_card', TJSONBool.Create(FModePropsCard));
 
@@ -165,7 +155,7 @@ var
 
       LJO := TJSONObject.Create;
       try
-        LJO.AddPair('channel_id', FChannelId);
+        LJO.AddPair('channel', FChannelName);
         LJO.AddPair('username', FUsername);
         LJO.AddPair('text', LLog);
 
@@ -188,7 +178,7 @@ var
   begin
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('channel_id', FChannelId);
+      LJO.AddPair('channel', FChannelName);
       LJO.AddPair('username', FUsername);
 
       LAppend := TStringBuilder.Create;

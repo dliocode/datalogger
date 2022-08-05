@@ -60,22 +60,18 @@ type
     function URL(const AValue: string): TProviderRESTIndy; overload;
     function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTIndy;
-
     function Token(const AValue: string): TProviderRESTIndy; overload;
     function Token: string; overload;
     function BearerToken(const AValue: string): TProviderRESTIndy;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTIndy;
-
     function Method(const AValue: TRESTMethod): TProviderRESTIndy;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTIndy;
-
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
-    constructor Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = ''); overload; deprecated 'Use TProviderRESTIndy.Create.URL('').ContentType(''application/json'').BearerToken(''aaaa'') - This function will be removed in future versions';
   end;
 
 implementation
@@ -89,27 +85,7 @@ begin
   URL('');
   ContentType('text/plain');
   Token('');
-end;
-
-constructor TProviderRESTIndy.Create(const AURL: string; const AContentType: string = 'text/plain'; const AToken: string = '');
-var
-  LProtocol: string;
-  LHost: string;
-begin
-  Create;
-
-  LProtocol := 'http://';
-  LHost := AURL;
-
-  if not LHost.ToLower.StartsWith('http://') and not LHost.ToLower.StartsWith('https://') then
-    LHost := LProtocol + AURL;
-
-  URL(LHost);
-  Token(AToken);
-  ContentType(AContentType);
-
-  if FContentType.Trim.IsEmpty then
-    ContentType('text/plain');
+  ExecuteFinally(nil);
 end;
 
 function TProviderRESTIndy.URL(const AValue: string): TProviderRESTIndy;

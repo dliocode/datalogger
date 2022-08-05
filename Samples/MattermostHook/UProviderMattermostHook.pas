@@ -49,9 +49,8 @@ begin
 
   Logger.AddProvider(
     TProviderMattermostHooks.Create
-    .URL('http://my.server.mattermost')
-    .BearerToken('111111111')
-    .ChannelId('aaaaaaa000000')
+    .URL('http://{your-mattermost-site}')
+    .ChannelName('aaaaaaa000000')
     .Username('my_username')
     .ModePropsCard(False)
     );

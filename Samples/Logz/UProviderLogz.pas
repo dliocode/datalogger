@@ -1,4 +1,4 @@
-unit UProviderMattermost;
+unit UProviderLogz;
 
 interface
 
@@ -29,7 +29,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DataLogger, DataLogger.Provider.Mattermost;
+  DataLogger, DataLogger.Provider.Logz;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -48,14 +48,12 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderMattermost.Create
-    .URL('http://{your-mattermost-site}')
-    .BearerToken('111111111')
-    .ChannelId('aaaaaaa000000')
+    TProviderLogz.Create
+      .Token('{token}')
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

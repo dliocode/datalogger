@@ -100,12 +100,14 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Logflare](https://logflare.app/) | DataLogger.Provider.Logflare | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare) | 
  | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach | [Logstach](https://github.com/dliocode/datalogger/tree/main/Samples/Logstach) | 
  | [Logtail](https://betterstack.com/logtail) | DataLogger.Provider.Logtail | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail) |  
+ | [Logz](https://logz.io/) | DataLogger.Provider.Logz | [Logz](https://github.com/dliocode/datalogger/tree/main/Samples/Logz) |  
  | [Mattermost](https://mattermost.com/) | DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook) | 
  | Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL) | 
  | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory) | 
  | [MongoDB](https://www.mongodb.com) | DataLogger.Provider.MongoDB.Cloud | [MongoDB](https://github.com/dliocode/datalogger/tree/main/Samples/MongoDB) |  
  | Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification) | 
  | OutputDebugString | DataLogger.Provider.OutputDebugString | [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) | 
+ | [PaperTrail](https://papertrailapp.com) | DataLogger.Provider.PaperTrail | [PaperTrail](https://github.com/dliocode/datalogger/tree/main/Samples/PaperTrail) | 
  | [RabbitMQ](https://github.com/danieleteti/delphistompclient) | DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ) | 
  | [Redis](https://github.com/danieleteti/delphiredisclient) | DataLogger.Provider.Redis | [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) | 
  | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST) | 

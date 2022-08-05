@@ -1,4 +1,4 @@
-unit UProviderMattermost;
+unit UProviderPaperTrail;
 
 interface
 
@@ -12,9 +12,11 @@ type
     Panel1: TPanel;
     btnMakeLog: TButton;
     pnlInfo: TPanel;
+    btnMakeLogCustom: TButton;
     procedure btnMakeLogClick(Sender: TObject);
     procedure pnlInfoClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btnMakeLogCustomClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -29,7 +31,8 @@ implementation
 {$R *.dfm}
 
 uses
-  DataLogger, DataLogger.Provider.Mattermost;
+  System.JSON,
+  DataLogger, DataLogger.Provider.PaperTrail;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -43,15 +46,31 @@ begin
     .Fatal('My Fatal');
 end;
 
+procedure TForm2.btnMakeLogCustomClick(Sender: TObject);
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('fields_custom1', 'my_value 1');
+    LJO.AddPair('fields_custom2', 'my_value 2');
+    LJO.AddPair('fields_custom3', 'my_value 3');
+    LJO.AddPair('fields_custom4', 'my_value 4');
+    LJO.AddPair('fields_custom5', 'my_value 5');
+
+    Logger.Debug(LJO);
+  finally
+    LJO.Free;
+  end;
+end;
+
 procedure TForm2.FormCreate(Sender: TObject);
 begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderMattermost.Create
-    .URL('http://{your-mattermost-site}')
-    .BearerToken('111111111')
-    .ChannelId('aaaaaaa000000')
+    TProviderPaperTrail.Create
+    .Token('{TOKEN_LOG_DESTINATION}')
     );
 
   // Log Format
