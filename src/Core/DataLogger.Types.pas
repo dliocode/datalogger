@@ -17,6 +17,8 @@ type
   EDataLoggerException = class(Exception)
   end;
 
+  Exception = System.SysUtils.Exception;
+
 {$SCOPEDENUMS ON}
 
   TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
@@ -42,6 +44,7 @@ type
     ThreadID: Integer;
     &Type: TLoggerType;
     TypeString: string;
+    TypeLevel: Integer;
     Tag: string;
     Message: string;
     MessageJSON: string;
@@ -78,6 +81,7 @@ type
     LOG_THREADID = '${thread_id}';
     LOG_PROCESSID = '${process_id}';
     LOG_TYPE = '${type}';
+    LOG_TYPE_LEVEL = '${type_level}';
     LOG_TAG = '${tag}';
     LOG_MESSAGE = '${message}';
 
@@ -132,6 +136,7 @@ begin
   _Add(TLoggerFormat.LOG_SEQUENCE, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
   _Add(TLoggerFormat.LOG_THREADID, 'log_thread_id', TJSONNumber.Create(AItem.ThreadID));
   _Add(TLoggerFormat.LOG_TYPE, 'log_type', TJSONString.Create(AItem.TypeString));
+  _Add(TLoggerFormat.LOG_TYPE_LEVEL, 'log_type_level', TJSONNumber.Create(AItem.TypeLevel));
   _Add(TLoggerFormat.LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
 
   if not AItem.MessageJSON.Trim.IsEmpty then
@@ -210,6 +215,7 @@ begin
   LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatTimestamp, AItem.TimeStamp));
   LLog := _Add(TLoggerFormat.LOG_THREADID, AItem.ThreadID.ToString);
   LLog := _Add(TLoggerFormat.LOG_TYPE, AItem.TypeString);
+  LLog := _Add(TLoggerFormat.LOG_TYPE_LEVEL, AItem.TypeLevel.ToString);
   LLog := _Add(TLoggerFormat.LOG_TAG, AItem.Tag.Trim);
 
   if not AItem.MessageJSON.Trim.IsEmpty then

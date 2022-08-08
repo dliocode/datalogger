@@ -22,6 +22,7 @@ type
   TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
   EDataLoggerException = DataLogger.Types.EDataLoggerException;
+  Exception =  DataLogger.Types.Exception;
 
   TDataLogger = class sealed(TThread)
   strict private
@@ -842,6 +843,8 @@ begin
     LLogItem.TypeString := ACustomType;
     if LLogItem.TypeString.Trim.IsEmpty then
       LLogItem.TypeString := AType.ToString;
+
+    LLogItem.TypeLevel := Ord(AType);
 
     LLogItem.Tag := ATag;
     LLogItem.Message := AMessageString;

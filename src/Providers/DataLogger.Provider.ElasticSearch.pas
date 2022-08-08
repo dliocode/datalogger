@@ -65,7 +65,7 @@ begin
   inherited URL(AValue);
 end;
 
-function TProviderElasticSearch.BasicAuth(const AUsername, APassword: string): TProviderElasticSearch;
+function TProviderElasticSearch.BasicAuth(const AUsername: string; const APassword: string): TProviderElasticSearch;
 begin
   Result := Self;
 
@@ -148,7 +148,7 @@ begin
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := Format('%s/%s/_doc', [inherited URL, FIndex.ToLower]);
 
-    LItemREST := Concat(LItemREST, [LLogItemREST]);;
+    LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
   InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
