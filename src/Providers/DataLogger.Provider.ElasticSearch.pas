@@ -29,7 +29,6 @@ type
   TProviderElasticSearch = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FPort: Integer;
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
     FIndex: string;
@@ -37,7 +36,6 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderElasticSearch;
-    function Port(const AValue: Integer): TProviderElasticSearch;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderElasticSearch;
     function Index(const AValue: string): TProviderElasticSearch;
 
@@ -55,9 +53,8 @@ constructor TProviderElasticSearch.Create;
 begin
   inherited Create;
 
-  URL('https://localhost');
+  URL('https://localhost:9200');
   ContentType('application/json');
-  Port(9200);
   BasicAuth('elastic', '');
   Index('logger');
 end;
@@ -66,12 +63,6 @@ function TProviderElasticSearch.URL(const AValue: string): TProviderElasticSearc
 begin
   Result := Self;
   inherited URL(AValue);
-end;
-
-function TProviderElasticSearch.Port(const AValue: Integer): TProviderElasticSearch;
-begin
-  Result := Self;
-  FPort := AValue;
 end;
 
 function TProviderElasticSearch.BasicAuth(const AUsername, APassword: string): TProviderElasticSearch;
@@ -109,7 +100,6 @@ begin
 
   try
     URL(LJO.GetValue<string>('url', inherited URL));
-    Port(LJO.GetValue<Integer>('port', FPort));
     BasicAuth(LJO.GetValue<string>('basic_auth_username', FBasicAuthUsername), LJO.GetValue<string>('basic_auth_password', FBasicAuthPassword));
     Index(LJO.GetValue<string>('index', FIndex));
 
@@ -126,7 +116,6 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('url', inherited URL);
-    LJO.AddPair('port', TJSONNumber.Create(FPort));
     LJO.AddPair('basic_auth_username', FBasicAuthUsername);
     LJO.AddPair('basic_auth_password', FBasicAuthPassword);
     LJO.AddPair('index', FIndex);
@@ -157,7 +146,7 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, True);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s:%d/%s/_doc', [inherited URL, FPort, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s/%s/_doc', [inherited URL, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);;
   end;

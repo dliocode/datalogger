@@ -50,8 +50,7 @@ begin
 
   Logger.AddProvider(
     TProviderElasticSearch.Create
-    .URL('https://localhost')
-    .Port(9200)
+    .URL('https://localhost:9200')
     .Index('logger')
     .BasicAuth('elastic', '{PASSWORD}')
     .SetLogException(
