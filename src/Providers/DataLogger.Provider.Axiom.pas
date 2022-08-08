@@ -58,16 +58,16 @@ begin
   Dataset('');
 end;
 
-function TProviderAxiom.Dataset(const AValue: string): TProviderAxiom;
-begin
-  Result := Self;
-  FDataset := AValue;
-end;
-
 function TProviderAxiom.ApiToken(const AValue: string): TProviderAxiom;
 begin
   Result := Self;
   inherited BearerToken(AValue);
+end;
+
+function TProviderAxiom.Dataset(const AValue: string): TProviderAxiom;
+begin
+  Result := Self;
+  FDataset := AValue;
 end;
 
 procedure TProviderAxiom.LoadFromJSON(const AJSON: string);
