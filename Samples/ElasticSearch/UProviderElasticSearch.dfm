@@ -2,7 +2,7 @@ object Form2: TForm2
   Left = 0
   Top = 0
   Caption = 'DataLogger - ElasticSearch'
-  ClientHeight = 60
+  ClientHeight = 414
   ClientWidth = 624
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -49,5 +49,14 @@ object Form2: TForm2
       TabOrder = 0
       OnClick = btnMakeLogClick
     end
+  end
+  object Memo1: TMemo
+    Left = 0
+    Top = 62
+    Width = 624
+    Height = 352
+    Align = alClient
+    ScrollBars = ssBoth
+    TabOrder = 2
   end
 end

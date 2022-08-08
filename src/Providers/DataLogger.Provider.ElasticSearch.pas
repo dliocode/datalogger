@@ -30,12 +30,15 @@ type
 {$ENDIF}
   private
     FPort: Integer;
+    FBasicAuthUsername: string;
+    FBasicAuthPassword: string;
     FIndex: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderElasticSearch;
     function Port(const AValue: Integer): TProviderElasticSearch;
+    function BasicAuth(const AUsername: string; const APassword: string): TProviderElasticSearch;
     function Index(const AValue: string): TProviderElasticSearch;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -52,9 +55,10 @@ constructor TProviderElasticSearch.Create;
 begin
   inherited Create;
 
-  URL('http://localhost');
+  URL('https://localhost');
   ContentType('application/json');
   Port(9200);
+  BasicAuth('elastic', '');
   Index('logger');
 end;
 
@@ -68,6 +72,16 @@ function TProviderElasticSearch.Port(const AValue: Integer): TProviderElasticSea
 begin
   Result := Self;
   FPort := AValue;
+end;
+
+function TProviderElasticSearch.BasicAuth(const AUsername, APassword: string): TProviderElasticSearch;
+begin
+  Result := Self;
+
+  FBasicAuthUsername := AUsername;
+  FBasicAuthPassword := APassword;
+
+  inherited BasicAuth(AUsername, APassword);
 end;
 
 function TProviderElasticSearch.Index(const AValue: string): TProviderElasticSearch;
@@ -96,6 +110,7 @@ begin
   try
     URL(LJO.GetValue<string>('url', inherited URL));
     Port(LJO.GetValue<Integer>('port', FPort));
+    BasicAuth(LJO.GetValue<string>('basic_auth_username', FBasicAuthUsername), LJO.GetValue<string>('basic_auth_password', FBasicAuthPassword));
     Index(LJO.GetValue<string>('index', FIndex));
 
     SetJSONInternal(LJO);
@@ -112,6 +127,8 @@ begin
   try
     LJO.AddPair('url', inherited URL);
     LJO.AddPair('port', TJSONNumber.Create(FPort));
+    LJO.AddPair('basic_auth_username', FBasicAuthUsername);
+    LJO.AddPair('basic_auth_password', FBasicAuthPassword);
     LJO.AddPair('index', FIndex);
 
     ToJSONInternal(LJO);
@@ -138,7 +155,7 @@ begin
     if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
-    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
+    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, True);
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := Format('%s:%d/%s/_doc', [inherited URL, FPort, FIndex.ToLower]);
 

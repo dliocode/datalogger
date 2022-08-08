@@ -12,6 +12,7 @@ type
     pnlInfo: TPanel;
     Panel1: TPanel;
     btnMakeLog: TButton;
+    Memo1: TMemo;
     procedure btnMakeLogClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure pnlInfoClick(Sender: TObject);
@@ -49,9 +50,15 @@ begin
 
   Logger.AddProvider(
     TProviderElasticSearch.Create
-    .URL('http://localhost')
+    .URL('https://localhost')
     .Port(9200)
     .Index('logger')
+    .BasicAuth('elastic', '{PASSWORD}')
+    .SetLogException(
+      procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer)
+      begin
+        Memo1.Lines.Add(E.Message);
+      end)
     );
 
   // Log Format

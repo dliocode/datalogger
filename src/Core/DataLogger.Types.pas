@@ -65,7 +65,7 @@ type
     class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): string;
     class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
     class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
-    class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
+    class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TStream;
   end;
 
   TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
@@ -256,11 +256,11 @@ begin
   Result.Seek(0, soFromBeginning);
 end;
 
-class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem): TStream;
+class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TStream;
 var
   LLog: string;
 begin
-  LLog := AsJsonObjectToString(ALogFormat, AItem);
+  LLog := AsJsonObjectToString(ALogFormat, AItem, AIgnoreLogFormat);
 
   Result := TStringStream.Create(LLog, TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);
