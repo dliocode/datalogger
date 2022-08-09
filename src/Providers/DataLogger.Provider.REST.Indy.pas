@@ -54,7 +54,6 @@ type
   protected
     procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
-
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderRESTIndy; overload;
@@ -338,23 +337,23 @@ begin
     for I := Low(AItemREST.Header) to High(AItemREST.Header) do
       LHTTP.Request.CustomHeaders.Values[AItemREST.Header[I].Key] := AItemREST.Header[I].Value;
 
-    if LURL.ToLower.Contains('https://') then
-    begin
-      if not LoadOpenSSLLibrary then
-        raise EDataLoggerException.Create('DLL''s not compatible or not found (ssleay32 e libeay32)');
-
-      LSSL := TIdSSLIOHandlerSocketOpenSSL.Create(LHTTP);
-      LSSL.SSLOptions.Method := sslvTLSv1_2;
-    end;
-
-    LHTTP.IOHandler := LSSL;
-
     LRetriesCount := 0;
 
     while True do
       try
         if Self.Terminated then
           Exit;
+
+        if LURL.ToLower.Contains('https://') then
+        begin
+          if not LoadOpenSSLLibrary then
+            raise EDataLoggerException.Create('DLL''s not compatible or not found (ssleay32 e libeay32)');
+
+          LSSL := TIdSSLIOHandlerSocketOpenSSL.Create(LHTTP);
+          LSSL.SSLOptions.Method := sslvTLSv1_2;
+        end;
+
+        LHTTP.IOHandler := LSSL;
 
         case AMethod of
           tlmGet:
