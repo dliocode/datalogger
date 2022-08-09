@@ -321,11 +321,11 @@ begin
     LHTTP.SendTimeout := 60000;
 {$ENDIF}
     LHTTP.HandleRedirects := True;
-    LHTTP.AcceptCharSet := 'utf-8';
-    LHTTP.AcceptEncoding := 'utf-8';
     LHTTP.UserAgent := 'DataLogger.Provider.REST.NetHTTPClient';
     LHTTP.ContentType := FContentType;
-    LHTTP.Accept := FContentType;
+    LHTTP.AcceptCharSet := 'utf-8';
+    LHTTP.AcceptEncoding := 'gzip, deflate, br';
+    LHTTP.Accept := '*/*';
 
     if not FToken.Trim.IsEmpty then
       LHTTP.CustomHeaders['Authorization'] := FToken;

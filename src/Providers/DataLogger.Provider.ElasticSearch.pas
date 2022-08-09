@@ -55,7 +55,6 @@ begin
 
   URL('https://localhost:9200');
   ContentType('application/json');
-  BasicAuth('elastic', '');
   Index('logger');
 end;
 

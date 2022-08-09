@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdHTTP, IdSSLOpenSSL, IdMultipartFormData,
+  IdHTTP, IdSSLOpenSSL, IdSSLOpenSSLHeaders, IdMultipartFormData,
   System.SysUtils, System.Classes, System.Threading, System.JSON, System.TypInfo, System.NetEncoding;
 
 type
@@ -320,12 +320,13 @@ begin
   try
     LHTTP.ConnectTimeout := 60000;
     LHTTP.ReadTimeout := 60000;
+
     LHTTP.HandleRedirects := True;
-    LHTTP.Request.AcceptCharSet := 'utf-8';
-    LHTTP.Request.AcceptEncoding := 'utf-8';
     LHTTP.Request.UserAgent := 'DataLogger.Provider.REST.Indy';
     LHTTP.Request.ContentType := FContentType;
-    LHTTP.Request.Accept := FContentType;
+    LHTTP.Request.AcceptCharSet := 'utf-8';
+    LHTTP.Request.AcceptEncoding := 'gzip, deflate, br';
+    LHTTP.Request.Accept := '*/*';
     LHTTP.Request.Connection := 'Keep-Alive';
 
     if not FToken.Trim.IsEmpty then
@@ -347,7 +348,7 @@ begin
         if LURL.ToLower.Contains('https://') then
         begin
           if not LoadOpenSSLLibrary then
-            raise EDataLoggerException.Create('DLL''s not compatible or not found (ssleay32 e libeay32)');
+            raise EDataLoggerException.Create(Self.ClassName + ' > ' + WhichFailedToLoad);
 
           LSSL := TIdSSLIOHandlerSocketOpenSSL.Create(LHTTP);
           LSSL.SSLOptions.Method := sslvTLSv1_2;
@@ -406,9 +407,6 @@ begin
       end;
   finally
     LHTTP.Free;
-
-    if Assigned(LSSL) then
-      UnLoadOpenSSLLibrary;
 
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;

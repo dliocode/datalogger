@@ -11,7 +11,6 @@ static/
 src/*.~*
 *.res
 *.exe
-*.dll
 *.bpl
 *.bpi
 *.dcp
