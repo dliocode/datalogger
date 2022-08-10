@@ -386,6 +386,9 @@ TLoggerFormat.LOG_PROCESSID;
 // Exibe o tipo do log, sendo eles: TRACE/DEBUG/INFO/SUCCESS/WARN/ERROR/FATAL
 TLoggerFormat.LOG_TYPE;
 
+// Exibe o tipo do log no formato numérico, sendo eles: 1=TRACE / 2=DEBUG / 3=INFO / 4=SUCCESS / 5=WARN / 6=ERROR / 7=FATAL / 8=CUSTOM
+TLoggerFormat.LOG_TYPE_LEVEL;
+
 // Exibe a tag do log, essa informação é preenchida a após a mensagem; Ex: Logger.Debug('Minha mensagem','Minha Tag');
 TLoggerFormat.LOG_TAG;
 
