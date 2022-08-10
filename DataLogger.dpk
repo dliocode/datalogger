@@ -77,6 +77,7 @@ contains
   DataLogger.Provider.SendGridWebApi in 'src\Providers\DataLogger.Provider.SendGridWebApi.pas',
   DataLogger.Provider.Slack in 'src\Providers\DataLogger.Provider.Slack.pas',
   DataLogger.Provider.Socket in 'src\Providers\DataLogger.Provider.Socket.pas',
+  DataLogger.Provider.Splunk in 'src\Providers\DataLogger.Provider.Splunk.pas',
   DataLogger.Provider.SysLog in 'src\Providers\DataLogger.Provider.SysLog.pas',
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
   DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',

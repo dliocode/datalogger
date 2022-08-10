@@ -177,6 +177,7 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.SendGridWebApi.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Slack.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Socket.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Splunk.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SysLog.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Telegram.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.TextFile.pas"/>
