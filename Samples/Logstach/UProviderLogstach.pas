@@ -49,8 +49,7 @@ begin
 
   Logger.AddProvider(
     TProviderLogstach.Create
-    .URL('http://localhost')
-    .Port(5044)
+    .URL('http://localhost:5044')
     .Index('logger')
     );
 

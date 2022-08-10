@@ -29,13 +29,11 @@ type
   TProviderLogstach = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FPort: Integer;
     FIndex: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderLogstach;
-    function Port(const AValue: Integer): TProviderLogstach;
     function Index(const AValue: string): TProviderLogstach;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -52,9 +50,8 @@ constructor TProviderLogstach.Create;
 begin
   inherited Create;
 
-  URL('http://localhost');
+  URL('http://localhost:5044');
   ContentType('application/json');
-  Port(5044);
   Index('logger');
 end;
 
@@ -62,12 +59,6 @@ function TProviderLogstach.URL(const AValue: string): TProviderLogstach;
 begin
   Result := Self;
   inherited URL(AValue);
-end;
-
-function TProviderLogstach.Port(const AValue: Integer): TProviderLogstach;
-begin
-  Result := Self;
-  FPort := AValue;
 end;
 
 function TProviderLogstach.Index(const AValue: string): TProviderLogstach;
@@ -95,7 +86,6 @@ begin
 
   try
     URL(LJO.GetValue<string>('url', inherited URL));
-    Port(LJO.GetValue<Integer>('port', FPort));
     Index(LJO.GetValue<string>('index', FIndex));
 
     SetJSONInternal(LJO);
@@ -111,7 +101,6 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('url', inherited URL);
-    LJO.AddPair('port', TJSONNUmber.Create(FPort));
     LJO.AddPair('index', FIndex);
 
     ToJSONInternal(LJO);
@@ -140,11 +129,12 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s:%d/%s/doc', [inherited URL, FPort, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s/%s/doc', [inherited URL, FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+
+  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
