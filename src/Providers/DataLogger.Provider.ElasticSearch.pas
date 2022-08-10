@@ -145,7 +145,7 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, True);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s/%s/_doc', [inherited URL, FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s/%s/_doc', [inherited URL.Trim(['/']), FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

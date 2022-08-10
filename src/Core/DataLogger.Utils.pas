@@ -441,12 +441,11 @@ begin
 
   LName := AName.ToLower;
   LRttiContext := TRttiContext.Create;
-  LRttiType := nil;
-
   try
     LRttiTypes := LRttiContext.GetTypes;
     LFound := False;
 
+    LRttiType := nil;
     for LRttiType in LRttiTypes do
     begin
       if (SameText(LName, LRttiType.Name.ToLower)) then

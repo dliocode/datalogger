@@ -5,17 +5,18 @@
   *************************************
 }
 
-// https://graphjson.com/
-// https://docs.graphjson.com/
+// https://www.splunk.com/
+// https://dev.splunk.com/enterprise/reference/
+// https://docs.splunk.com/Documentation
 
-unit DataLogger.Provider.GraphJSON;
+unit DataLogger.Provider.Splunk;
 
 interface
 
 uses
-{$IF DEFINED(DATALOGGER_GRAPHJSON_USE_INDY)}
+{$IF DEFINED(DATALOGGER_SPLUNK_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_GRAPHJSON_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_SPLUNK_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -24,21 +25,19 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_GRAPHJSON_USE_INDY)}
-  TProviderGraphJSON = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_GRAPHJSON_USE_NETHTTPCLIENT)}
-  TProviderGraphJSON = class(TProviderRESTNetHTTPClient)
+{$IF DEFINED(DATALOGGER_SPLUNK_USE_INDY)}
+  TProviderSplunk = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_SPLUNK_USE_NETHTTPCLIENT)}
+  TProviderSplunk = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  TProviderGraphJSON = class(TProviderRESTHTTPClient)
+  TProviderSplunk = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FApiKey: string;
-    FCollection: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function ApiKey(const AValue: string): TProviderGraphJSON;
-    function Collection(const AValue: string): TProviderGraphJSON;
+    function URL(const AValue: string): TProviderSplunk;
+    function Token(const AValue: string): TProviderSplunk;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -48,30 +47,29 @@ type
 
 implementation
 
-{ TProviderGraphJSON }
+{ TProviderSplunk }
 
-constructor TProviderGraphJSON.Create;
+constructor TProviderSplunk.Create;
 begin
   inherited Create;
 
-  URL('');
+  URL('https://localhost:8088');
   ContentType('application/json');
-  Collection('');
 end;
 
-function TProviderGraphJSON.ApiKey(const AValue: string): TProviderGraphJSON;
+function TProviderSplunk.URL(const AValue: string): TProviderSplunk;
 begin
   Result := Self;
-  FApiKey := AValue;
+  inherited URL(AValue);
 end;
 
-function TProviderGraphJSON.Collection(const AValue: string): TProviderGraphJSON;
+function TProviderSplunk.Token(const AValue: string): TProviderSplunk;
 begin
   Result := Self;
-  FCollection := AValue;
+  inherited Token('Splunk ' + AValue);
 end;
 
-procedure TProviderGraphJSON.LoadFromJSON(const AJSON: string);
+procedure TProviderSplunk.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -89,8 +87,8 @@ begin
     Exit;
 
   try
-    ApiKey(LJO.GetValue<string>('api_key', FApiKey));
-    Collection(LJO.GetValue<string>('collection', FCollection));
+    URL(LJO.GetValue<string>('url', inherited URL));
+    Token(LJO.GetValue<string>('token', inherited Token));
 
     SetJSONInternal(LJO);
   finally
@@ -98,14 +96,14 @@ begin
   end;
 end;
 
-function TProviderGraphJSON.ToJSON(const AFormat: Boolean): string;
+function TProviderSplunk.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('collection', FCollection);
+    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('token', inherited Token);
 
     ToJSONInternal(LJO);
 
@@ -115,7 +113,7 @@ begin
   end;
 end;
 
-procedure TProviderGraphJSON.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderSplunk.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
@@ -133,18 +131,13 @@ begin
     if LItem.InternalItem.TypeSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
-
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('api_key', FApiKey);
-      LJO.AddPair('collection', FCollection);
-      LJO.AddPair('timestamp', TJSONNumber.Create(DateTimeToUnix(LItem.TimeStamp, False)));
-      LJO.AddPair('json', LLog);
+      LJO.AddPair('event', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := 'https://api.graphjson.com/api/log';
+      LLogItemREST.URL := Format('%s/services/collector/event', [inherited URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -161,6 +154,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderGraphJSON);
+ForceReferenceToClass(TProviderSplunk);
 
 end.

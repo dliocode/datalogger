@@ -149,7 +149,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/v4/posts', [ExcludeTrailingPathDelimiter(inherited URL)]);
+      LLogItemREST.URL := Format('%s/api/v4/posts', [inherited URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;

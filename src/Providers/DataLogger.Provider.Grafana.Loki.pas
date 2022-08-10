@@ -187,7 +187,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/loki/api/v1/push', [inherited URL]);
+      LLogItemREST.URL := Format('%s/loki/api/v1/push', [inherited URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -195,7 +195,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
