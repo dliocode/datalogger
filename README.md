@@ -116,6 +116,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) | 
  | [SendGrid](https://sendgrid.com/) | DataLogger.Provider.SendGridWebApi | [SendGridWebApi](https://github.com/dliocode/datalogger/tree/main/Samples/SendGrid-WebApi) | 
  | [Slack](https://slack.com/) | DataLogger.Provider.Slack | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) | 
+ | [Splunk](https://www.splunk.com/) | DataLogger.Provider.Splunk | [Splunk](https://github.com/dliocode/datalogger/tree/main/Samples/Splunk) | 
  | Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket) | 
  | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) | 
  | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
