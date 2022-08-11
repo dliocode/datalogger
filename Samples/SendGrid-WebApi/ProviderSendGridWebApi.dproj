@@ -112,7 +112,7 @@
         <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.HTTPClient.pas"/>
         <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.Indy.pas"/>
         <DCCReference Include="..\..\src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas"/>
-        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.SendGridWebApi.pas"/>
+        <DCCReference Include="..\..\src\Providers\DataLogger.Provider.SendGrid.WebApi.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

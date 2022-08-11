@@ -32,7 +32,7 @@ implementation
 
 uses
   System.JSON,
-  DataLogger, DataLogger.Provider.SendGridWebApi;
+  DataLogger, DataLogger.Provider.SendGrid.WebApi;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin

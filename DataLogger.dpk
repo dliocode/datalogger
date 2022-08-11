@@ -74,7 +74,7 @@ contains
   DataLogger.Provider.REST.NetHTTPClient in 'src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas',
   DataLogger.Provider.RichEdit in 'src\Providers\DataLogger.Provider.RichEdit.pas',
   DataLogger.Provider.SendEmail in 'src\Providers\DataLogger.Provider.SendEmail.pas',
-  DataLogger.Provider.SendGridWebApi in 'src\Providers\DataLogger.Provider.SendGridWebApi.pas',
+  DataLogger.Provider.SendGrid.WebApi in 'src\Providers\DataLogger.Provider.SendGrid.WebApi.pas',
   DataLogger.Provider.Slack in 'src\Providers\DataLogger.Provider.Slack.pas',
   DataLogger.Provider.Socket in 'src\Providers\DataLogger.Provider.Socket.pas',
   DataLogger.Provider.Splunk in 'src\Providers\DataLogger.Provider.Splunk.pas',

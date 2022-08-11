@@ -7,7 +7,7 @@
 
 // https://sendgrid.com/
 
-unit DataLogger.Provider.SendGridWebApi;
+unit DataLogger.Provider.SendGrid.WebApi;
 
 interface
 

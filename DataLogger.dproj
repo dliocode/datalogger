@@ -174,7 +174,7 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.RichEdit.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SendEmail.pas"/>
-        <DCCReference Include="src\Providers\DataLogger.Provider.SendGridWebApi.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.SendGrid.WebApi.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Slack.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Socket.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Splunk.pas"/>
