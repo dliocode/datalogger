@@ -102,6 +102,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach | [Logstach](https://github.com/dliocode/datalogger/tree/main/Samples/Logstach) | 
  | [Logtail](https://betterstack.com/logtail) | DataLogger.Provider.Logtail | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail) |  
  | [Logz](https://logz.io/) | DataLogger.Provider.Logz | [Logz](https://github.com/dliocode/datalogger/tree/main/Samples/Logz) |  
+ | [Mailgun](https://www.mailgun.com/) | DataLogger.Provider.Mailgun.Api | [Mailgun](https://github.com/dliocode/datalogger/tree/main/Samples/Mailgun-Api) |  
  | [Mattermost](https://mattermost.com/) | DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.Hooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook) | 
  | Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL) | 
  | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory) | 

@@ -117,7 +117,6 @@ procedure TProviderSplunk.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
-  LLog: string;
   LJO: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin

@@ -59,6 +59,7 @@ contains
   DataLogger.Provider.Logstach in 'src\Providers\DataLogger.Provider.Logstach.pas',
   DataLogger.Provider.Logtail in 'src\Providers\DataLogger.Provider.Logtail.pas',
   DataLogger.Provider.Logz in 'src\Providers\DataLogger.Provider.Logz.pas',
+  DataLogger.Provider.Mailgun.Api in 'src\Providers\DataLogger.Provider.Mailgun.Api.pas',
   DataLogger.Provider.Mattermost.Hooks in 'src\Providers\DataLogger.Provider.Mattermost.Hooks.pas',
   DataLogger.Provider.Mattermost in 'src\Providers\DataLogger.Provider.Mattermost.pas',
   DataLogger.Provider.Memo in 'src\Providers\DataLogger.Provider.Memo.pas',
