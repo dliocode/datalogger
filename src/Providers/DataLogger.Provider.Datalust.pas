@@ -5,18 +5,17 @@
   *************************************
 }
 
-// https://www.splunk.com/
-// https://dev.splunk.com/enterprise/reference/
-// https://docs.splunk.com/Documentation
+// https://datalust.co/
+// https://docs.datalust.co/docs
 
-unit DataLogger.Provider.Splunk;
+unit DataLogger.Provider.Datalust;
 
 interface
 
 uses
-{$IF DEFINED(DATALOGGER_SPLUNK_USE_INDY)}
+{$IF DEFINED(DATALOGGER_DATALUST_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_SPLUNK_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_DATALUST_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -25,20 +24,20 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_SPLUNK_USE_INDY)}
-  TProviderSplunk = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_SPLUNK_USE_NETHTTPCLIENT)}
-  TProviderSplunk = class(TProviderRESTNetHTTPClient)
+{$IF DEFINED(DATALOGGER_DATALUST_USE_INDY)}
+  TProviderDatalust = class(TProviderRESTIndy)
+{$ELSEIF DEFINED(DATALOGGER_DATALUST_USE_NETHTTPCLIENT)}
+  TProviderDatalust = class(TProviderRESTNetHTTPClient)
 {$ELSE}
-  TProviderSplunk = class(TProviderRESTHTTPClient)
+  TProviderDatalust = class(TProviderRESTHTTPClient)
 {$ENDIF}
   private
-    FToken: string;
+    FApiKey: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderSplunk;
-    function Token(const AValue: string): TProviderSplunk;
+    function URL(const AValue: string): TProviderDatalust;
+    function ApiKey(const AValue: string): TProviderDatalust;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -48,31 +47,31 @@ type
 
 implementation
 
-{ TProviderSplunk }
+{ TProviderDatalust }
 
-constructor TProviderSplunk.Create;
+constructor TProviderDatalust.Create;
 begin
   inherited Create;
 
-  URL('https://localhost:8088');
+  URL('http://localhost:5431');
   ContentType('application/json');
 end;
 
-function TProviderSplunk.URL(const AValue: string): TProviderSplunk;
+function TProviderDatalust.URL(const AValue: string): TProviderDatalust;
 begin
   Result := Self;
   inherited URL(AValue);
 end;
 
-function TProviderSplunk.Token(const AValue: string): TProviderSplunk;
+function TProviderDatalust.ApiKey(const AValue: string): TProviderDatalust;
 begin
   Result := Self;
 
-  FToken := AValue;
-  inherited Token('Splunk ' + AValue);
+  FApiKey := AValue;
+  inherited AddHeader('X-Seq-ApiKey', AValue);
 end;
 
-procedure TProviderSplunk.LoadFromJSON(const AJSON: string);
+procedure TProviderDatalust.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -90,8 +89,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
-    Token(LJO.GetValue<string>('token', FToken));
+    ApiKey(LJO.GetValue<string>('api_key', FApiKey));
 
     SetJSONInternal(LJO);
   finally
@@ -99,14 +97,13 @@ begin
   end;
 end;
 
-function TProviderSplunk.ToJSON(const AFormat: Boolean): string;
+function TProviderDatalust.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
-    LJO.AddPair('token', FToken);
+    LJO.AddPair('api_key', FApiKey);
 
     ToJSONInternal(LJO);
 
@@ -116,11 +113,12 @@ begin
   end;
 end;
 
-procedure TProviderSplunk.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderDatalust.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LJO: TJSONObject;
+  LJOEvents: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -135,11 +133,22 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('event', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+      LJOEvents := TJSONObject.Create;
+      LJOEvents
+        .AddPair('Timestamp', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)))
+        .AddPair('Level', LItem.TypeString)
+        .AddPair('Properties', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+
+      if not LItem.Message.Trim.IsEmpty then
+        LJOEvents.AddPair('MessageTemplate', LItem.Message)
+      else
+        LJOEvents.AddPair('MessageTemplate', LItem.MessageJSON);
+
+      LJO.AddPair('Events', TJSONArray.Create.Add(LJOEvents));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/services/collector/event', [inherited URL.Trim(['/'])]);
+      LLogItemREST.URL := Format('%s/api/events/raw', [inherited URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -156,6 +165,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderSplunk);
+ForceReferenceToClass(TProviderDatalust);
 
 end.

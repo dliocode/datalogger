@@ -44,6 +44,7 @@ contains
   DataLogger.Provider.Axiom in 'src\Providers\DataLogger.Provider.Axiom.pas',
   DataLogger.Provider.Console in 'src\Providers\DataLogger.Provider.Console.pas',
   DataLogger.Provider.Datadog in 'src\Providers\DataLogger.Provider.Datadog.pas',
+  DataLogger.Provider.Datalust in 'src\Providers\DataLogger.Provider.Datalust.pas',
   DataLogger.Provider.Discord.Hooks in 'src\Providers\DataLogger.Provider.Discord.Hooks.pas',
   DataLogger.Provider.ElasticSearch in 'src\Providers\DataLogger.Provider.ElasticSearch.pas',
   DataLogger.Provider.Email in 'src\Providers\DataLogger.Provider.Email.pas',

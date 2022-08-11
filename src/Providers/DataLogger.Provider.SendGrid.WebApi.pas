@@ -105,7 +105,7 @@ begin
     Exit;
 
   try
-    BearerToken(LJO.GetValue<string>('api_key', inherited Token));
+    ApiKey(LJO.GetValue<string>('api_key', inherited Token));
     EmailFrom(LJO.GetValue<string>('email_from', FEmailFrom));
     EmailTo(LJO.GetValue<string>('email_to', String.Join(',', FEmailTo)).Split([',']));
     Subject(LJO.GetValue<string>('subject', FSubject));

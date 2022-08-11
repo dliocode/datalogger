@@ -88,7 +88,7 @@ begin
     Exit;
 
   try
-    BearerToken(LJO.GetValue<string>('api_token', inherited Token));
+    ApiToken(LJO.GetValue<string>('api_token', inherited Token));
     Dataset(LJO.GetValue<string>('dataset', FDataset));
 
     SetJSONInternal(LJO);

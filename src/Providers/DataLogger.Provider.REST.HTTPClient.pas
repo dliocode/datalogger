@@ -369,7 +369,11 @@ begin
             end;
         end;
 
-        LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
+        try
+          LResponseContent := LResponse.ContentAsString(TEncoding.UTF8);
+        except
+          LResponseContent := LResponse.ContentAsString(TEncoding.ASCII);
+        end;
 
         if not(LResponse.StatusCode in [200, 201, 202, 204]) then
           raise EDataLoggerException.Create(LResponseContent);

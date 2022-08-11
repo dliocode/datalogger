@@ -79,7 +79,7 @@ begin
     Exit;
 
   try
-    BearerToken(LJO.GetValue<string>('source_token', inherited Token));
+    SourceToken(LJO.GetValue<string>('source_token', inherited Token));
 
     SetJSONInternal(LJO);
   finally
