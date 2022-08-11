@@ -70,11 +70,8 @@ begin
 
   Logger.AddProvider(
     TProviderDatalust.Create
-    .URL('http://localhost:5341')
-    .ApiKey('y6RD90xma96zehE8cYDq')
-
-//    .URL('{API_TOKEN}')
-//    .ApiKey('{API_TOKEN}')
+    .URL('{API_TOKEN}')
+    .ApiKey('{API_TOKEN}')
     );
 
   // Log Format
