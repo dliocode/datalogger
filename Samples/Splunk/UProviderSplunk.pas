@@ -51,7 +51,7 @@ begin
   Logger.AddProvider(
     TProviderSplunk.Create
     .URL('https://localhost:8088')
-    .Token('5caacb17-2d3b-471e-b4e9-e2fc13a036ca')
+    .Token('{TOKEN}')
     );
 
   // Log Format
