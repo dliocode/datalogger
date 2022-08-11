@@ -57,6 +57,7 @@ contains
   DataLogger.Provider.ListBox in 'src\Providers\DataLogger.Provider.ListBox.pas',
   DataLogger.Provider.ListView in 'src\Providers\DataLogger.Provider.ListView.pas',
   DataLogger.Provider.Logflare in 'src\Providers\DataLogger.Provider.Logflare.pas',
+  DataLogger.Provider.Loggly in 'src\Providers\DataLogger.Provider.Loggly.pas',
   DataLogger.Provider.Logstach in 'src\Providers\DataLogger.Provider.Logstach.pas',
   DataLogger.Provider.Logtail in 'src\Providers\DataLogger.Provider.Logtail.pas',
   DataLogger.Provider.Logz in 'src\Providers\DataLogger.Provider.Logz.pas',
@@ -75,6 +76,7 @@ contains
   DataLogger.Provider.REST.Indy in 'src\Providers\DataLogger.Provider.REST.Indy.pas',
   DataLogger.Provider.REST.NetHTTPClient in 'src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas',
   DataLogger.Provider.RichEdit in 'src\Providers\DataLogger.Provider.RichEdit.pas',
+  DataLogger.Provider.Sematext.Logs in 'src\Providers\DataLogger.Provider.Sematext.Logs.pas',
   DataLogger.Provider.SendEmail in 'src\Providers\DataLogger.Provider.SendEmail.pas',
   DataLogger.Provider.SendGrid.WebApi in 'src\Providers\DataLogger.Provider.SendGrid.WebApi.pas',
   DataLogger.Provider.Slack in 'src\Providers\DataLogger.Provider.Slack.pas',
@@ -84,7 +86,6 @@ contains
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
   DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',
   DataLogger.Provider.Twilio.SMS in 'src\Providers\DataLogger.Provider.Twilio.SMS.pas',
-  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas',
-  DataLogger.Provider.Sematext.Logs in 'src\Providers\DataLogger.Provider.Sematext.Logs.pas';
+  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas';
 
 end.
