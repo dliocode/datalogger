@@ -115,6 +115,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Redis](https://github.com/danieleteti/delphiredisclient) | DataLogger.Provider.Redis | [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) | 
  | Rest | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST) | 
  | RichEdit | DataLogger.Provider.RichEdit | [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) | 
+ | [Sematext](https://sematext.com/) | DataLogger.Provider.Sematext.Logs | [Sematext-Logs](https://github.com/dliocode/datalogger/tree/main/Samples/Sematext-Logs) | 
  | [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) | 
  | [SendGrid](https://sendgrid.com/) | DataLogger.Provider.SendGrid.WebApi | [SendGridWebApi](https://github.com/dliocode/datalogger/tree/main/Samples/SendGrid-WebApi) | 
  | [Slack](https://slack.com/) | DataLogger.Provider.Slack | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) | 

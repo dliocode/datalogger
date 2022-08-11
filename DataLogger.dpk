@@ -84,6 +84,7 @@ contains
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
   DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',
   DataLogger.Provider.Twilio.SMS in 'src\Providers\DataLogger.Provider.Twilio.SMS.pas',
-  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas';
+  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas',
+  DataLogger.Provider.Sematext.Logs in 'src\Providers\DataLogger.Provider.Sematext.Logs.pas';
 
 end.
