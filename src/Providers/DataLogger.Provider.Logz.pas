@@ -52,7 +52,6 @@ constructor TProviderLogz.Create;
 begin
   inherited Create;
 
-  URL('');
   ContentType('application/json');
 end;
 

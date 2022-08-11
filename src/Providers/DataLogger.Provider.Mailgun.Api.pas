@@ -60,7 +60,6 @@ constructor TProviderMailgunApi.Create;
 begin
   inherited Create;
 
-  URL('');
   ContentType('application/json');
   EmailFrom('');
   EmailTo([]);

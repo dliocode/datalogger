@@ -59,7 +59,6 @@ constructor TProviderTwilioWhatsApp.Create;
 begin
   inherited Create;
 
-  URL('');
   ContentType('application/json');
   PhoneFrom('');
   PhoneTo('');

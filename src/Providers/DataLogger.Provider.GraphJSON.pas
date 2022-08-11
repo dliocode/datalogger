@@ -54,7 +54,6 @@ constructor TProviderGraphJSON.Create;
 begin
   inherited Create;
 
-  URL('');
   ContentType('application/json');
   Collection('');
 end;

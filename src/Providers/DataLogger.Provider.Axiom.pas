@@ -53,7 +53,6 @@ constructor TProviderAxiom.Create;
 begin
   inherited Create;
 
-  URL('');
   ContentType('application/json');
   Dataset('');
 end;
