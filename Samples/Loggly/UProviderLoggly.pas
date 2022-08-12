@@ -70,8 +70,7 @@ begin
 
   Logger.AddProvider(
     TProviderLoggly.Create
-    .Token('c720d1c9-efb6-4014-be82-560063f477c3')
-//    .Token('{TOKEN_LOG_DESTINATION}')
+    .Token('{TOKEN_LOG_SOURCE_SETUP_CUSTOMER_TOKENS}')
     );
 
   // Log Format
