@@ -72,6 +72,7 @@ type
   public
     function ReadMessage: string;
     function ReadMessageBytes: TBytes;
+
     procedure WriteMessage(const AMessage: string);
     procedure WriteMessageBytes(const AMessage: TBytes);
   end;
@@ -438,7 +439,7 @@ begin
                 Continue;
               end;
 
-              if SecondsBetween(Now, TMyData(LContext.Data).LastRecvTime) >= 20 then
+              if SecondsBetween(Now, TMyData(LContext.Data).LastRecvTime) >= 30 then
               begin
                 FListClients.Remove(LIDs[I]);
                 Continue;

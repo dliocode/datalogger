@@ -38,9 +38,9 @@ requires
 contains
   DataLogger in 'src\Core\DataLogger.pas',
   DataLogger.Provider in 'src\Core\DataLogger.Provider.pas',
+  DataLogger.Simple in 'src\Core\DataLogger.Simple.pas',
   DataLogger.Types in 'src\Core\DataLogger.Types.pas',
   DataLogger.Utils in 'src\Core\DataLogger.Utils.pas',
-  DataLogger.Simple in 'src\Core\DataLogger.Simple.pas',
   DataLogger.Provider.Axiom in 'src\Providers\DataLogger.Provider.Axiom.pas',
   DataLogger.Provider.Console in 'src\Providers\DataLogger.Provider.Console.pas',
   DataLogger.Provider.Datadog in 'src\Providers\DataLogger.Provider.Datadog.pas',
@@ -68,6 +68,7 @@ contains
   DataLogger.Provider.Memo in 'src\Providers\DataLogger.Provider.Memo.pas',
   DataLogger.Provider.Memory in 'src\Providers\DataLogger.Provider.Memory.pas',
   DataLogger.Provider.MongoDB.Cloud in 'src\Providers\DataLogger.Provider.MongoDB.Cloud.pas',
+  DataLogger.Provider.NewRelic in 'src\Providers\DataLogger.Provider.NewRelic.pas',
   DataLogger.Provider.Notification in 'src\Providers\DataLogger.Provider.Notification.pas',
   DataLogger.Provider.Novu in 'src\Providers\DataLogger.Provider.Novu.pas',
   DataLogger.Provider.OutputDebugString in 'src\Providers\DataLogger.Provider.OutputDebugString.pas',
