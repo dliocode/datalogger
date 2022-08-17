@@ -70,10 +70,7 @@ begin
 
   Logger.AddProvider(
     TProviderNewRelic.Create
-    .ApiKey('a81bf7b393599fb70859a1455c72dfd5FFFFNRAL')
-
-//    .SourceKey('{SOURCE_KEY}')
-//    .ApiKey('{API_KEY}')
+    .ApiKey('{API_KEY}')
     );
 
   // Log Format
