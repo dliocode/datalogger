@@ -35,6 +35,7 @@ type
 
   TLoggerInternalItem = record
     TypeSlineBreak: Boolean;
+    TransactionID: string;
   end;
 
   TLoggerItem = record
