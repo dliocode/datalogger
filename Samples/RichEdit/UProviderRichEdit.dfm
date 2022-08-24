@@ -22,7 +22,7 @@ object Form2: TForm2
     TabOrder = 0
     object btnMakeLog: TButton
       Left = 272
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Caption = 'Make Log'

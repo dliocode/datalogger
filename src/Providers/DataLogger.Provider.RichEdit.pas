@@ -17,7 +17,9 @@ uses
 type
   TColor = System.UITypes.TColor;
   TColorRec = System.UITypes.TColorRec;
+{$SCOPEDENUMS ON}
   TRichEditModeInsert = (tmFirst, tmLast);
+{$SCOPEDENUMS OFF}
 
   TProviderRichEdit = class(TDataLoggerProvider)
   private
@@ -75,7 +77,7 @@ begin
   ChangeColor(TLoggerType.Custom, $000000);
 
   MaxLogLines(0);
-  ModeInsert(tmLast);
+  ModeInsert(TRichEditModeInsert.tmLast);
   CleanOnStart(False);
   FCleanOnRun := False;
 end;
@@ -93,18 +95,25 @@ begin
   case ALogType of
     TLoggerType.Trace:
       FColorTrace := AColor;
+
     TLoggerType.Debug:
       FColorDebug := AColor;
+
     TLoggerType.Info:
       FColorInfo := AColor;
+
     TLoggerType.Success:
       FColorSuccess := AColor;
+
     TLoggerType.Warn:
       FColorWarn := AColor;
+
     TLoggerType.Error:
       FColorError := AColor;
+
     TLoggerType.Fatal:
       FColorFatal := AColor;
+
     TLoggerType.Custom:
       FColorCustom := AColor;
   end;
@@ -209,6 +218,8 @@ var
   LLog: string;
   LRetriesCount: Integer;
   LLines: Integer;
+  LSelStart: Int64;
+  LSelLength: Int64;
 begin
   if not Assigned(FRichEdit) then
     raise EDataLoggerException.Create('RichEdit not defined!');
@@ -243,31 +254,32 @@ begin
       FRichEdit.SelAttributes.Color := clWhite;
 
     if FUseColorInRichEdit then
-      case LItem.&Type of
-        TLoggerType.Trace:
-          FRichEdit.SelAttributes.Color := FColorTrace;
+      if FModeInsert = TRichEditModeInsert.tmLast then
+        case LItem.&Type of
+          TLoggerType.Trace:
+            FRichEdit.SelAttributes.Color := FColorTrace;
 
-        TLoggerType.Debug:
-          FRichEdit.SelAttributes.Color := FColorDebug;
+          TLoggerType.Debug:
+            FRichEdit.SelAttributes.Color := FColorDebug;
 
-        TLoggerType.Info:
-          FRichEdit.SelAttributes.Color := FColorInfo;
+          TLoggerType.Info:
+            FRichEdit.SelAttributes.Color := FColorInfo;
 
-        TLoggerType.Success:
-          FRichEdit.SelAttributes.Color := FColorSuccess;
+          TLoggerType.Success:
+            FRichEdit.SelAttributes.Color := FColorSuccess;
 
-        TLoggerType.Warn:
-          FRichEdit.SelAttributes.Color := FColorWarn;
+          TLoggerType.Warn:
+            FRichEdit.SelAttributes.Color := FColorWarn;
 
-        TLoggerType.Error:
-          FRichEdit.SelAttributes.Color := FColorError;
+          TLoggerType.Error:
+            FRichEdit.SelAttributes.Color := FColorError;
 
-        TLoggerType.Fatal:
-          FRichEdit.SelAttributes.Color := FColorFatal;
+          TLoggerType.Fatal:
+            FRichEdit.SelAttributes.Color := FColorFatal;
 
-        TLoggerType.Custom:
-          FRichEdit.SelAttributes.Color := FColorCustom;
-      end;
+          TLoggerType.Custom:
+            FRichEdit.SelAttributes.Color := FColorCustom;
+        end;
 
     LRetriesCount := 0;
 
@@ -282,13 +294,52 @@ begin
 
               FRichEdit.Lines.BeginUpdate;
               case FModeInsert of
-                tmFirst:
+                TRichEditModeInsert.tmFirst:
                   FRichEdit.Lines.Insert(0, LLog);
 
-                tmLast:
+                TRichEditModeInsert.tmLast:
                   FRichEdit.Lines.Add(LLog);
               end;
             end);
+
+          if FUseColorInRichEdit then
+            if FModeInsert = TRichEditModeInsert.tmFirst then
+            begin
+              LSelStart := FRichEdit.SelStart;
+              LSelLength := FRichEdit.SelLength;
+
+              FRichEdit.SelStart := 0;
+              FRichEdit.SelLength := Length(LLog);
+
+              case LItem.&Type of
+                TLoggerType.Trace:
+                  FRichEdit.SelAttributes.Color := FColorTrace;
+
+                TLoggerType.Debug:
+                  FRichEdit.SelAttributes.Color := FColorDebug;
+
+                TLoggerType.Info:
+                  FRichEdit.SelAttributes.Color := FColorInfo;
+
+                TLoggerType.Success:
+                  FRichEdit.SelAttributes.Color := FColorSuccess;
+
+                TLoggerType.Warn:
+                  FRichEdit.SelAttributes.Color := FColorWarn;
+
+                TLoggerType.Error:
+                  FRichEdit.SelAttributes.Color := FColorError;
+
+                TLoggerType.Fatal:
+                  FRichEdit.SelAttributes.Color := FColorFatal;
+
+                TLoggerType.Custom:
+                  FRichEdit.SelAttributes.Color := FColorCustom;
+              end;
+
+              FRichEdit.SelStart := LSelStart;
+              FRichEdit.SelLength := LSelLength;
+            end;
 
           if FMaxLogLines > 0 then
           begin
@@ -302,10 +353,10 @@ begin
                 while LLines > FMaxLogLines do
                 begin
                   case FModeInsert of
-                    tmFirst:
+                    TRichEditModeInsert.tmFirst:
                       FRichEdit.Lines.Delete(Pred(LLines));
 
-                    tmLast:
+                    TRichEditModeInsert.tmLast:
                       FRichEdit.Lines.Delete(0);
                   end;
 
@@ -323,14 +374,14 @@ begin
               FRichEdit.Lines.EndUpdate;
 
               case FModeInsert of
-                tmFirst:
+                TRichEditModeInsert.tmFirst:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Min;
 {$ENDIF}
                   end;
 
-                tmLast:
+                TRichEditModeInsert.tmLast:
                   begin
 {$IF DEFINED(DATALOGGER_FMX)}
                     FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Max;
