@@ -37,7 +37,7 @@ uses
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
   Logger
-    .Trace('My trace')
+    .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')
