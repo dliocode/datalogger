@@ -36,24 +36,15 @@ uses
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
-  TThread.CreateAnonymousThread(
-  procedure
-  begin
-    TParallel.For(0, 100,
-    procedure(index: integer)
-    begin
-      Logger
-        .Trace('My trace')
-        .Debug('My Debug')
-        .Info('My Info')
-        .Warn('My Warn')
-        .Error('My Error')
-        .Success('My Success')
-        .Fatal('My Fatal')
-        .CustomType('My Custom', 'My Custom');
-    end);
-  end
-  ).Start;
+  Logger
+    .Trace('My trace')
+    .Debug('My Debug')
+    .Info('My Info')
+    .Warn('My Warn')
+    .Error('My Error')
+    .Success('My Success')
+    .Fatal('My Fatal')
+    .CustomType('My Custom', 'My Custom');
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
@@ -66,7 +57,7 @@ begin
     // .ChangeColor(TLoggerType.Debug, TColorRec.Hotpink)
     // .UseColorInRichEdit(True)
     // .MaxLogLines(10)
-//     .ModeInsert(TRichEditModeInsert.tmFirst)
+    // .ModeInsert(TRichEditModeInsert.tmFirst)
     // .CleanOnStart(False)
     );
 
