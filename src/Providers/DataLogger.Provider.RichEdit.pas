@@ -68,10 +68,10 @@ begin
   UseColorInRichEdit(True);
 
   ChangeColor(TLoggerType.Trace, $00A100AD);
-  ChangeColor(TLoggerType.Debug, $00CCD249);
+  ChangeColor(TLoggerType.Debug, $00AEB600);
   ChangeColor(TLoggerType.Info, $000000);
-  ChangeColor(TLoggerType.Success, $000CC516);
-  ChangeColor(TLoggerType.Warn, $0074DFFF);
+  ChangeColor(TLoggerType.Success, $0009AC00);
+  ChangeColor(TLoggerType.Warn, $0000A4D8);
   ChangeColor(TLoggerType.Error, $001D2AAA);
   ChangeColor(TLoggerType.Fatal, $001C0FD1);
   ChangeColor(TLoggerType.Custom, $000000);
