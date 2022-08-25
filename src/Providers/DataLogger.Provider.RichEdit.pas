@@ -242,17 +242,17 @@ begin
     else
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
+    LColor := clBlack;
+
     TThread.Synchronize(nil,
       procedure
       begin
         if (csDestroying in FRichEdit.ComponentState) then
           Exit;
-      end);
 
-    if (THackCustom(FRichEdit).Color = clWindow) or (THackCustom(FRichEdit).Color = clWhite) then
-      LColor := clBlack
-    else
-      LColor := clWhite;
+        if not(THackCustom(FRichEdit).Color = clWindow) or not (THackCustom(FRichEdit).Color = clWhite) then
+          LColor := clWhite
+      end);
 
     if FUseColorInRichEdit then
       case LItem.&Type of
