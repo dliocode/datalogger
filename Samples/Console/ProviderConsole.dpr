@@ -15,7 +15,7 @@ begin
   Logger.AddProvider(
     TProviderConsole.Create
 //    .UseColorInConsole(True)
-//    .UseColorOnlyOnTypes(False)
+//    .UseColorOnlyInTypes(False)
 //    .ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Red)
     );
 
