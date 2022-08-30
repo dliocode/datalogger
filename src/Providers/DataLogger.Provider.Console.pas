@@ -34,7 +34,7 @@ type
     end;
   private
     FUseColorInConsole: Boolean;
-    FUseColorOnlyOnTypes: Boolean;
+    FUseColorOnlyInTypes: Boolean;
     FColorTrace: TColorConsole;
     FColorDebug: TColorConsole;
     FColorInfo: TColorConsole;
@@ -48,7 +48,7 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
-    function UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
+    function UseColorOnlyInTypes(const AValue: Boolean): TProviderConsole;
     function ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -66,7 +66,7 @@ begin
   inherited Create;
 
   UseColorInConsole(True);
-  UseColorOnlyOnTypes(False);
+  UseColorOnlyInTypes(False);
 
   ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Magenta);
   ChangeColor(TLoggerType.Debug, TColor.Black, TColor.Cyan);
@@ -84,10 +84,10 @@ begin
   FUseColorInConsole := AValue;
 end;
 
-function TProviderConsole.UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
+function TProviderConsole.UseColorOnlyInTypes(const AValue: Boolean): TProviderConsole;
 begin
   Result := Self;
-  FUseColorOnlyOnTypes := AValue;
+  FUseColorOnlyInTypes := AValue;
 end;
 
 function TProviderConsole.ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
@@ -164,6 +164,7 @@ begin
 
   try
     UseColorInConsole(LJO.GetValue<Boolean>('use_color_in_console', FUseColorInConsole));
+    UseColorOnlyInTypes(LJO.GetValue<Boolean>('use_color_only_in_types', FUseColorOnlyInTypes));
 
     SetJSONInternal(LJO);
   finally
@@ -178,6 +179,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColorInConsole));
+    LJO.AddPair('use_color_only_in_types', TJSONBool.Create(FUseColorOnlyInTypes));
 
     ToJSONInternal(LJO);
 
@@ -217,7 +219,7 @@ begin
       try
         if FUseColorInConsole then
         begin
-          if FUseColorOnlyOnTypes and FLogFormat.Contains(TLoggerFormat.LOG_TYPE) then
+          if FUseColorOnlyInTypes and FLogFormat.Contains(TLoggerFormat.LOG_TYPE) then
           begin
             LLogFormat := FLogFormat.Split([TLoggerFormat.LOG_TYPE]);
 
