@@ -34,6 +34,7 @@ type
     end;
   private
     FUseColorInConsole: Boolean;
+    FUseColorOnlyOnTypes: Boolean;
     FColorTrace: TColorConsole;
     FColorDebug: TColorConsole;
     FColorInfo: TColorConsole;
@@ -42,7 +43,6 @@ type
     FColorError: TColorConsole;
     FColorFatal: TColorConsole;
     FColorCustom: TColorConsole;
-    FUseColorOnlyOnTypes: Boolean;
     procedure WriteColor(const AType: TLoggerType; const ALog: string; const ASlinebreak: Boolean = True);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -66,6 +66,8 @@ begin
   inherited Create;
 
   UseColorInConsole(True);
+  UseColorOnlyOnTypes(False);
+
   ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Magenta);
   ChangeColor(TLoggerType.Debug, TColor.Black, TColor.Cyan);
   ChangeColor(TLoggerType.Info, TColor.Black, TColor.White);
@@ -80,6 +82,12 @@ function TProviderConsole.UseColorInConsole(const AValue: Boolean): TProviderCon
 begin
   Result := Self;
   FUseColorInConsole := AValue;
+end;
+
+function TProviderConsole.UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
+begin
+  Result := Self;
+  FUseColorOnlyOnTypes := AValue;
 end;
 
 function TProviderConsole.ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
@@ -135,12 +143,6 @@ begin
         FColorCustom.Foreground := AColorForeground;
       end;
   end;
-end;
-
-function TProviderConsole.UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
-begin
-  Result := Self;
-  FUseColorOnlyOnTypes := AValue;
 end;
 
 procedure TProviderConsole.LoadFromJSON(const AJSON: string);
