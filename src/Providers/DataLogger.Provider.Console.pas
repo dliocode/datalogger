@@ -42,11 +42,13 @@ type
     FColorError: TColorConsole;
     FColorFatal: TColorConsole;
     FColorCustom: TColorConsole;
-    procedure WriteColor(const AType: TLoggerType; const ALog: string);
+    FUseColorOnlyOnTypes: Boolean;
+    procedure WriteColor(const AType: TLoggerType; const ALog: string; const ASlinebreak: Boolean = True);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
+    function UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
     function ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -135,6 +137,12 @@ begin
   end;
 end;
 
+function TProviderConsole.UseColorOnlyOnTypes(const AValue: Boolean): TProviderConsole;
+begin
+  Result := Self;
+  FUseColorOnlyOnTypes := AValue;
+end;
+
 procedure TProviderConsole.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
@@ -182,6 +190,8 @@ var
   LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
+  LLogFormat: TArray<string>;
+  I: Integer;
 begin
   if not IsConsole then
     Exit;
@@ -204,7 +214,26 @@ begin
     while True do
       try
         if FUseColorInConsole then
-          WriteColor(LItem.&Type, LLog)
+        begin
+          if FUseColorOnlyOnTypes and FLogFormat.Contains(TLoggerFormat.LOG_TYPE) then
+          begin
+            LLogFormat := FLogFormat.Split([TLoggerFormat.LOG_TYPE]);
+
+            for I := Low(LLogFormat) to High(LLogFormat) do
+            begin
+              LLog := TLoggerLogFormat.AsString(LLogFormat[I], LItem, FFormatTimestamp);
+
+              Write(LLog);
+
+              if I = 0 then
+                WriteColor(LItem.&Type, LItem.TypeString, False);
+            end;
+
+            Writeln;
+          end
+          else
+            WriteColor(LItem.&Type, LLog);
+        end
         else
           Writeln(LLog);
 
@@ -232,7 +261,7 @@ begin
   end;
 end;
 
-procedure TProviderConsole.WriteColor(const AType: TLoggerType; const ALog: string);
+procedure TProviderConsole.WriteColor(const AType: TLoggerType; const ALog: string; const ASlinebreak: Boolean = True);
   function _Color(const AColor: TColorConsole): SmallInt;
   begin
     Result := SmallInt(Integer(AColor.Background) shl 4) or Integer(AColor.Foreground);
@@ -273,16 +302,22 @@ procedure TProviderConsole.WriteColor(const AType: TLoggerType; const ALog: stri
 
 
 var
-  ConOut: THandle;
-  BufInfo: TConsoleScreenBufferInfo;
+  LHandleOutput: THandle;
+  LBufferInfo: TConsoleScreenBufferInfo;
 begin
-  ConOut := GetStdHandle(STD_OUTPUT_HANDLE);
-  GetConsoleScreenBufferInfo(ConOut, BufInfo);
+  LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
+  GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
 
   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _Color(_ColorType));
-  Writeln(ALog);
-  SetConsoleTextAttribute(ConOut, BufInfo.wAttributes);
+
+  if ASlinebreak then
+    Writeln(ALog)
+  else
+    Write(ALog);
+
+  SetConsoleTextAttribute(LHandleOutput, LBufferInfo.wAttributes);
 end;
+
 {$ELSEIF DEFINED(LINUX)}
 
 
@@ -295,11 +330,15 @@ begin
     LColor := LColor - 8;
 
   Write(#27'[1;' + LColor.ToString + 'm');
-  Writeln(ALog);
+
+  if ASlinebreak then
+    Writeln(ALog)
+  else
+    Write(ALog);
+
   Write(#27'[0m');
 end;
 {$ELSE}
-
 
 begin
   Writeln(ALog);

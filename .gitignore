@@ -39,3 +39,4 @@ src/*.~*
 *.stat
 *delphilsp.json
 *.gex
+Samples/Console/ProviderConsole.deployproj

@@ -42,7 +42,7 @@ type
     Name: string;
     Sequence: Int64;
     TimeStamp: TDateTime;
-    ThreadID: Integer;
+    ThreadID: Int64;
     &Type: TLoggerType;
     TypeString: string;
     TypeLevel: Integer;
@@ -212,11 +212,11 @@ begin
   LLog := ALogFormat;
 
   LLog := _Add(TLoggerFormat.LOG_NAME, AItem.Name);
-  LLog := _Add(TLoggerFormat.LOG_SEQUENCE, AItem.Sequence.ToString);
+  LLog := _Add(TLoggerFormat.LOG_SEQUENCE, IntToStr(AItem.Sequence));
   LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatTimestamp, AItem.TimeStamp));
-  LLog := _Add(TLoggerFormat.LOG_THREADID, AItem.ThreadID.ToString);
+  LLog := _Add(TLoggerFormat.LOG_THREADID, IntToStr(AItem.ThreadID));
   LLog := _Add(TLoggerFormat.LOG_TYPE, AItem.TypeString);
-  LLog := _Add(TLoggerFormat.LOG_TYPE_LEVEL, AItem.TypeLevel.ToString);
+  LLog := _Add(TLoggerFormat.LOG_TYPE_LEVEL, IntToStr(AItem.TypeLevel));
   LLog := _Add(TLoggerFormat.LOG_TAG, AItem.Tag.Trim);
 
   if not AItem.MessageJSON.Trim.IsEmpty then

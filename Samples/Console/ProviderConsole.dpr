@@ -12,19 +12,25 @@ uses
   DataLogger.Provider.Console in '..\..\src\Providers\DataLogger.Provider.Console.pas';
 
 begin
-  Logger.AddProvider(TProviderConsole.Create);
+  Logger.AddProvider(
+    TProviderConsole.Create
+//    .UseColorInConsole(True)
+//    .UseColorOnlyOnTypes(False)
+//    .ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Red)
+    );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_TYPE + ']: ' + TLoggerFormat.LOG_MESSAGE);
 
   Logger
     .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
+    .Success('My Success')
     .Warn('My Warn')
     .Error('My Error')
-    .Success('My Success')
     .Fatal('My Fatal');
 
   Readln;
+
 end.
