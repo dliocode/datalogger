@@ -88,6 +88,12 @@ begin
   FRichEdit := AValue;
 end;
 
+function TProviderRichEdit.UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
+begin
+  Result := Self;
+  FUseColorInRichEdit := AValue;
+end;
+
 function TProviderRichEdit.ChangeColor(const ALogType: TLoggerType; const AColor: TColor): TProviderRichEdit;
 begin
   Result := Self;
@@ -204,12 +210,6 @@ begin
   finally
     LJO.Free;
   end;
-end;
-
-function TProviderRichEdit.UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
-begin
-  Result := Self;
-  FUseColorInRichEdit := AValue;
 end;
 
 procedure TProviderRichEdit.Save(const ACache: TArray<TLoggerItem>);
