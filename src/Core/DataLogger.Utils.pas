@@ -96,7 +96,6 @@ begin
   end;
 end;
 {$ELSE}
-
 var
   LFileName: UTF8String;
   LStatBuf: _stat;
@@ -127,8 +126,7 @@ begin
 
   FAppName := Result;
 end;
-{$ELSEIF DEFINED(IOS)}
-
+{$ELSEIF DEFINED(IOS)}   
 begin
   if not Trim(FAppName).IsEmpty then
     Exit(FAppName);
@@ -137,8 +135,7 @@ begin
 
   FAppName := Result;
 end;
-{$ELSE}
-
+{$ELSE}     
 var
   LAppPathFull: string;
 begin
@@ -156,7 +153,6 @@ begin
 end;
 {$ENDIF}
 
-
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
@@ -167,8 +163,7 @@ begin
 
   FAppPath := Result;
 end;
-{$ELSE}
-
+{$ELSE}     
 var
   LAppPathFull: string;
 begin
@@ -185,7 +180,6 @@ begin
   FAppPath := Result;
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.AppVersion: TAppVersion;
 {$IF DEFINED(ANDROID)}
@@ -222,8 +216,7 @@ begin
 
   FAppVersion := Result;
 end;
-{$ELSEIF DEFINED(MSWINDOWS)}
-
+{$ELSEIF DEFINED(MSWINDOWS)}     
 var
   LAppPathFull: string;
   LInfoSize: DWORD;
@@ -289,13 +282,11 @@ begin
 
   FAppVersion := Result;
 end;
-{$ELSE}
-
+{$ELSE}     
 begin
   Result := default (TAppVersion);
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.AppSize: Double;
 var
@@ -332,21 +323,18 @@ begin
   if Result.Trim.IsEmpty then
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
-{$ELSEIF DEFINED(IOS)}
-
+{$ELSEIF DEFINED(IOS)}     
 begin
   Result := '';
 end;
-{$ELSEIF DEFINED(LINUX)}
-
+{$ELSEIF DEFINED(LINUX)}   
 var
   LName: utsname;
 begin
   uname(LName);
   Result := string(AnsiString(LName.nodename));
 end;
-{$ELSEIF DEFINED(MSWINDOWS)}
-
+{$ELSEIF DEFINED(MSWINDOWS)}  
 var
   LBuffer: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
   LSize: cardinal;
@@ -358,13 +346,11 @@ begin
   else
     Result := EmptyStr;
 end;
-{$ELSE}
-
+{$ELSE}     
 begin
   Result := EmptyStr;
 end;
 {$ENDIF}
-
 
 // {$IFDEF MACOS}
 // function NSUserName: Pointer; cdecl; external '/System/Library/Frameworks/Foundation.framework/Foundation' name '_NSUserName';
@@ -387,12 +373,10 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
-
 begin
   Result := '';
 end;
 {$ENDIF}
-
 
 class function TLoggerUtils.OS: string;
 begin
