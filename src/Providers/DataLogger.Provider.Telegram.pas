@@ -28,6 +28,7 @@ type
 {$SCOPEDENUMS OFF}
 
 {$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+
   TProviderTelegram = class(TProviderRESTIndy)
 {$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
   TProviderTelegram = class(TProviderRESTNetHTTPClient)

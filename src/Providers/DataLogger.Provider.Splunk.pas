@@ -22,7 +22,7 @@ uses
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
   DataLogger.Types,
-  System.SysUtils, System.Classes, System.JSON, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
 {$IF DEFINED(DATALOGGER_SPLUNK_USE_INDY)}

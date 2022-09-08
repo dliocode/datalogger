@@ -17,8 +17,6 @@ type
   EDataLoggerException = class(Exception)
   end;
 
-  Exception = System.SysUtils.Exception;
-
 {$SCOPEDENUMS ON}
 
   TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
@@ -63,6 +61,9 @@ type
 
     InternalItem: TLoggerInternalItem;
   end;
+
+  TDataLoggerListItem = TList<TLoggerItem>;
+  TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
 
   TLoggerLogFormat = class
     class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;

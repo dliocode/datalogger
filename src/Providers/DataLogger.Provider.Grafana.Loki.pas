@@ -139,7 +139,7 @@ procedure TProviderGrafanaLoki.Save(const ACache: TArray<TLoggerItem>);
 
     LSize := ASize - Length(Result);
     if (LSize > 0) then
-       Result := Result + StringOfChar('0', LSize);
+      Result := Result + StringOfChar('0', LSize);
   end;
 
 var
@@ -170,17 +170,17 @@ begin
       LJOData := TJSONObject.Create;
       LJOData.AddPair('stream',
         TJSONObject.Create
-          .AddPair('service', FServiceName)
-          .AddPair('type', LItem.TypeString)
+        .AddPair('service', FServiceName)
+        .AddPair('type', LItem.TypeString)
         );
 
       LJOData.AddPair('values',
         TJSONArray.Create
-          .Add(
-            TJSONArray.Create
-            .Add(LDateUNIX)
-            .Add(LLog)
-          )
+        .Add(
+        TJSONArray.Create
+        .Add(LDateUNIX)
+        .Add(LLog)
+        )
         );
 
       LJO.AddPair('streams', TJSONArray.Create.Add(LJOData));

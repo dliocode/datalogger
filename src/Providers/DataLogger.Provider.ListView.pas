@@ -22,7 +22,7 @@ type
   TListViewModeInsert = (tmFirst, tmLast);
 {$SCOPEDENUMS OFF}
 
-  TProviderListView = class(TDataLoggerProvider)
+  TProviderListView = class(TDataLoggerProvider<TProviderListView>)
   private
     FListView: TCustomListView;
     FMaxLogLines: Integer;
@@ -174,7 +174,6 @@ begin
 {$ELSE}
               FListView.Items.BeginUpdate;
 {$ENDIF}
-
               case FModeInsert of
                 TListViewModeInsert.tmFirst:
                   begin
@@ -241,7 +240,6 @@ begin
 {$ELSE}
                 FListView.Items.EndUpdate;
 {$ENDIF}
-
                 case FModeInsert of
                   TListViewModeInsert.tmFirst:
                     begin

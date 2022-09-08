@@ -23,7 +23,7 @@ type
   TMemoModeInsert = (tmFirst, tmLast);
 {$SCOPEDENUMS OFF}
 
-  TProviderMemo = class(TDataLoggerProvider)
+  TProviderMemo = class(TDataLoggerProvider<TProviderMemo>)
   private
     FMemo: TCustomMemo;
     FMaxLogLines: Integer;
@@ -41,8 +41,7 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
-    constructor Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = TMemoModeInsert.tmLast); overload; deprecated 'Use TProviderMemo.Create.Memo(Memo).MaxLogLines(0).ModeInsert(tmLast) - This function will be removed in future versions';
+    constructor Create;
   end;
 
 implementation
@@ -58,15 +57,6 @@ begin
   ModeInsert(TMemoModeInsert.tmLast);
   CleanOnStart(False);
   FCleanOnRun := False;
-end;
-
-constructor TProviderMemo.Create(const AMemo: TCustomMemo; const AMaxLogLines: Integer = 0; const AModeInsert: TMemoModeInsert = TMemoModeInsert.tmLast);
-begin
-  Create;
-
-  Memo(AMemo);
-  MaxLogLines(AMaxLogLines);
-  ModeInsert(AModeInsert);
 end;
 
 function TProviderMemo.Memo(const AValue: TCustomMemo): TProviderMemo;

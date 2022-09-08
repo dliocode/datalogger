@@ -17,7 +17,7 @@ uses
 type
   TProviderSocketCustomMessage = reference to function(const AItem: TLoggerItem): string;
 
-  TProviderSocket = class(TDataLoggerProvider)
+  TProviderSocket = class(TDataLoggerProvider<TProviderSocket>)
   private
     FListClients: TDictionary<string, TIdContext>;
     FSocket: TIdCustomTCPServer;

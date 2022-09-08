@@ -96,6 +96,7 @@ begin
   end;
 end;
 {$ELSE}
+
 var
   LFileName: UTF8String;
   LStatBuf: _stat;
@@ -127,6 +128,7 @@ begin
   FAppName := Result;
 end;
 {$ELSEIF DEFINED(IOS)}
+
 begin
   if not Trim(FAppName).IsEmpty then
     Exit(FAppName);
@@ -136,6 +138,7 @@ begin
   FAppName := Result;
 end;
 {$ELSE}
+
 var
   LAppPathFull: string;
 begin
@@ -153,6 +156,7 @@ begin
 end;
 {$ENDIF}
 
+
 class function TLoggerUtils.AppPath: string;
 {$IF DEFINED(ANDROID) OR DEFINED(IOS)}
 begin
@@ -164,6 +168,7 @@ begin
   FAppPath := Result;
 end;
 {$ELSE}
+
 var
   LAppPathFull: string;
 begin
@@ -181,6 +186,7 @@ begin
 end;
 {$ENDIF}
 
+
 class function TLoggerUtils.AppVersion: TAppVersion;
 {$IF DEFINED(ANDROID)}
 var
@@ -195,6 +201,7 @@ begin
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
 end;
 {$ELSEIF DEFINED(IOS)}
+
 var
   AppKey: Pointer;
   AppBundle: NSBundle;
@@ -216,6 +223,7 @@ begin
   FAppVersion := Result;
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 var
   LAppPathFull: string;
   LInfoSize: DWORD;
@@ -282,10 +290,12 @@ begin
   FAppVersion := Result;
 end;
 {$ELSE}
+
 begin
   Result := default (TAppVersion);
 end;
 {$ENDIF}
+
 
 class function TLoggerUtils.AppSize: Double;
 var
@@ -307,7 +317,6 @@ begin
 {$ELSE}
     Result := GetSize(LAppPathFull);
 {$ENDIF}
-
     Result := Result / 1024; // Kb
   except
   end;
@@ -324,10 +333,12 @@ begin
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
 {$ELSEIF DEFINED(IOS)}
+
 begin
   Result := '';
 end;
 {$ELSEIF DEFINED(LINUX)}
+
 var
   LName: utsname;
 begin
@@ -335,6 +346,7 @@ begin
   Result := string(AnsiString(LName.nodename));
 end;
 {$ELSEIF DEFINED(MSWINDOWS)}
+
 var
   LBuffer: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
   LSize: cardinal;
@@ -347,10 +359,12 @@ begin
     Result := EmptyStr;
 end;
 {$ELSE}
+
 begin
   Result := EmptyStr;
 end;
 {$ENDIF}
+
 
 // {$IFDEF MACOS}
 // function NSUserName: Pointer; cdecl; external '/System/Library/Frameworks/Foundation.framework/Foundation' name '_NSUserName';
@@ -373,10 +387,12 @@ end;
 // Result := TNSString.Wrap(NSUserName).UTF8String;
 // end;
 {$ELSE}
+
 begin
   Result := '';
 end;
 {$ENDIF}
+
 
 class function TLoggerUtils.OS: string;
 begin
@@ -402,7 +418,6 @@ begin
 {$ELSE}
   LProcessId := 0;
 {$ENDIF}
-
   Result := LProcessId.toString;
 
   FProcessId := Result;
@@ -478,7 +493,7 @@ begin
     Result := TJSON.Format(AValue)
 {$ENDIF}
   else
-    Result := AValue.ToString;
+    Result := AValue.toString;
 end;
 
 initialization

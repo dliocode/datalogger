@@ -14,7 +14,7 @@ uses
   System.SysUtils, System.Notification, System.JSON, System.Classes;
 
 type
-  TProviderNotification = class(TDataLoggerProvider)
+  TProviderNotification = class(TDataLoggerProvider<TProviderNotification>)
   private
     FNotificationCenter: TNotificationCenter;
     FTitle: string;

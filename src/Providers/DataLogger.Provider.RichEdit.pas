@@ -21,7 +21,7 @@ type
   TRichEditModeInsert = (tmFirst, tmLast);
 {$SCOPEDENUMS OFF}
 
-  TProviderRichEdit = class(TDataLoggerProvider)
+  TProviderRichEdit = class(TDataLoggerProvider<TProviderRichEdit>)
   private
     FRichEdit: TCustomRichEdit;
     FUseColorInRichEdit: Boolean;
@@ -250,7 +250,7 @@ begin
         if (csDestroying in FRichEdit.ComponentState) then
           Exit;
 
-        if not(THackCustom(FRichEdit).Color = clWindow) or not (THackCustom(FRichEdit).Color = clWhite) then
+        if not(THackCustom(FRichEdit).Color = clWindow) or not(THackCustom(FRichEdit).Color = clWhite) then
           LColor := clWhite
       end);
 

@@ -11,7 +11,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
-  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.Threading, System.JSON;
+  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON;
 
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
@@ -19,17 +19,16 @@ type
   TLoggerTypes = DataLogger.Types.TLoggerTypes;
   TLoggerTypeAutoCommit = DataLogger.Types.TLoggerTypeAutoCommit;
   TOnLogException = DataLogger.Types.TOnLogException;
-  TDataLoggerProvider = DataLogger.Provider.TDataLoggerProvider;
+
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
   EDataLoggerException = DataLogger.Types.EDataLoggerException;
-  Exception = DataLogger.Types.Exception;
 
   TDataLogger = class sealed(TThread)
   strict private
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
     FListLoggerItem: TList<TLoggerItem>;
-    FListProviders: TObjectList<TDataLoggerProvider>;
+    FListProviders: TObjectList<TThread>;
     FLogLevel: TLoggerType;
     FDisableLogType: TLoggerTypes;
     FOnlyLogType: TLoggerTypes;
@@ -46,16 +45,16 @@ type
     function ExtractCache: TArray<TLoggerItem>;
     procedure SaveForced;
     procedure CloseProvider;
-    function GetProviders: TArray<TDataLoggerProvider>;
+    function GetProviders: TArray<TThread>;
     procedure Lock;
     procedure UnLock;
   protected
     procedure Execute; override;
   public
-    function AddProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger; overload;
-    function AddProvider(const AProvider: TDataLoggerProvider): TDataLogger; overload;
-    function RemoveProvider(const AProvider: TDataLoggerProvider): TDataLogger;
-    function SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+    function AddProvider(const AProviders: TArray<TThread>): TDataLogger; overload;
+    function AddProvider(const AProvider: TThread): TDataLogger; overload;
+    function RemoveProvider(const AProvider: TThread): TDataLogger;
+    function SetProvider(const AProviders: TArray<TThread>): TDataLogger;
 
     function Trace(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
@@ -115,7 +114,7 @@ type
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
 
-    procedure LoadFromJSON(const AJSON: string);
+    function LoadFromJSON(const AJSON: string): Boolean;
     function ToJSON(const AFormat: Boolean = False): string;
 
     procedure AfterConstruction; override;
@@ -165,7 +164,7 @@ begin
 
   FEvent := TEvent.Create;
   FListLoggerItem := TList<TLoggerItem>.Create;
-  FListProviders := TObjectList<TDataLoggerProvider>.Create(True);
+  FListProviders := TObjectList<TThread>.Create(True);
 
   SetLogLevel(TLoggerType.All);
   SetDisableLogType([]);
@@ -210,7 +209,7 @@ end;
 procedure TDataLogger.Execute;
 var
   LCache: TArray<TLoggerItem>;
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   while not Terminated do
@@ -227,11 +226,11 @@ begin
       Continue;
 
     for I := Low(LProviders) to High(LProviders) do
-      LProviders[I].AddCache(LCache);
+      TDataLoggerProvider<TObject>(LProviders[I]).AddCache(LCache);
   end;
 end;
 
-function TDataLogger.AddProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+function TDataLogger.AddProvider(const AProviders: TArray<TThread>): TDataLogger;
 begin
   Result := Self;
 
@@ -243,12 +242,12 @@ begin
   end;
 end;
 
-function TDataLogger.AddProvider(const AProvider: TDataLoggerProvider): TDataLogger;
+function TDataLogger.AddProvider(const AProvider: TThread): TDataLogger;
 begin
   Result := AddProvider([AProvider]);
 end;
 
-function TDataLogger.RemoveProvider(const AProvider: TDataLoggerProvider): TDataLogger;
+function TDataLogger.RemoveProvider(const AProvider: TThread): TDataLogger;
 begin
   Result := Self;
 
@@ -260,9 +259,9 @@ begin
   end;
 end;
 
-function TDataLogger.SetProvider(const AProviders: TArray<TDataLoggerProvider>): TDataLogger;
+function TDataLogger.SetProvider(const AProviders: TArray<TThread>): TDataLogger;
 var
-  LItem: TDataLoggerProvider;
+  LItem: TThread;
 begin
   Result := Self;
 
@@ -420,7 +419,7 @@ end;
 
 function TDataLogger.StartTransaction: TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   LID: string;
   I: Integer;
 begin
@@ -433,12 +432,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].StartTransaction(LID);
+    TDataLoggerProvider<TObject>(LProviders[I]).StartTransaction(LID);
 end;
 
 function TDataLogger.CommitTransaction: TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   LID: string;
   I: Integer;
 begin
@@ -451,12 +450,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].CommitTransaction(LID);
+    TDataLoggerProvider<TObject>(LProviders[I]).CommitTransaction(LID);
 end;
 
 function TDataLogger.RollbackTransaction: TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   LID: string;
   I: Integer;
 begin
@@ -469,13 +468,13 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].RollbackTransaction(LID);
+    TDataLoggerProvider<TObject>(LProviders[I]).RollbackTransaction(LID);
 end;
 
 function TDataLogger.InTransaction: Boolean;
 var
-  LProviders: TArray<TDataLoggerProvider>;
-  LProvider: TDataLoggerProvider;
+  LProviders: TArray<TThread>;
+  LProvider: TThread;
   LID: string;
 begin
   Result := False;
@@ -486,7 +485,7 @@ begin
 
   for LProvider in LProviders do
   begin
-    Result := LProvider.InTransaction(LID);
+    Result := TDataLoggerProvider<TObject>(LProvider).InTransaction(LID);
     if Result then
       Break;
   end;
@@ -494,7 +493,7 @@ end;
 
 function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -502,12 +501,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetLogFormat(ALogFormat);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetLogFormat(ALogFormat);
 end;
 
 function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -515,7 +514,7 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetFormatTimestamp(AFormatTimestamp);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
 end;
 
 function TDataLogger.SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
@@ -556,7 +555,7 @@ end;
 
 function TDataLogger.SetLogException(const AException: TOnLogException): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -564,12 +563,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetLogException(AException);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetLogException(AException);
 end;
 
 function TDataLogger.SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -577,12 +576,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetMaxRetries(AMaxRetries);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetMaxRetries(AMaxRetries);
 end;
 
 function TDataLogger.SetInitialMessage(const AMessage: string): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -590,12 +589,12 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetInitialMessage(AMessage);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetInitialMessage(AMessage);
 end;
 
 function TDataLogger.SetFinalMessage(const AMessage: string): TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -603,7 +602,7 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].SetFinalMessage(AMessage);
+    TDataLoggerProvider<TObject>(LProviders[I]).SetFinalMessage(AMessage);
 end;
 
 function TDataLogger.SetName(const AName: string): TDataLogger;
@@ -632,7 +631,7 @@ end;
 
 function TDataLogger.Clear: TDataLogger;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   Result := Self;
@@ -648,7 +647,7 @@ begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].Clear;
+    TDataLoggerProvider<TObject>(LProviders[I]).Clear;
 end;
 
 function TDataLogger.CountLogInCache: Int64;
@@ -661,95 +660,111 @@ begin
   end;
 end;
 
-procedure TDataLogger.LoadFromJSON(const AJSON: string);
+function TDataLogger.LoadFromJSON(const AJSON: string): Boolean;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   LJSON: string;
+  LJV: TJSONValue;
   LJO: TJSONObject;
   LJA: TJSONArray;
   LJAName: string;
-  LProvider: TDataLoggerProvider;
+  LProvider: TThread;
   I: Integer;
   J: Integer;
 begin
-  if AJSON.Trim.IsEmpty then
-    Exit;
+  Result := False;
 
   LJSON := AJSON.Replace(#$D#$A, '');
 
+  if AJSON.Trim.IsEmpty then
+    Exit;
+
+  if AJSON.Trim = '{}' then
+    Exit;
+
   try
-    LJO := TJSONObject.ParseJSONValue(LJSON) as TJSONObject;
+    LJV := TJSONObject.ParseJSONValue(LJSON);
+
+    if not(LJV is TJSONObject) then
+    begin
+      LJV.Free;
+      Exit;
+    end;
+
+    LJO := LJV as TJSONObject;
   except
     on E: Exception do
       raise EDataLoggerException.Create('JSON invalid in LoadFromJSON!');
   end;
 
-  if Assigned(LJO) then
-  begin
-    LProviders := GetProviders;
+  if not Assigned(LJO) then
+    Exit;
 
+  Result := True;
+
+  LProviders := GetProviders;
+
+  try
+    for I := Pred(LJO.Count) downto 0 do
+    begin
+      if not(LJO.Pairs[I].JsonValue is TJSONArray) then
+        Continue;
+
+      LJA := LJO.Pairs[I].JsonValue as TJSONArray;
+      LJAName := LJO.Pairs[I].JsonString.Value;
+
+      if LJA.Count = 0 then
+        Continue;
+
+      for LProvider in LProviders do
+        if LProvider.ClassName.ToLower = LJAName.ToLower then
+        begin
+          TDataLoggerProvider<TObject>(LProvider).LoadFromJSON(LJA.Items[0].ToString);
+          LJA.Remove(0).Free;
+
+          if LJA.Count = 0 then
+            Break;
+        end;
+
+      if LJA.Count = 0 then
+        LJO.RemovePair(LJAName).Free;
+    end;
+
+    if LJO.Count = 0 then
+      Exit;
+
+    Lock;
     try
-      for I := Pred(LJO.Count) downto 0 do
+      for I := 0 to Pred(LJO.Count) do
       begin
-        if not(LJO.Pairs[I].JsonValue is TJSONArray) then
-          Continue;
-
         LJA := LJO.Pairs[I].JsonValue as TJSONArray;
         LJAName := LJO.Pairs[I].JsonString.Value;
 
-        if LJA.Count = 0 then
-          Continue;
-
-        for LProvider in LProviders do
-          if LProvider.ClassName.ToLower = LJAName.ToLower then
-          begin
-            LProvider.LoadFromJSON(LJA.Items[0].ToString);
-            LJA.Remove(0).Free;
-
-            if LJA.Count = 0 then
-              Break;
-          end;
-
-        if LJA.Count = 0 then
-          LJO.RemovePair(LJAName).Free;
-      end;
-
-      if LJO.Count = 0 then
-        Exit;
-
-      Lock;
-      try
-        for I := 0 to Pred(LJO.Count) do
+        for J := 0 to Pred(LJA.Count) do
         begin
-          LJA := LJO.Pairs[I].JsonValue as TJSONArray;
-          LJAName := LJO.Pairs[I].JsonString.Value;
+          LProvider := TLoggerRTTI.CreateObject(LJAName) as TThread;
 
-          for J := 0 to Pred(LJA.Count) do
-          begin
-            LProvider := TLoggerRTTI.CreateObject(LJAName) as TDataLoggerProvider;
+          if not Assigned(LProvider) then
+            Continue;
 
-            if not Assigned(LProvider) then
+          try
+            TDataLoggerProvider<TObject>(LProvider).LoadFromJSON(LJA.Items[J].ToString);
+          except
+            on E: Exception do
+            begin
+              LProvider.Free;
               Continue;
-
-            try
-              LProvider.LoadFromJSON(LJA.Items[J].ToString);
-            except
-              on E: Exception do
-              begin
-                LProvider.Free;
-                Continue;
-              end;
             end;
-
-            AddProvider(LProvider);
           end;
+
+          AddProvider(LProvider);
         end;
-      finally
-        UnLock;
       end;
     finally
-      LJO.Free;
+      UnLock;
     end;
+  finally
+    LJO.Free;
   end;
 end;
 
@@ -757,8 +772,8 @@ function TDataLogger.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
   LJA: TJSONArray;
-  LProviders: TArray<TDataLoggerProvider>;
-  LProvider: TDataLoggerProvider;
+  LProviders: TArray<TThread>;
+  LProvider: TThread;
 begin
   LProviders := GetProviders;
 
@@ -779,7 +794,7 @@ begin
         else
           LJA := LJO.Get(LProvider.ClassName).JsonValue as TJSONArray;
 
-        LJA.Add(TJSONObject.ParseJSONValue(LProvider.ToJSON) as TJSONObject);
+        LJA.Add(TJSONObject.ParseJSONValue(TDataLoggerProvider<TObject>(LProvider).ToJSON) as TJSONObject);
       end;
 
       Result := TLoggerJSON.Format(LJO, AFormat);
@@ -912,18 +927,18 @@ end;
 
 procedure TDataLogger.CloseProvider;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
   I: Integer;
 begin
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
-    LProviders[I].NotifyEvent;
+    TDataLoggerProvider<TObject>(LProviders[I]).NotifyEvent;
 end;
 
-function TDataLogger.GetProviders: TArray<TDataLoggerProvider>;
+function TDataLogger.GetProviders: TArray<TThread>;
 var
-  LProviders: TArray<TDataLoggerProvider>;
+  LProviders: TArray<TThread>;
 begin
   Result := [];
 

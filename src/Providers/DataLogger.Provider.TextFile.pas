@@ -16,7 +16,7 @@ uses
 type
   TProviderTextFileExecuteCompress = reference to procedure(const ADirLogFileName: string; const AFileName: string; var ARemoveFile: Boolean);
 
-  TProviderTextFile = class(TDataLoggerProvider)
+  TProviderTextFile = class(TDataLoggerProvider<TProviderTextFile>)
   private
     FLogDir: string;
     FPrefixFileName: string;

@@ -25,6 +25,7 @@ type
     Field: string;
     Value: string;
     ContentType: string;
+    
     class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
   end;
 
@@ -39,7 +40,7 @@ type
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
   TRESTMethod = (tlmGet, tlmPost);
 
-  TProviderRESTNetHTTPClient = class(TDataLoggerProvider)
+  TProviderRESTNetHTTPClient = class(TDataLoggerProvider<TProviderRESTNetHTTPClient>)
   private
     FURL: string;
     FContentType: string;

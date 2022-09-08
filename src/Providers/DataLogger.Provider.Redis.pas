@@ -17,7 +17,7 @@ uses
   System.SysUtils, System.JSON;
 
 type
-  TProviderRedis = class(TDataLoggerProvider)
+  TProviderRedis = class(TDataLoggerProvider<TProviderRedis>)
   private
     FHost: string;
     FPort: Integer;

@@ -19,7 +19,7 @@ uses
   System.SysUtils, System.Types, System.JSON;
 
 type
-  TProviderEventLog = class(TDataLoggerProvider)
+  TProviderEventLog = class(TDataLoggerProvider<TProviderEventLog>)
   private
     FName: string;
   protected
@@ -162,9 +162,11 @@ begin
   end;
 end;
 {$ELSE}
+
 begin
 end;
 {$ENDIF}
+
 
 procedure ForceReferenceToClass(C: TClass);
 begin

@@ -19,7 +19,7 @@ uses
   System.SysUtils, System.JSON;
 
 type
-  TProviderOutputDebugString = class(TDataLoggerProvider)
+  TProviderOutputDebugString = class(TDataLoggerProvider<TProviderOutputDebugString>)
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public

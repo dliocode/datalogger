@@ -17,7 +17,7 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderSendEmail = class(TDataLoggerProvider)
+  TProviderSendEmail = class(TDataLoggerProvider<TProviderSendEmail>)
   private
     FSendEmail: TSendEmail;
     FModeCustom: Boolean;

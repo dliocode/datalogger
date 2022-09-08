@@ -14,7 +14,7 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderMemory = class(TDataLoggerProvider)
+  TProviderMemory = class(TDataLoggerProvider<TProviderMemory>)
   private
     FStringList: TStringList;
   protected

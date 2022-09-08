@@ -47,7 +47,7 @@ type
     destructor Destroy; override;
   end;
 
-  TProviderEvents = class(TDataLoggerProvider)
+  TProviderEvents = class(TDataLoggerProvider<TProviderEvents>)
   private
     FConfig: TEventsConfig;
   protected

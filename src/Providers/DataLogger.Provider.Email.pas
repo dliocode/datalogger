@@ -15,7 +15,7 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderEmail = class(TDataLoggerProvider)
+  TProviderEmail = class(TDataLoggerProvider<TProviderEmail>)
   private
     FIdSMTP: TIdSMTP;
     FFromAddress: string;

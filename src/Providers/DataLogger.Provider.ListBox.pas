@@ -23,7 +23,7 @@ type
   TListBoxModeInsert = (tmFirst, tmLast);
 {$SCOPEDENUMS OFF}
 
-  TProviderListBox = class(TDataLoggerProvider)
+  TProviderListBox = class(TDataLoggerProvider<TProviderListBox>)
   private
     FListBox: TCustomListBox;
     FMaxLogLines: Integer;

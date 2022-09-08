@@ -42,7 +42,7 @@ type
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
   TRESTMethod = (tlmGet, tlmPost);
 
-  TProviderRESTIndy = class(TDataLoggerProvider)
+  TProviderRESTIndy = class(TDataLoggerProvider<TProviderRESTIndy>)
   private
     FURL: string;
     FContentType: string;

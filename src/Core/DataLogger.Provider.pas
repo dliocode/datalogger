@@ -10,27 +10,15 @@ unit DataLogger.Provider;
 interface
 
 uses
-  DataLogger.Types, DataLogger.Utils,
+  DataLogger.Types, DataLogger.Transaction, DataLogger.Utils,
   System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo;
 
 type
   TLoggerJSON = DataLogger.Utils.TLoggerJSON;
 
-  TDataLoggerListItem = TList<TLoggerItem>;
-  TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
-
-  TDataLoggerTransaction = class
-  public
-    InTransaction: Boolean;
-    ListItemTransaction: TDataLoggerListItemTransaction;
-
-    destructor Destroy; override;
-  end;
-
-  TDataLoggerListTransaction = TObjectDictionary<string, TDataLoggerTransaction>;
-
-  TDataLoggerProvider = class(TThread)
+  TDataLoggerProvider<T: class> = class(TThread)
   private
+    FOwner: T;
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
 
@@ -57,39 +45,39 @@ type
 
     procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
+
     procedure SetJSONInternal(const AJO: TJSONObject);
     procedure ToJSONInternal(const AJO: TJSONObject);
     procedure Lock;
     procedure UnLock;
   public
-    function SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
-    function SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
-    function SetLogLevel(const ALogLevel: TLoggerType): TDataLoggerProvider;
-    function SetDisableLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
-    function SetOnlyLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
-    function SetLogException(const AException: TOnLogException): TDataLoggerProvider;
-    function SetMaxRetries(const AMaxRetries: Integer): TDataLoggerProvider;
-    function SetInitialMessage(const AMessage: string): TDataLoggerProvider;
-    function SetFinalMessage(const AMessage: string): TDataLoggerProvider;
+    function SetLogFormat(const ALogFormat: string): T;
+    function SetFormatTimestamp(const AFormatTimestamp: string): T;
+    function SetLogLevel(const ALogLevel: TLoggerType): T;
+    function SetDisableLogType(const ALogTypes: TLoggerTypes): T;
+    function SetOnlyLogType(const ALogTypes: TLoggerTypes): T;
+    function SetLogException(const AException: TOnLogException): T;
+    function SetMaxRetries(const AMaxRetries: Integer): T;
+    function SetInitialMessage(const AMessage: string): T;
+    function SetFinalMessage(const AMessage: string): T;
 
-    function UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
-    function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
+    function UseTransaction(const AUseTransaction: Boolean): T;
+    function AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): T;
 
-    function StartTransaction(const AID: string; const AUseLock: Boolean = True): TDataLoggerProvider;
-    function CommitTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
-    function RollbackTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
+    function StartTransaction(const AID: string; const AUseLock: Boolean = True): T;
+    function CommitTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): T;
+    function RollbackTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): T;
     function InTransaction(const AID: string): Boolean;
     function CountTransaction(const AID: string): Integer;
 
-    function Clear: TDataLoggerProvider;
+    function Clear: T;
     function CountLogInCache: Int64;
 
     procedure LoadFromJSON(const AJSON: string); virtual; abstract;
     function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
 
-    function AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider; overload;
-    function AddCache(const AValue: TLoggerItem): TDataLoggerProvider; overload;
-    function NotifyEvent: TDataLoggerProvider;
+    function AddCache(const AValues: TArray<TLoggerItem>): T;
+    function NotifyEvent: T;
 
     constructor Create;
     procedure AfterConstruction; override;
@@ -100,16 +88,17 @@ implementation
 
 { TDataLoggerProvider }
 
-constructor TDataLoggerProvider.Create;
+constructor TDataLoggerProvider<T>.Create;
 begin
   inherited Create(True);
   FreeOnTerminate := False;
 end;
 
-procedure TDataLoggerProvider.AfterConstruction;
+procedure TDataLoggerProvider<T>.AfterConstruction;
 begin
   inherited;
 
+  FOwner := Self as T;
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
 
@@ -129,7 +118,7 @@ begin
   Start;
 end;
 
-procedure TDataLoggerProvider.BeforeDestruction;
+procedure TDataLoggerProvider<T>.BeforeDestruction;
 begin
   Terminate;
   FEvent.SetEvent;
@@ -149,7 +138,7 @@ begin
   inherited;
 end;
 
-procedure TDataLoggerProvider.Execute;
+procedure TDataLoggerProvider<T>.Execute;
 var
   LCache: TArray<TLoggerItem>;
 begin
@@ -166,80 +155,80 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.SetLogFormat(const ALogFormat: string): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetLogFormat(const ALogFormat: string): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FLogFormat := ALogFormat;
 end;
 
-function TDataLoggerProvider.SetFormatTimestamp(const AFormatTimestamp: string): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetFormatTimestamp(const AFormatTimestamp: string): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FFormatTimestamp := AFormatTimestamp;
 end;
 
-function TDataLoggerProvider.SetLogLevel(const ALogLevel: TLoggerType): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetLogLevel(const ALogLevel: TLoggerType): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FLogLevel := ALogLevel;
 end;
 
-function TDataLoggerProvider.SetDisableLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetDisableLogType(const ALogTypes: TLoggerTypes): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FDisableLogType := ALogTypes;
 end;
 
-function TDataLoggerProvider.SetOnlyLogType(const ALogTypes: TLoggerTypes): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetOnlyLogType(const ALogTypes: TLoggerTypes): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FOnlyLogType := ALogTypes;
 end;
 
-function TDataLoggerProvider.SetLogException(const AException: TOnLogException): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetLogException(const AException: TOnLogException): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FLogException := AException;
 end;
 
-function TDataLoggerProvider.SetMaxRetries(const AMaxRetries: Integer): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetMaxRetries(const AMaxRetries: Integer): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FMaxRetries := AMaxRetries;
 end;
 
-function TDataLoggerProvider.SetInitialMessage(const AMessage: string): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetInitialMessage(const AMessage: string): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FInitialMessage := AMessage;
 end;
 
-function TDataLoggerProvider.SetFinalMessage(const AMessage: string): TDataLoggerProvider;
+function TDataLoggerProvider<T>.SetFinalMessage(const AMessage: string): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FFinalMessage := AMessage;
 end;
 
-function TDataLoggerProvider.UseTransaction(const AUseTransaction: Boolean): TDataLoggerProvider;
+function TDataLoggerProvider<T>.UseTransaction(const AUseTransaction: Boolean): T;
 begin
-  Result := Self;
+  Result := FOwner;
   FUseTransaction := AUseTransaction;
 end;
 
-function TDataLoggerProvider.AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
+function TDataLoggerProvider<T>.AutoCommit(const ALogTypes: TLoggerTypes; const ATypeAutoCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): T;
 begin
-  Result := Self;
+  Result := FOwner;
 
   FAutoCommit := ALogTypes;
   FTypeAutoCommit := ATypeAutoCommit;
 end;
 
-function TDataLoggerProvider.StartTransaction(const AID: string; const AUseLock: Boolean = True): TDataLoggerProvider;
+function TDataLoggerProvider<T>.StartTransaction(const AID: string; const AUseLock: Boolean = True): T;
 var
   LTransaction: TDataLoggerTransaction;
   LCountTransaction: Integer;
 begin
-  Result := Self;
+  Result := FOwner;
 
   if not FUseTransaction then
     Exit;
@@ -266,14 +255,14 @@ begin
   LTransaction.ListItemTransaction.Add(LCountTransaction + 1, TDataLoggerListItem.Create);
 end;
 
-function TDataLoggerProvider.CommitTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): TDataLoggerProvider;
+function TDataLoggerProvider<T>.CommitTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock; const AUseLock: Boolean = True): T;
 var
   LTransaction: TDataLoggerTransaction;
   LCountTransaction: Integer;
   LCurrent: TDataLoggerListItem;
   LCurrentValues: TArray<TLoggerItem>;
 begin
-  Result := Self;
+  Result := FOwner;
 
   if not FUseTransaction then
     Exit;
@@ -332,12 +321,12 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.RollbackTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): TDataLoggerProvider;
+function TDataLoggerProvider<T>.RollbackTransaction(const AID: string; const ATypeCommit: TLoggerTypeAutoCommit = TLoggerTypeAutoCommit.tcBlock): T;
 var
   LTransaction: TDataLoggerTransaction;
   LCountTransaction: Integer;
 begin
-  Result := Self;
+  Result := FOwner;
 
   if not FUseTransaction then
     Exit;
@@ -376,7 +365,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.InTransaction(const AID: string): Boolean;
+function TDataLoggerProvider<T>.InTransaction(const AID: string): Boolean;
 var
   LTransaction: TDataLoggerTransaction;
 begin
@@ -393,7 +382,7 @@ begin
   Result := LTransaction.InTransaction;
 end;
 
-function TDataLoggerProvider.CountTransaction(const AID: string): Integer;
+function TDataLoggerProvider<T>.CountTransaction(const AID: string): Integer;
 var
   LTransaction: TDataLoggerTransaction;
 begin
@@ -410,9 +399,9 @@ begin
   Result := LTransaction.ListItemTransaction.Count;
 end;
 
-function TDataLoggerProvider.Clear: TDataLoggerProvider;
+function TDataLoggerProvider<T>.Clear: T;
 begin
-  Result := Self;
+  Result := FOwner;
 
   Lock;
   try
@@ -423,7 +412,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.CountLogInCache: Int64;
+function TDataLoggerProvider<T>.CountLogInCache: Int64;
 begin
   Lock;
   try
@@ -433,7 +422,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.AddCache(const AValues: TArray<TLoggerItem>): TDataLoggerProvider;
+function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
   I: Integer;
   LItem: TLoggerItem;
@@ -441,7 +430,7 @@ var
   LTransaction: TDataLoggerTransaction;
   LListLoggerItem: TDataLoggerListItem;
 begin
-  Result := Self;
+  Result := FOwner;
 
   Lock;
   try
@@ -504,14 +493,9 @@ begin
   end;
 end;
 
-function TDataLoggerProvider.AddCache(const AValue: TLoggerItem): TDataLoggerProvider;
+function TDataLoggerProvider<T>.NotifyEvent: T;
 begin
-  Result := AddCache([AValue]);
-end;
-
-function TDataLoggerProvider.NotifyEvent: TDataLoggerProvider;
-begin
-  Result := Self;
+  Result := FOwner;
 
   Lock;
   try
@@ -521,7 +505,20 @@ begin
   end;
 end;
 
-procedure TDataLoggerProvider.SetJSONInternal(const AJO: TJSONObject);
+function TDataLoggerProvider<T>.ExtractCache: TArray<TLoggerItem>;
+begin
+  Lock;
+  try
+    Result := FListLoggerBase.ToArray;
+
+    FListLoggerBase.Clear;
+    FListLoggerBase.TrimExcess;
+  finally
+    UnLock;
+  end;
+end;
+
+procedure TDataLoggerProvider<T>.SetJSONInternal(const AJO: TJSONObject);
 var
   LJOInternal: TJSONObject;
   LValue: string;
@@ -602,7 +599,7 @@ begin
   end;
 end;
 
-procedure TDataLoggerProvider.ToJSONInternal(const AJO: TJSONObject);
+procedure TDataLoggerProvider<T>.ToJSONInternal(const AJO: TJSONObject);
 var
   LJOInternal: TJSONObject;
   I: TLoggerType;
@@ -659,40 +656,14 @@ begin
   LJOAutoCommit.AddPair('type_commit', GetEnumName(TypeInfo(TLoggerTypeAutoCommit), Integer(FTypeAutoCommit)));
 end;
 
-procedure TDataLoggerProvider.Lock;
+procedure TDataLoggerProvider<T>.Lock;
 begin
   FCriticalSection.Acquire;
 end;
 
-procedure TDataLoggerProvider.UnLock;
+procedure TDataLoggerProvider<T>.UnLock;
 begin
   FCriticalSection.Release;
-end;
-
-function TDataLoggerProvider.ExtractCache: TArray<TLoggerItem>;
-begin
-  Lock;
-  try
-    Result := FListLoggerBase.ToArray;
-
-    FListLoggerBase.Clear;
-    FListLoggerBase.TrimExcess;
-  finally
-    UnLock;
-  end;
-end;
-
-{ TDataLoggerTransaction }
-
-destructor TDataLoggerTransaction.Destroy;
-begin
-  if Assigned(ListItemTransaction) then
-  begin
-    ListItemTransaction.Free;
-    ListItemTransaction := nil;
-  end;
-
-  inherited;
 end;
 
 end.

@@ -17,7 +17,7 @@ uses
   System.SysUtils, System.JSON;
 
 type
-  TProviderRabbitMQ = class(TDataLoggerProvider)
+  TProviderRabbitMQ = class(TDataLoggerProvider<TProviderRabbitMQ>)
   private
     FHost: string;
     FPort: Integer;

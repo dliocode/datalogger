@@ -44,7 +44,7 @@ type
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
   TRESTMethod = (tlmGet, tlmPost);
 
-  TProviderRESTHTTPClient = class(TDataLoggerProvider)
+  TProviderRESTHTTPClient = class(TDataLoggerProvider<TProviderRESTHTTPClient>)
   private
     FURL: string;
     FContentType: string;
@@ -255,6 +255,7 @@ begin
     LLogItemREST.LogItem := LItem;
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+  
   InternalSaveAsync(FMethod, LItemREST);
 end;
 

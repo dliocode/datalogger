@@ -15,7 +15,7 @@ uses
   System.SysUtils, System.JSON;
 
 type
-  TProviderSysLog = class(TDataLoggerProvider)
+  TProviderSysLog = class(TDataLoggerProvider<TProviderSysLog>)
   private
     FSysLog: TIdSysLog;
   protected
