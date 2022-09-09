@@ -52,7 +52,7 @@ begin
     TProviderTelegram.Create
     .BotToken('<TOKEN>')
     .ChatId('00000000')
-    .ParseMode(tpMarkdown)
+    .ParseMode(TTelegramParseMode.tpMarkdown)
     );
 
   // Log Format

@@ -13,6 +13,7 @@ unit DataLogger.Provider.NewRelic;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_NEW_RELIC_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_NEW_RELIC_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_NEW_RELIC_USE_INDY)}
-  TProviderNewRelic = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_NEW_RELIC_USE_NETHTTPCLIENT)}
-  TProviderNewRelic = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderNewRelic = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderNewRelic = class(TDataLoggerProvider<TProviderNewRelic>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_NEW_RELIC_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_NEW_RELIC_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiKey: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -41,7 +47,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -52,8 +59,15 @@ constructor TProviderNewRelic.Create;
 begin
   inherited Create;
 
-  URL('https://log-api.newrelic.com/log/v1');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://log-api.newrelic.com/log/v1');
+end;
+
+destructor TProviderNewRelic.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderNewRelic.ApiKey(const AValue: string): TProviderNewRelic;
@@ -138,7 +152,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

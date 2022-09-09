@@ -14,6 +14,7 @@ unit DataLogger.Provider.PaperTrail;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_PAPERTRAIL_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_PAPERTRAIL_USE_NETHTTPCLIENT)}
@@ -21,18 +22,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_PAPERTRAIL_USE_INDY)}
-  TProviderPaperTrail = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_PAPERTRAIL_USE_NETHTTPCLIENT)}
-  TProviderPaperTrail = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderPaperTrail = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderPaperTrail = class(TDataLoggerProvider<TProviderPaperTrail>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_PAPERTRAIL_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_PAPERTRAIL_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FToken: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -42,7 +48,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,8 +60,15 @@ constructor TProviderPaperTrail.Create;
 begin
   inherited Create;
 
-  URL('https://logs.collector.solarwinds.com/v1/log');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://logs.collector.solarwinds.com/v1/log');
+end;
+
+destructor TProviderPaperTrail.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderPaperTrail.Token(const AValue: string): TProviderPaperTrail;
@@ -62,7 +76,7 @@ begin
   Result := Self;
 
   FToken := AValue;
-  inherited BasicAuth('', AValue);
+  FHTTP.BasicAuth('', AValue);
 end;
 
 procedure TProviderPaperTrail.LoadFromJSON(const AJSON: string);
@@ -133,7 +147,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

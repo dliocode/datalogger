@@ -13,6 +13,7 @@ unit DataLogger.Provider.Logtail;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_LOGTAIL_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_LOGTAIL_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_LOGTAIL_USE_INDY)}
-  TProviderLogtail = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_LOGTAIL_USE_NETHTTPCLIENT)}
-  TProviderLogtail = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderLogtail = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderLogtail = class(TDataLoggerProvider<TProviderLogtail>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_LOGTAIL_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_LOGTAIL_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -40,7 +46,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -51,14 +58,21 @@ constructor TProviderLogtail.Create;
 begin
   inherited Create;
 
-  URL('https://in.logtail.com');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://in.logtail.com');
+end;
+
+destructor TProviderLogtail.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderLogtail.SourceToken(const AValue: string): TProviderLogtail;
 begin
   Result := Self;
-  inherited BearerToken(AValue);
+  FHTTP.BearerToken(AValue);
 end;
 
 procedure TProviderLogtail.LoadFromJSON(const AJSON: string);
@@ -79,7 +93,7 @@ begin
     Exit;
 
   try
-    SourceToken(LJO.GetValue<string>('source_token', inherited Token));
+    SourceToken(LJO.GetValue<string>('source_token', FHTTP.Token));
 
     SetJSONInternal(LJO);
   finally
@@ -93,7 +107,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('source_token', inherited Token);
+    LJO.AddPair('source_token', FHTTP.Token);
 
     ToJSONInternal(LJO);
 
@@ -137,7 +151,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

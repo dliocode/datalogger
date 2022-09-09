@@ -25,7 +25,7 @@ type
     Field: string;
     Value: string;
     ContentType: string;
-    
+
     class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
   end;
 

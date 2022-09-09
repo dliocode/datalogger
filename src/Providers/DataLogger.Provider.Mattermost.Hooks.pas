@@ -12,6 +12,7 @@ unit DataLogger.Provider.Mattermost.Hooks;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_INDY)}
-  TProviderMattermostHooks = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_NETHTTPCLIENT)}
-  TProviderMattermostHooks = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderMattermostHooks = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderMattermostHooks = class(TDataLoggerProvider<TProviderMattermostHooks>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FChannelName: string;
     FUsername: string;
     FModePropsCard: Boolean;
@@ -46,6 +52,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -56,17 +63,25 @@ constructor TProviderMattermostHooks.Create;
 begin
   inherited Create;
 
-  URL('http://localhost');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('http://localhost');
+
   ChannelName('');
   Username('');
   ModePropsCard(False);
 end;
 
+destructor TProviderMattermostHooks.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
+end;
+
 function TProviderMattermostHooks.URL(const AValue: string): TProviderMattermostHooks;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderMattermostHooks.ChannelName(const AValue: string): TProviderMattermostHooks;
@@ -105,7 +120,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     ChannelName(LJO.GetValue<string>('channel_name', FChannelName));
     Username(LJO.GetValue<string>('username', FUsername));
     ModePropsCard(LJO.GetValue<Boolean>('mode_props_card', FModePropsCard));
@@ -122,7 +137,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('channel_name', FChannelName);
     LJO.AddPair('username', FUsername);
     LJO.AddPair('mode_props_card', TJSONBool.Create(FModePropsCard));
@@ -222,7 +237,7 @@ begin
   else
     Default;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

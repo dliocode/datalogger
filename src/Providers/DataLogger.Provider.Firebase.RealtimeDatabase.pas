@@ -12,6 +12,7 @@ unit DataLogger.Provider.Firebase.RealtimeDatabase;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_INDY)}
-  TProviderRealtimeDatabase = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_NETHTTPCLIENT)}
-  TProviderRealtimeDatabase = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderRealtimeDatabase = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderRealtimeDatabase = class(TDataLoggerProvider<TProviderRealtimeDatabase>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_FIREBASE_REALTIMEDATABASE_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FDataBase: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -41,7 +47,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -52,15 +59,22 @@ constructor TProviderRealtimeDatabase.Create;
 begin
   inherited Create;
 
-  URL('');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   DataBase('datalogger');
+end;
+
+destructor TProviderRealtimeDatabase.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderRealtimeDatabase.URL(const AValue: string): TProviderRealtimeDatabase;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderRealtimeDatabase.DataBase(const AValue: string): TProviderRealtimeDatabase;
@@ -87,7 +101,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     DataBase(LJO.GetValue<string>('database', FDataBase));
 
     SetJSONInternal(LJO);
@@ -102,7 +116,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('database', FDataBase);
 
     ToJSONInternal(LJO);
@@ -134,12 +148,12 @@ begin
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s/%s.json', [inherited URL.Trim(['/']), FDataBase]);
+    LLogItemREST.URL := Format('%s/%s.json', [FHTTP.URL.Trim(['/']), FDataBase]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

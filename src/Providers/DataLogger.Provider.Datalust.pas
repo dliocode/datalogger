@@ -13,6 +13,7 @@ unit DataLogger.Provider.Datalust;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_DATALUST_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_DATALUST_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_DATALUST_USE_INDY)}
-  TProviderDatalust = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_DATALUST_USE_NETHTTPCLIENT)}
-  TProviderDatalust = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderDatalust = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderDatalust = class(TDataLoggerProvider<TProviderDatalust>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_DATALUST_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_DATALUST_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiKey: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -42,7 +48,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,14 +60,21 @@ constructor TProviderDatalust.Create;
 begin
   inherited Create;
 
-  URL('http://localhost:5431');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('http://localhost:5431');
+end;
+
+destructor TProviderDatalust.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderDatalust.URL(const AValue: string): TProviderDatalust;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderDatalust.ApiKey(const AValue: string): TProviderDatalust;
@@ -68,7 +82,7 @@ begin
   Result := Self;
 
   FApiKey := AValue;
-  inherited AddHeader('X-Seq-ApiKey', AValue);
+  FHTTP.AddHeader('X-Seq-ApiKey', AValue);
 end;
 
 procedure TProviderDatalust.LoadFromJSON(const AJSON: string);
@@ -148,7 +162,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/events/raw', [inherited URL.Trim(['/'])]);
+      LLogItemREST.URL := Format('%s/api/events/raw', [FHTTP.URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -156,7 +170,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

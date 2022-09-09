@@ -13,6 +13,7 @@ unit DataLogger.Provider.Mailgun.Api;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_MAILGUN_API_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_MAILGUN_API_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MAILGUN_API_USE_INDY)}
-  TProviderMailgunApi = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MAILGUN_API_USE_NETHTTPCLIENT)}
-  TProviderMailgunApi = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderMailgunApi = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderMailgunApi = class(TDataLoggerProvider<TProviderMailgunApi>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_MAILGUN_API_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_MAILGUN_API_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiKey: string;
     FDomain: string;
     FEmailFrom: string;
@@ -49,7 +55,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -60,17 +67,25 @@ constructor TProviderMailgunApi.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   EmailFrom('');
   EmailTo([]);
   Subject('DataLogger');
+end;
+
+destructor TProviderMailgunApi.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderMailgunApi.ApiKey(const AValue: string): TProviderMailgunApi;
 begin
   Result := Self;
   FApiKey := AValue;
-  inherited BasicAuth('api', AValue);
+  FHTTP.BasicAuth('api', AValue);
 end;
 
 function TProviderMailgunApi.Domain(const AValue: string): TProviderMailgunApi;
@@ -182,7 +197,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

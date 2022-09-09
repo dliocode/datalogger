@@ -15,6 +15,7 @@ unit DataLogger.Provider.Loggly;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_LOGGLY_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_LOGGLY_USE_NETHTTPCLIENT)}
@@ -22,18 +23,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_LOGGLY_USE_INDY)}
-  TProviderLoggly = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_LOGGLY_USE_NETHTTPCLIENT)}
-  TProviderLoggly = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderLoggly = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderLoggly = class(TDataLoggerProvider<TProviderLoggly>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_LOGGLY_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_LOGGLY_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FToken: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -43,7 +49,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -54,7 +61,14 @@ constructor TProviderLoggly.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+end;
+
+destructor TProviderLoggly.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderLoggly.Token(const AValue: string): TProviderLoggly;
@@ -132,7 +146,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

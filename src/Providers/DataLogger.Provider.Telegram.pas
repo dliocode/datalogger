@@ -12,6 +12,7 @@ unit DataLogger.Provider.Telegram;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
@@ -19,7 +20,6 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo;
 
 type
@@ -27,14 +27,20 @@ type
   TTelegramParseMode = (tpNone, tpHTML, tpMarkdown);
 {$SCOPEDENUMS OFF}
 
-{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}  
-  TProviderTelegram = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
-  TProviderTelegram = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderTelegram = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderTelegram = class(TDataLoggerProvider<TProviderTelegram>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_TELEGRAM_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_TELEGRAM_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FBotToken: string;
     FChatId: string;
     FParseMode: TTelegramParseMode;
@@ -48,8 +54,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
-    constructor Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = TTelegramParseMode.tpMarkdown); overload; deprecated 'Use TProviderTelegram.Create.BotToken(''AAAAA'').ChatId(''00000000'').ParseMode(tpMarkdown) - This function will be removed in future versions';
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -66,19 +72,18 @@ constructor TProviderTelegram.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   BotToken('');
   ChatId('');
   ParseMode(TTelegramParseMode.tpMarkdown);
 end;
 
-constructor TProviderTelegram.Create(const ABotToken: string; const AChatId: string; const AParseMode: TTelegramParseMode = TTelegramParseMode.tpMarkdown);
+destructor TProviderTelegram.Destroy;
 begin
-  Create;
-
-  BotToken(ABotToken);
-  ChatId(AChatId);
-  ParseMode(AParseMode);
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderTelegram.BotToken(const AValue: string): TProviderTelegram;
@@ -247,7 +252,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmGet, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmGet, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

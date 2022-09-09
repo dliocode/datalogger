@@ -10,6 +10,7 @@ unit DataLogger.Provider.Logstach;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_LOGSTACH_USE_NETHTTPCLIENT)}
@@ -17,18 +18,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
-  TProviderLogstach = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_LOGSTACH_USE_NETHTTPCLIENT)}
-  TProviderLogstach = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderLogstach = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderLogstach = class(TDataLoggerProvider<TProviderLogstach>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_LOGSTACH_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FIndex: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -39,7 +45,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;  
   end;
 
 implementation
@@ -50,15 +57,23 @@ constructor TProviderLogstach.Create;
 begin
   inherited Create;
 
-  URL('http://localhost:5044');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('http://localhost:5044');
+
   Index('logger');
+end;
+
+destructor TProviderLogstach.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderLogstach.URL(const AValue: string): TProviderLogstach;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderLogstach.Index(const AValue: string): TProviderLogstach;
@@ -85,7 +100,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     Index(LJO.GetValue<string>('index', FIndex));
 
     SetJSONInternal(LJO);
@@ -100,7 +115,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('index', FIndex);
 
     ToJSONInternal(LJO);
@@ -129,12 +144,12 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s/%s/doc', [inherited URL.Trim(['/']), FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s/%s/doc', [FHTTP.URL.Trim(['/']), FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

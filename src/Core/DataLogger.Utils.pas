@@ -126,7 +126,7 @@ begin
 
   FAppName := Result;
 end;
-{$ELSEIF DEFINED(IOS)}   
+{$ELSEIF DEFINED(IOS)}
 begin
   if not Trim(FAppName).IsEmpty then
     Exit(FAppName);
@@ -135,7 +135,7 @@ begin
 
   FAppName := Result;
 end;
-{$ELSE}     
+{$ELSE}
 var
   LAppPathFull: string;
 begin
@@ -163,7 +163,7 @@ begin
 
   FAppPath := Result;
 end;
-{$ELSE}     
+{$ELSE}
 var
   LAppPathFull: string;
 begin
@@ -216,7 +216,7 @@ begin
 
   FAppVersion := Result;
 end;
-{$ELSEIF DEFINED(MSWINDOWS)}     
+{$ELSEIF DEFINED(MSWINDOWS)}
 var
   LAppPathFull: string;
   LInfoSize: DWORD;
@@ -282,7 +282,7 @@ begin
 
   FAppVersion := Result;
 end;
-{$ELSE}     
+{$ELSE}
 begin
   Result := default (TAppVersion);
 end;
@@ -323,18 +323,18 @@ begin
   if Result.Trim.IsEmpty then
     Result := Format('%s %s', [JStringToString(TJBuild.JavaClass.MANUFACTURER), JStringToString(TJBuild.JavaClass.PRODUCT)]);
 end;
-{$ELSEIF DEFINED(IOS)}     
+{$ELSEIF DEFINED(IOS)}
 begin
   Result := '';
 end;
-{$ELSEIF DEFINED(LINUX)}   
+{$ELSEIF DEFINED(LINUX)}
 var
   LName: utsname;
 begin
   uname(LName);
   Result := string(AnsiString(LName.nodename));
 end;
-{$ELSEIF DEFINED(MSWINDOWS)}  
+{$ELSEIF DEFINED(MSWINDOWS)}
 var
   LBuffer: array [0 .. MAX_COMPUTERNAME_LENGTH + 1] of Char;
   LSize: cardinal;
@@ -346,7 +346,7 @@ begin
   else
     Result := EmptyStr;
 end;
-{$ELSE}     
+{$ELSE}
 begin
   Result := EmptyStr;
 end;

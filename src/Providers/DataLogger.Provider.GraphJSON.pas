@@ -13,6 +13,7 @@ unit DataLogger.Provider.GraphJSON;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_GRAPHJSON_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_GRAPHJSON_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_GRAPHJSON_USE_INDY)}
-  TProviderGraphJSON = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_GRAPHJSON_USE_NETHTTPCLIENT)}
-  TProviderGraphJSON = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderGraphJSON = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderGraphJSON = class(TDataLoggerProvider<TProviderGraphJSON>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_GRAPHJSON_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_GRAPHJSON_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiKey: string;
     FCollection: string;
   protected
@@ -43,7 +49,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -54,8 +61,16 @@ constructor TProviderGraphJSON.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   Collection('');
+end;
+
+destructor TProviderGraphJSON.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderGraphJSON.ApiKey(const AValue: string): TProviderGraphJSON;
@@ -151,7 +166,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

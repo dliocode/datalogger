@@ -12,6 +12,7 @@ unit DataLogger.Provider.Slack;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
-  TProviderSlack = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
-  TProviderSlack = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderSlack = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderSlack = class(TDataLoggerProvider<TProviderSlack>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -39,6 +45,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -49,14 +56,21 @@ constructor TProviderSlack.Create;
 begin
   inherited Create;
 
-  URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
+end;
+
+destructor TProviderSlack.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderSlack.URL(const AValue: string): TProviderSlack;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 procedure TProviderSlack.LoadFromJSON(const AJSON: string);
@@ -77,7 +91,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
 
     SetJSONInternal(LJO);
   finally
@@ -91,7 +105,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
 
     ToJSONInternal(LJO);
 
@@ -127,7 +141,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := inherited URL;
+      LLogItemREST.URL := FHTTP.URL;
     finally
       LJO.Free;
     end;
@@ -135,7 +149,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

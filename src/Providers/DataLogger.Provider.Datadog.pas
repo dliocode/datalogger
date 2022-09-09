@@ -12,6 +12,7 @@ unit DataLogger.Provider.Datadog;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_DATADOG_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_DATADOG_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_DATADOG_USE_INDY)}
-  TProviderDatadog = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_DATADOG_USE_NETHTTPCLIENT)}
-  TProviderDatadog = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderDatadog = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderDatadog = class(TDataLoggerProvider<TProviderDatadog>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_DATADOG_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_DATADOG_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiKey: string;
     FApplicationKey: string;
     FSource: string;
@@ -46,7 +52,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -56,25 +63,33 @@ implementation
 constructor TProviderDatadog.Create;
 begin
   inherited Create;
+  
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://http-intake.logs.datadoghq.com/api/v2/logs');
 
-  URL('https://http-intake.logs.datadoghq.com/api/v2/logs');
-  ContentType('application/json');
   Source('datalogger');
   Service('');
+end;
+
+destructor TProviderDatadog.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderDatadog.ApiKey(const AValue: string): TProviderDatadog;
 begin
   Result := Self;
   FApiKey := AValue;
-  AddHeader('DD-API-KEY', AValue);
+  FHTTP.AddHeader('DD-API-KEY', AValue);
 end;
 
 function TProviderDatadog.ApplicationKey(const AValue: string): TProviderDatadog;
 begin
   Result := Self;
   FApplicationKey := AValue;
-  AddHeader('DD-APPLICATION-KEY', AValue);
+  FHTTP.AddHeader('DD-APPLICATION-KEY', AValue);
 end;
 
 function TProviderDatadog.Source(const AValue: string): TProviderDatadog;
@@ -176,7 +191,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

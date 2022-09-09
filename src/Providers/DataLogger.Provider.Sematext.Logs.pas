@@ -13,6 +13,7 @@ unit DataLogger.Provider.Sematext.Logs;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_INDY)}
-  TProviderSematextLogs = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_NETHTTPCLIENT)}
-  TProviderSematextLogs = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderSematextLogs = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderSematextLogs = class(TDataLoggerProvider<TProviderSematextLogs>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_SEMATEXT_LOGS_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FAppToken: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -41,7 +47,9 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
+
   end;
 
 implementation
@@ -52,7 +60,14 @@ constructor TProviderSematextLogs.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+end;
+
+destructor TProviderSematextLogs.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderSematextLogs.AppToken(const AValue: string): TProviderSematextLogs;
@@ -129,7 +144,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

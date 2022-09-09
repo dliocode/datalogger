@@ -13,6 +13,7 @@ unit DataLogger.Provider.MongoDB.Cloud;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_INDY)}
-  TProviderMongoDBCloud = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_NETHTTPCLIENT)}
-  TProviderMongoDBCloud = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderMongoDBCloud = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderMongoDBCloud = class(TDataLoggerProvider<TProviderMongoDBCloud>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_MONGODB_CLOUD_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FAppServiceID: string;
     FDataSource: string;
     FDataBase: string;
@@ -48,7 +54,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -59,12 +66,19 @@ constructor TProviderMongoDBCloud.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
 
   AppServiceID('');
   DataSource('AtlasCluster');
   DataBase('db_datalogger');
   Collection('logger');
+end;
+
+destructor TProviderMongoDBCloud.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderMongoDBCloud.AppServiceID(const AValue: string): TProviderMongoDBCloud;
@@ -76,7 +90,7 @@ end;
 function TProviderMongoDBCloud.ApiKey(const AValue: string): TProviderMongoDBCloud;
 begin
   Result := Self;
-  AddHeader('api-key', AValue);
+  FHTTP.AddHeader('api-key', AValue);
 end;
 
 function TProviderMongoDBCloud.DataSource(const AValue: string): TProviderMongoDBCloud;
@@ -181,7 +195,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

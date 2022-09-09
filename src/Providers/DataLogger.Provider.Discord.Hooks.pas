@@ -12,6 +12,7 @@ unit DataLogger.Provider.Discord.Hooks;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_INDY)}
-  TProviderDiscordHooks = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_NETHTTPCLIENT)}
-  TProviderDiscordHooks = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderDiscordHooks = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderDiscordHooks = class(TDataLoggerProvider<TProviderDiscordHooks>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FUsername: string;
     FAvatarURL: string;
   protected
@@ -44,6 +50,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -54,16 +61,24 @@ constructor TProviderDiscordHooks.Create;
 begin
   inherited Create;
 
-  URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>');
+
   Username('DataLogger');
   AvatarURL('');
-  ContentType('application/json');
+end;
+
+destructor TProviderDiscordHooks.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderDiscordHooks.URL(const AValue: string): TProviderDiscordHooks;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderDiscordHooks.Username(const AValue: string): TProviderDiscordHooks;
@@ -96,7 +111,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     Username(LJO.GetValue<string>('username', FUsername));
     AvatarURL(LJO.GetValue<string>('avatar_url', FAvatarURL));
 
@@ -112,7 +127,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('username', FUsername);
     LJO.AddPair('avatar_url', FAvatarURL);
 
@@ -154,7 +169,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := inherited URL;
+      LLogItemREST.URL := FHTTP.URL;
     finally
       LJO.Free;
     end;
@@ -162,7 +177,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST, 250);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST, 250);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

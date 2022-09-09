@@ -12,6 +12,7 @@ unit DataLogger.Provider.Logflare;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_LOGFLARE_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_LOGFLARE_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_LOGFLARE_USE_INDY)}
-  TProviderLogflare = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_LOGFLARE_USE_NETHTTPCLIENT)}
-  TProviderLogflare = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderLogflare = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderLogflare = class(TDataLoggerProvider<TProviderLogflare>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_LOGFLARE_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_LOGFLARE_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FSourceKey: string;
     FApiKey: string;
   protected
@@ -42,7 +48,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,8 +60,15 @@ constructor TProviderLogflare.Create;
 begin
   inherited Create;
 
-  URL('https://api.logflare.app/api/logs');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://api.logflare.app/api/logs');
+end;
+
+destructor TProviderLogflare.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderLogflare.SourceKey(const AValue: string): TProviderLogflare;
@@ -66,8 +80,9 @@ end;
 function TProviderLogflare.ApiKey(const AValue: string): TProviderLogflare;
 begin
   Result := Self;
+
   FApiKey := AValue;
-  AddHeader('X-API-KEY', AValue);
+  FHTTP.AddHeader('X-API-KEY', AValue);
 end;
 
 procedure TProviderLogflare.LoadFromJSON(const AJSON: string);
@@ -150,7 +165,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

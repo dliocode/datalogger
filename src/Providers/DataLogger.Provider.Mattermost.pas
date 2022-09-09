@@ -12,6 +12,7 @@ unit DataLogger.Provider.Mattermost;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
-  TProviderMattermost = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
-  TProviderMattermost = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderMattermost = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderMattermost = class(TDataLoggerProvider<TProviderMattermost>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_MATTERMOST_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FChannelId: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -42,7 +48,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,15 +60,23 @@ constructor TProviderMattermost.Create;
 begin
   inherited Create;
 
-  URL('http://localhost');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('http://localhost');
+
   ChannelId('');
+end;
+
+destructor TProviderMattermost.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderMattermost.URL(const AValue: string): TProviderMattermost;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderMattermost.ChannelId(const AValue: string): TProviderMattermost;
@@ -73,7 +88,7 @@ end;
 function TProviderMattermost.BearerToken(const AValue: string): TProviderMattermost;
 begin
   Result := Self;
-  inherited BearerToken(AValue);
+  FHTTP.BearerToken(AValue);
 end;
 
 procedure TProviderMattermost.LoadFromJSON(const AJSON: string);
@@ -94,8 +109,8 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
-    BearerToken(LJO.GetValue<string>('token', inherited Token));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
+    BearerToken(LJO.GetValue<string>('token', FHTTP.Token));
     ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
 
     SetJSONInternal(LJO);
@@ -110,8 +125,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
-    LJO.AddPair('token', inherited Token);
+    LJO.AddPair('url', FHTTP.URL);
+    LJO.AddPair('token', FHTTP.Token);
     LJO.AddPair('channel_id', FChannelId);
 
     ToJSONInternal(LJO);
@@ -149,7 +164,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/v4/posts', [inherited URL.Trim(['/'])]);
+      LLogItemREST.URL := Format('%s/api/v4/posts', [FHTTP.URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -157,7 +172,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

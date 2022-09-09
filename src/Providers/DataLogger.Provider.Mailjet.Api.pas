@@ -14,6 +14,7 @@ unit DataLogger.Provider.Mailjet.Api;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_MAILJET_API_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_MAILJET_API_USE_NETHTTPCLIENT)}
@@ -21,18 +22,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_MAILJET_API_USE_INDY)}
-  TProviderMailjetApi = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_MAILJET_API_USE_NETHTTPCLIENT)}
-  TProviderMailjetApi = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderMailjetApi = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderMailjetApi = class(TDataLoggerProvider<TProviderMailjetApi>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_MAILJET_API_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_MAILJET_API_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
     FCustomID: string;
@@ -56,7 +62,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -67,13 +74,21 @@ constructor TProviderMailjetApi.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   CustomID('DataLogger');
   EmailFrom('', '');
   EmailTo([]);
   EmailCc([]);
   EmailBcc([]);
   Subject('DataLogger');
+end;
+
+destructor TProviderMailjetApi.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderMailjetApi.BasicAuth(const AUsername, APassword: string): TProviderMailjetApi;
@@ -83,7 +98,7 @@ begin
   FBasicAuthUsername := AUsername;
   FBasicAuthPassword := APassword;
 
-  inherited BasicAuth(AUsername, APassword);
+  FHTTP.BasicAuth(AUsername, APassword);
 end;
 
 function TProviderMailjetApi.CustomID(const AValue: string): TProviderMailjetApi;
@@ -246,7 +261,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

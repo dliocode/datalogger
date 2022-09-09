@@ -12,6 +12,7 @@ unit DataLogger.Provider.Twilio.SMS;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_TWILIO_SMS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_TWILIO_SMS_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_TWILIO_SMS_USE_INDY)}
-  TProviderTwilioSMS = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_TWILIO_SMS_USE_NETHTTPCLIENT)}
-  TProviderTwilioSMS = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderTwilioSMS = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderTwilioSMS = class(TDataLoggerProvider<TProviderTwilioSMS>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_TWILIO_SMS_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_TWILIO_SMS_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FAccountSID: string;
     FAuthToken: string;
     FMessagingServiceSID: string;
@@ -48,7 +54,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -59,9 +66,20 @@ constructor TProviderTwilioSMS.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
+  AccountSID('');
+  AuthToken('');
+  MessagingServiceSID('');
   PhoneFrom('');
   PhoneTo('');
+end;
+
+destructor TProviderTwilioSMS.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderTwilioSMS.AccountSID(const AValue: string): TProviderTwilioSMS;
@@ -114,6 +132,7 @@ begin
   try
     AccountSID(LJO.GetValue<string>('account_sid', FAccountSID));
     AuthToken(LJO.GetValue<string>('auth_token', FAuthToken));
+    MessagingServiceSID(LJO.GetValue<string>('messaging_service_sid', FMessagingServiceSID));
     PhoneFrom(LJO.GetValue<string>('phone_from', FPhoneFrom));
     PhoneTo(LJO.GetValue<string>('phone_to', FPhoneTo));
 
@@ -131,6 +150,7 @@ begin
   try
     LJO.AddPair('account_sid', FAccountSID);
     LJO.AddPair('auth_token', FAuthToken);
+    LJO.AddPair('messaging_service_sid', FMessagingServiceSID);
     LJO.AddPair('phone_from', FPhoneFrom);
     LJO.AddPair('phone_to', FPhoneTo);
 
@@ -154,7 +174,7 @@ begin
   if Length(ACache) = 0 then
     Exit;
 
-  BasicAuth(FAccountSID, FAuthToken);
+  FHTTP.BasicAuth(FAccountSID, FAuthToken);
 
   for LItem in ACache do
   begin
@@ -178,7 +198,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

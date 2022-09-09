@@ -13,6 +13,7 @@ unit DataLogger.Provider.Grafana.Loki;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_INDY)}
-  TProviderGrafanaLoki = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_NETHTTPCLIENT)}
-  TProviderGrafanaLoki = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderGrafanaLoki = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderGrafanaLoki = class(TDataLoggerProvider<TProviderGrafanaLoki>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_GRAFANA_LOKI_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FServiceName: string;
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
@@ -46,6 +52,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -56,25 +63,33 @@ constructor TProviderGrafanaLoki.Create;
 begin
   inherited Create;
 
-  URL('https://logs-prod3.grafana.net');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://logs-prod3.grafana.net');
+
   ServiceName('Log');
+end;
+
+destructor TProviderGrafanaLoki.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderGrafanaLoki.URL(const AValue: string): TProviderGrafanaLoki;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
-function TProviderGrafanaLoki.BasicAuth(const AUsername, APassword: string): TProviderGrafanaLoki;
+function TProviderGrafanaLoki.BasicAuth(const AUsername: string; const APassword: string): TProviderGrafanaLoki;
 begin
   Result := Self;
 
   FBasicAuthUsername := AUsername;
   FBasicAuthPassword := APassword;
 
-  inherited BasicAuth(AUsername, APassword);
+  FHTTP.BasicAuth(AUsername, APassword);
 end;
 
 function TProviderGrafanaLoki.ServiceName(const AValue: string): TProviderGrafanaLoki;
@@ -101,9 +116,9 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     BasicAuth(LJO.GetValue<string>('basic_auth_username', FBasicAuthUsername), LJO.GetValue<string>('basic_auth_password', FBasicAuthPassword));
-    ServiceName(LJO.GetValue<string>('label_id', FServiceName));
+    ServiceName(LJO.GetValue<string>('service_name', FServiceName));
 
     SetJSONInternal(LJO);
   finally
@@ -117,10 +132,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('basic_auth_username', FBasicAuthUsername);
     LJO.AddPair('basic_auth_password', FBasicAuthPassword);
-    LJO.AddPair('label_id', FServiceName);
+    LJO.AddPair('service_name', FServiceName);
 
     ToJSONInternal(LJO);
 
@@ -174,20 +189,12 @@ begin
         .AddPair('type', LItem.TypeString)
         );
 
-      LJOData.AddPair('values',
-        TJSONArray.Create
-        .Add(
-        TJSONArray.Create
-        .Add(LDateUNIX)
-        .Add(LLog)
-        )
-        );
-
+      LJOData.AddPair('values', TJSONArray.Create.Add(TJSONArray.Create.Add(LDateUNIX).Add(LLog)));
       LJO.AddPair('streams', TJSONArray.Create.Add(LJOData));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/loki/api/v1/push', [inherited URL.Trim(['/'])]);
+      LLogItemREST.URL := Format('%s/loki/api/v1/push', [FHTTP.URL.Trim(['/'])]);
     finally
       LJO.Free;
     end;
@@ -195,7 +202,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

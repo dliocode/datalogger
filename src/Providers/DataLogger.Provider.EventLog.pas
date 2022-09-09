@@ -161,7 +161,7 @@ begin
     LEventLogger.Free;
   end;
 end;
-{$ELSE}   
+{$ELSE}
 begin
 end;
 {$ENDIF}       

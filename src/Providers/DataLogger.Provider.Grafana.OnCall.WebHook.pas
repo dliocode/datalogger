@@ -13,6 +13,7 @@ unit DataLogger.Provider.Grafana.OnCall.WebHook;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_INDY)}
-  TProviderGrafanaOnCall = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_NETHTTPCLIENT)}
-  TProviderGrafanaOnCallWebHook = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderGrafanaOnCallWebHook = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderGrafanaOnCallWebHook = class(TDataLoggerProvider<TProviderGrafanaOnCallWebHook>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_GRAFANA_ONCALL_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -40,6 +46,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -50,14 +57,21 @@ constructor TProviderGrafanaOnCallWebHook.Create;
 begin
   inherited Create;
 
-  URL('https://a-prod-us-central-0.grafana.net/integrations/v1/webhook/xxxxxxxxxxxxxxxxxxx/');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://a-prod-us-central-0.grafana.net/integrations/v1/webhook/xxxxxxxxxxxxxxxxxxx/');
+end;
+
+destructor TProviderGrafanaOnCallWebHook.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderGrafanaOnCallWebHook.URL(const AValue: string): TProviderGrafanaOnCallWebHook;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 procedure TProviderGrafanaOnCallWebHook.LoadFromJSON(const AJSON: string);
@@ -78,7 +92,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
 
     SetJSONInternal(LJO);
   finally
@@ -92,7 +106,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
 
     ToJSONInternal(LJO);
 
@@ -123,12 +137,12 @@ begin
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := inherited URL;
+    LLogItemREST.URL := FHTTP.URL;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

@@ -13,6 +13,7 @@ unit DataLogger.Provider.Postmark.Api;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_POSTMARK_API_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_POSTMARK_API_USE_NETHTTPCLIENT)}
@@ -20,18 +21,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_POSTMARK_API_USE_INDY)}
-  TProviderPostmarkApi = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_POSTMARK_API_USE_NETHTTPCLIENT)}
-  TProviderPostmarkApi = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderPostmarkApi = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderPostmarkApi = class(TDataLoggerProvider<TProviderPostmarkApi>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_POSTMARK_API_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_POSTMARK_API_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FApiToken: string;
     FEmailFrom: string;
     FEmailTo: TArray<string>;
@@ -47,7 +53,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -58,17 +65,26 @@ constructor TProviderPostmarkApi.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   EmailFrom('');
   EmailTo([]);
   Subject('DataLogger');
 end;
 
+destructor TProviderPostmarkApi.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
+end;
+
 function TProviderPostmarkApi.ApiToken(const AValue: string): TProviderPostmarkApi;
 begin
   Result := Self;
+
   FApiToken := AValue;
-  inherited AddHeader('X-Postmark-Server-Token', AValue);
+  FHTTP.AddHeader('X-Postmark-Server-Token', AValue);
 end;
 
 function TProviderPostmarkApi.EmailFrom(const AValue: string): TProviderPostmarkApi;
@@ -178,7 +194,7 @@ begin
     end;
   end;
 
-  InternalSave(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

@@ -10,6 +10,7 @@ unit DataLogger.Provider.ElasticSearch;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_ELASTICSEARCH_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_ELASTICSEARCH_USE_NETHTTPCLIENT)}
@@ -17,18 +18,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_ELASTICSEARCH_USE_INDY)}
-  TProviderElasticSearch = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_ELASTICSEARCH_USE_NETHTTPCLIENT)}
-  TProviderElasticSearch = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderElasticSearch = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderElasticSearch = class(TDataLoggerProvider<TProviderElasticSearch>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_ELASTICSEARCH_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_ELASTICSEARCH_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
     FIndex: string;
@@ -43,6 +49,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,15 +60,23 @@ constructor TProviderElasticSearch.Create;
 begin
   inherited Create;
 
-  URL('https://localhost:9200');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://localhost:9200');
+
   Index('logger');
+end;
+
+destructor TProviderElasticSearch.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderElasticSearch.URL(const AValue: string): TProviderElasticSearch;
 begin
   Result := Self;
-  inherited URL(AValue);
+  FHTTP.URL(AValue);
 end;
 
 function TProviderElasticSearch.BasicAuth(const AUsername: string; const APassword: string): TProviderElasticSearch;
@@ -71,7 +86,7 @@ begin
   FBasicAuthUsername := AUsername;
   FBasicAuthPassword := APassword;
 
-  inherited BasicAuth(AUsername, APassword);
+  FHTTP.BasicAuth(AUsername, APassword);
 end;
 
 function TProviderElasticSearch.Index(const AValue: string): TProviderElasticSearch;
@@ -98,7 +113,7 @@ begin
     Exit;
 
   try
-    URL(LJO.GetValue<string>('url', inherited URL));
+    URL(LJO.GetValue<string>('url', FHTTP.URL));
     BasicAuth(LJO.GetValue<string>('basic_auth_username', FBasicAuthUsername), LJO.GetValue<string>('basic_auth_password', FBasicAuthPassword));
     Index(LJO.GetValue<string>('index', FIndex));
 
@@ -114,7 +129,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', inherited URL);
+    LJO.AddPair('url', FHTTP.URL);
     LJO.AddPair('basic_auth_username', FBasicAuthUsername);
     LJO.AddPair('basic_auth_password', FBasicAuthPassword);
     LJO.AddPair('index', FIndex);
@@ -145,12 +160,12 @@ begin
 
     LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, True);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('%s/%s/_doc', [inherited URL.Trim(['/']), FIndex.ToLower]);
+    LLogItemREST.URL := Format('%s/%s/_doc', [FHTTP.URL.Trim(['/']), FIndex.ToLower]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

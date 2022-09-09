@@ -12,6 +12,7 @@ unit DataLogger.Provider.SendGrid.WebApi;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_NETHTTPCLIENT)}
@@ -19,18 +20,23 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON;
 
 type
-{$IF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_INDY)}
-  TProviderSendGridWebApi = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_NETHTTPCLIENT)}
-  TProviderSendGridWebApi = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderSendGridWebApi = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderSendGridWebApi = class(TDataLoggerProvider<TProviderSendGridWebApi>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+
+  private
+    FHTTP: TProviderHTTP;
     FEmailFrom: string;
     FEmailTo: TArray<string>;
     FSubject: string;
@@ -45,7 +51,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -56,17 +63,25 @@ constructor TProviderSendGridWebApi.Create;
 begin
   inherited Create;
 
-  URL('https://api.sendgrid.com/v3/mail/send');
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+  FHTTP.URL('https://api.sendgrid.com/v3/mail/send');
+
   EmailFrom('');
   EmailTo([]);
   Subject('DataLogger');
 end;
 
+destructor TProviderSendGridWebApi.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
+end;
+
 function TProviderSendGridWebApi.ApiKey(const AValue: string): TProviderSendGridWebApi;
 begin
   Result := Self;
-  inherited BearerToken(AValue);
+  FHTTP.BearerToken(AValue);
 end;
 
 function TProviderSendGridWebApi.EmailFrom(const AValue: string): TProviderSendGridWebApi;
@@ -105,7 +120,7 @@ begin
     Exit;
 
   try
-    ApiKey(LJO.GetValue<string>('api_key', inherited Token));
+    ApiKey(LJO.GetValue<string>('api_key', FHTTP.Token));
     EmailFrom(LJO.GetValue<string>('email_from', FEmailFrom));
     EmailTo(LJO.GetValue<string>('email_to', String.Join(',', FEmailTo)).Split([',']));
     Subject(LJO.GetValue<string>('subject', FSubject));
@@ -122,7 +137,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', inherited Token);
+    LJO.AddPair('api_key', FHTTP.Token);
     LJO.AddPair('email_from', FEmailFrom);
     LJO.AddPair('email_to', String.Join(',', FEmailTo));
     LJO.AddPair('subject', FSubject);
@@ -186,7 +201,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := inherited URL;
+      LLogItemREST.URL := FHTTP.URL;
     finally
       LJO.Free;
     end;
@@ -194,7 +209,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

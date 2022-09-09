@@ -13,6 +13,7 @@ unit DataLogger.Provider.Axiom;
 interface
 
 uses
+  DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_AXIOM_USE_INDY)}
   DataLogger.Provider.REST.Indy,
 {$ELSEIF DEFINED(DATALOGGER_AXIOM_USE_NETHTTPCLIENT)}
@@ -20,18 +21,22 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  DataLogger.Types,
   System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
-{$IF DEFINED(DATALOGGER_AXIOM_USE_INDY)}
-  TProviderAxiom = class(TProviderRESTIndy)
-{$ELSEIF DEFINED(DATALOGGER_AXIOM_USE_NETHTTPCLIENT)}
-  TProviderAxiom = class(TProviderRESTNetHTTPClient)
-{$ELSE}
-  TProviderAxiom = class(TProviderRESTHTTPClient)
-{$ENDIF}
+  TProviderAxiom = class(TDataLoggerProvider<TProviderAxiom>)
   private
+    type
+    TProviderHTTP = class(
+{$IF DEFINED(DATALOGGER_AXIOM_USE_INDY)}
+      TProviderRESTIndy
+{$ELSEIF DEFINED(DATALOGGER_AXIOM_USE_NETHTTPCLIENT)}
+      TProviderRESTNetHTTPClient
+{$ELSE}
+      TProviderRESTHTTPClient
+{$ENDIF});
+  private
+    FHTTP: TProviderHTTP;
     FDataset: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -42,7 +47,8 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -53,14 +59,22 @@ constructor TProviderAxiom.Create;
 begin
   inherited Create;
 
-  ContentType('application/json');
+  FHTTP := TProviderHTTP.Create;
+  FHTTP.ContentType('application/json');
+
   Dataset('');
+end;
+
+destructor TProviderAxiom.Destroy;
+begin
+  FHTTP.Free;
+  inherited;
 end;
 
 function TProviderAxiom.ApiToken(const AValue: string): TProviderAxiom;
 begin
   Result := Self;
-  inherited BearerToken(AValue);
+  FHTTP.BearerToken(AValue);
 end;
 
 function TProviderAxiom.Dataset(const AValue: string): TProviderAxiom;
@@ -87,7 +101,7 @@ begin
     Exit;
 
   try
-    ApiToken(LJO.GetValue<string>('api_token', inherited Token));
+    ApiToken(LJO.GetValue<string>('api_token', FHTTP.Token));
     Dataset(LJO.GetValue<string>('dataset', FDataset));
 
     SetJSONInternal(LJO);
@@ -102,7 +116,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_token', inherited Token);
+    LJO.AddPair('api_token', FHTTP.Token);
     LJO.AddPair('dataset', FDataset);
 
     ToJSONInternal(LJO);
@@ -148,7 +162,7 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

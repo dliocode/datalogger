@@ -255,7 +255,7 @@ begin
     LLogItemREST.LogItem := LItem;
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
-  
+
   InternalSaveAsync(FMethod, LItemREST);
 end;
 
