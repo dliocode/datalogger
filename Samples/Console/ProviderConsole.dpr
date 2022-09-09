@@ -12,8 +12,16 @@ begin
   Logger.AddProvider(
     TProviderConsole.Create
 //    .UseColorInConsole(True)
-//    .UseColorOnlyInTypes(False)
-//    .ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Red)
+//    .UseColorOnlyInTypes(True)
+
+//    .ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Magenta)
+//    .ChangeColor(TLoggerType.Debug, TColor.Black, TColor.Cyan)
+//    .ChangeColor(TLoggerType.Info, TColor.Black, TColor.White)
+//    .ChangeColor(TLoggerType.Success, TColor.Black, TColor.Green)
+//    .ChangeColor(TLoggerType.Warn, TColor.Black, TColor.Yellow)
+//    .ChangeColor(TLoggerType.Error, TColor.Black, TColor.Red)
+//    .ChangeColor(TLoggerType.Fatal, TColor.Black, TColor.DarkRed)
+//    .ChangeColor(TLoggerType.Custom, TColor.Black, TColor.White)
     );
 
   // Log Format
@@ -27,8 +35,8 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('CUSTOM TYPE','My Custom')    
+    .CustomType('Custom Type','My Custom')    
     ;
+    
   Readln;
-
 end.
