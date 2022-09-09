@@ -43,11 +43,11 @@ type
   private
     FNotificationCenter: TNotificationCenter;
     FTitle: string;
-    FIncludeLogTypeInTitle: Boolean;
+    FIncludeLogLevelInTitle: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function Title(const AValue: string; const AIncludeLogTypeInTitle: Boolean = True): TProviderNotification;
+    function Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -69,7 +69,7 @@ begin
   Title('DataLogger - Notification');
 end;
 
-function TProviderNotification.Title(const AValue: string; const AIncludeLogTypeInTitle: Boolean = True): TProviderNotification;
+function TProviderNotification.Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
 begin
   Result := Self;
 
@@ -78,7 +78,7 @@ begin
   else
     FTitle := AValue;
 
-  FIncludeLogTypeInTitle := AIncludeLogTypeInTitle;
+  FIncludeLogLevelInTitle := AIncludeLogLevelInTitle;
 end;
 
 destructor TProviderNotification.Destroy;
@@ -106,7 +106,7 @@ begin
     Exit;
 
   try
-    Title(LJO.GetValue<string>('title', FTitle), LJO.GetValue<Boolean>('include_log_type_in_title', FIncludeLogTypeInTitle));
+    Title(LJO.GetValue<string>('title', FTitle), LJO.GetValue<Boolean>('include_log_level_in_title', FIncludeLogLevelInTitle));
 
     SetJSONInternal(LJO);
   finally
@@ -121,7 +121,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('title', FTitle);
-    LJO.AddPair('include_log_type_in_title', TJSONBool.Create(FIncludeLogTypeInTitle));
+    LJO.AddPair('include_log_level_in_title', TJSONBool.Create(FIncludeLogLevelInTitle));
 
     ToJSONInternal(LJO);
 
@@ -144,12 +144,12 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LName := FTitle;
-    if FIncludeLogTypeInTitle then
-      LName := LName + ' - ' + LItem.TypeString;
+    if FIncludeLogLevelInTitle then
+      LName := LName + ' - ' + LItem.LevelString;
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 

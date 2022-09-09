@@ -55,7 +55,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

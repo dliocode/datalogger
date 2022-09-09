@@ -72,13 +72,13 @@ function Fatal(const AMessage: string; const ATagName: string = ''): TDataLogger
 function Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
 function Fatal(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-function CustomType(const AType: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
-function CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
-function CustomType(const AType: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
+function Custom(const ALogLevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+function Custom(const ALogLevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+function Custom(const ALogLevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-function Log(const AType: TLoggerType; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
-function Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
-function Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
 function SlineBreak: TDataLogger;
 
@@ -211,34 +211,34 @@ begin
   Result := GetDataLogger.Fatal(AMessage, ATagName);
 end;
 
-function CustomType(const AType: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
+function Custom(const ALogLevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := GetDataLogger.CustomType(AType, AMessage, ATagName);
+  Result := GetDataLogger.Custom(ALogLevel, AMessage, ATagName);
 end;
 
-function CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
+function Custom(const ALogLevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := GetDataLogger.CustomType(AType, AMessage, AArgs, ATagName);
+  Result := GetDataLogger.Custom(ALogLevel, AMessage, AArgs, ATagName);
 end;
 
-function CustomType(const AType: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
+function Custom(const ALogLevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := GetDataLogger.CustomType(AType, AMessage, ATagName);
+  Result := GetDataLogger.Custom(ALogLevel, AMessage, ATagName);
 end;
 
-function Log(const AType: TLoggerType; const AMessage: string; const ATagName: string = ''): TDataLogger;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := GetDataLogger.Log(AType, AMessage, ATagName);
+  Result := GetDataLogger.Log(ALogLevel, AMessage, ATagName);
 end;
 
-function Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := GetDataLogger.Log(AType, AMessage, AArgs, ATagName);
+  Result := GetDataLogger.Log(ALogLevel, AMessage, AArgs, ATagName);
 end;
 
-function Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
+function Log(const ALogLevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := GetDataLogger.Log(AType, AMessage, ATagName);
+  Result := GetDataLogger.Log(ALogLevel, AMessage, ATagName);
 end;
 
 function SlineBreak: TDataLogger;

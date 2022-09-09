@@ -84,11 +84,7 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
-    constructor Create(
-      const ALogDir: string; const APrefixFileName: string = ''; const AExtension: string = '.txt';
-      const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd'); overload; deprecated 'Use TProviderTextFile.Create.LogDir(''.'').PrefixFileName(''.'').Extension(''log'') - This function will be removed in future versions';
-
+    constructor Create; 
     destructor Destroy; override;
   end;
 
@@ -114,19 +110,6 @@ begin
 
   FWriter := nil;
   FRotateInternal := 0;
-end;
-
-constructor TProviderTextFile.Create(
-  const ALogDir: string; const APrefixFileName: string = ''; const AExtension: string = '.txt';
-  const ACleanOnStart: Boolean = False; const AFormatDateTime: string = 'yyyy-mm-dd');
-begin
-  Create;
-
-  LogDir(ALogDir);
-  PrefixFileName(APrefixFileName);
-  Extension(AExtension);
-  CleanOnStart(ACleanOnStart);
-  FormatDateTime(AFormatDateTime);
 end;
 
 destructor TProviderTextFile.Destroy;
@@ -304,7 +287,7 @@ begin
   try
     for LItem in ACache do
     begin
-      if LItem.InternalItem.TypeSlineBreak then
+      if LItem.InternalItem.LevelSlineBreak then
         LLog := ''
       else
         LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);

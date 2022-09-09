@@ -61,7 +61,7 @@ type
     end;
   private
     FUseColorInConsole: Boolean;
-    FUseColorOnlyInTypes: Boolean;
+    FUseColorOnlyInLevels: Boolean;
     FColorTrace: TColorConsole;
     FColorDebug: TColorConsole;
     FColorInfo: TColorConsole;
@@ -70,13 +70,13 @@ type
     FColorError: TColorConsole;
     FColorFatal: TColorConsole;
     FColorCustom: TColorConsole;
-    procedure WriteColor(const AType: TLoggerType; const ALog: string; const ASlinebreak: Boolean = True);
+    procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
-    function UseColorOnlyInTypes(const AValue: Boolean): TProviderConsole;
-    function ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
+    function UseColorOnlyInLevels(const AValue: Boolean): TProviderConsole;
+    function ChangeColor(const ALogLevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -93,16 +93,16 @@ begin
   inherited Create;
 
   UseColorInConsole(True);
-  UseColorOnlyInTypes(False);
+  UseColorOnlyInLevels(False);
 
-  ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Magenta);
-  ChangeColor(TLoggerType.Debug, TColor.Black, TColor.Cyan);
-  ChangeColor(TLoggerType.Info, TColor.Black, TColor.White);
-  ChangeColor(TLoggerType.Success, TColor.Black, TColor.Green);
-  ChangeColor(TLoggerType.Warn, TColor.Black, TColor.Yellow);
-  ChangeColor(TLoggerType.Error, TColor.Black, TColor.Red);
-  ChangeColor(TLoggerType.Fatal, TColor.Black, TColor.DarkRed);
-  ChangeColor(TLoggerType.Custom, TColor.Black, TColor.White);
+  ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta);
+  ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan);
+  ChangeColor(TLoggerLevel.Info, TColor.Black, TColor.White);
+  ChangeColor(TLoggerLevel.Success, TColor.Black, TColor.Green);
+  ChangeColor(TLoggerLevel.Warn, TColor.Black, TColor.Yellow);
+  ChangeColor(TLoggerLevel.Error, TColor.Black, TColor.Red);
+  ChangeColor(TLoggerLevel.Fatal, TColor.Black, TColor.DarkRed);
+  ChangeColor(TLoggerLevel.Custom, TColor.Black, TColor.White);
 end;
 
 function TProviderConsole.UseColorInConsole(const AValue: Boolean): TProviderConsole;
@@ -111,60 +111,60 @@ begin
   FUseColorInConsole := AValue;
 end;
 
-function TProviderConsole.UseColorOnlyInTypes(const AValue: Boolean): TProviderConsole;
+function TProviderConsole.UseColorOnlyInLevels(const AValue: Boolean): TProviderConsole;
 begin
   Result := Self;
-  FUseColorOnlyInTypes := AValue;
+  FUseColorOnlyInLevels := AValue;
 end;
 
-function TProviderConsole.ChangeColor(const ALogType: TLoggerType; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
+function TProviderConsole.ChangeColor(const ALogLevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 begin
   Result := Self;
 
-  case ALogType of
-    TLoggerType.Trace:
+  case ALogLevel of
+    TLoggerLevel.Trace:
       begin
         FColorTrace.Background := AColorBackground;
         FColorTrace.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Debug:
+    TLoggerLevel.Debug:
       begin
         FColorDebug.Background := AColorBackground;
         FColorDebug.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Info:
+    TLoggerLevel.Info:
       begin
         FColorInfo.Background := AColorBackground;
         FColorInfo.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Success:
+    TLoggerLevel.Success:
       begin
         FColorSuccess.Background := AColorBackground;
         FColorSuccess.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Warn:
+    TLoggerLevel.Warn:
       begin
         FColorWarn.Background := AColorBackground;
         FColorWarn.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Error:
+    TLoggerLevel.Error:
       begin
         FColorError.Background := AColorBackground;
         FColorError.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Fatal:
+    TLoggerLevel.Fatal:
       begin
         FColorFatal.Background := AColorBackground;
         FColorFatal.Foreground := AColorForeground;
       end;
 
-    TLoggerType.Custom:
+    TLoggerLevel.Custom:
       begin
         FColorCustom.Background := AColorBackground;
         FColorCustom.Foreground := AColorForeground;
@@ -191,7 +191,7 @@ begin
 
   try
     UseColorInConsole(LJO.GetValue<Boolean>('use_color_in_console', FUseColorInConsole));
-    UseColorOnlyInTypes(LJO.GetValue<Boolean>('use_color_only_in_types', FUseColorOnlyInTypes));
+    UseColorOnlyInLevels(LJO.GetValue<Boolean>('use_color_only_in_levels', FUseColorOnlyInLevels));
 
     SetJSONInternal(LJO);
   finally
@@ -206,7 +206,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColorInConsole));
-    LJO.AddPair('use_color_only_in_types', TJSONBool.Create(FUseColorOnlyInTypes));
+    LJO.AddPair('use_color_only_in_levels', TJSONBool.Create(FUseColorOnlyInLevels));
 
     ToJSONInternal(LJO);
 
@@ -232,7 +232,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
     begin
       Writeln;
       Continue;
@@ -246,9 +246,9 @@ begin
       try
         if FUseColorInConsole then
         begin
-          if FUseColorOnlyInTypes and FLogFormat.Contains(TLoggerFormat.LOG_TYPE) then
+          if FUseColorOnlyInLevels and FLogFormat.Contains(TLoggerFormat.LOG_LEVEL) then
           begin
-            LLogFormat := FLogFormat.Split([TLoggerFormat.LOG_TYPE]);
+            LLogFormat := FLogFormat.Split([TLoggerFormat.LOG_LEVEL]);
 
             for I := Low(LLogFormat) to High(LLogFormat) do
             begin
@@ -257,13 +257,13 @@ begin
               Write(LLog);
 
               if I = 0 then
-                WriteColor(LItem.&Type, LItem.TypeString, False);
+                WriteColor(LItem.Level, LItem.LevelString, False);
             end;
 
             Writeln;
           end
           else
-            WriteColor(LItem.&Type, LLog);
+            WriteColor(LItem.Level, LLog);
         end
         else
           Writeln(LLog);
@@ -292,37 +292,37 @@ begin
   end;
 end;
 
-procedure TProviderConsole.WriteColor(const AType: TLoggerType; const ALog: string; const ASlinebreak: Boolean = True);
+procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
   function _Color(const AColor: TColorConsole): SmallInt;
   begin
     Result := SmallInt(Integer(AColor.Background) shl 4) or Integer(AColor.Foreground);
   end;
 
-  function _ColorType: TColorConsole;
+  function _ColorLevel: TColorConsole;
   begin
-    case AType of
-      TLoggerType.Trace:
+    case ALevel of
+      TLoggerLevel.Trace:
         Result := FColorTrace;
 
-      TLoggerType.Debug:
+      TLoggerLevel.Debug:
         Result := FColorDebug;
 
-      TLoggerType.Info:
+      TLoggerLevel.Info:
         Result := FColorInfo;
 
-      TLoggerType.Success:
+      TLoggerLevel.Success:
         Result := FColorSuccess;
 
-      TLoggerType.Warn:
+      TLoggerLevel.Warn:
         Result := FColorWarn;
 
-      TLoggerType.Error:
+      TLoggerLevel.Error:
         Result := FColorError;
 
-      TLoggerType.Fatal:
+      TLoggerLevel.Fatal:
         Result := FColorFatal;
 
-      TLoggerType.Custom:
+      TLoggerLevel.Custom:
         Result := FColorCustom;
     else
       Result := FColorInfo;
@@ -337,7 +337,7 @@ begin
   LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
   GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
 
-  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _Color(_ColorType));
+  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _Color(_ColorLevel));
 
   if ASlinebreak then
     Writeln(ALog)
@@ -351,7 +351,7 @@ end;
 var
   LColor: Integer;
 begin
-  LColor := Integer(_ColorType.Foreground) + 30;
+  LColor := Integer(_ColorLevel.Foreground) + 30;
 
   if LColor > 37 then
     LColor := LColor - 8;

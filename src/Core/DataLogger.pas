@@ -40,9 +40,9 @@ uses
 
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
-  TLoggerType = DataLogger.Types.TLoggerType;
-  TLoggerTypes = DataLogger.Types.TLoggerTypes;
-  TLoggerTypeAutoCommit = DataLogger.Types.TLoggerTypeAutoCommit;
+  TLoggerLevel = DataLogger.Types.TLoggerLevel;
+  TLoggerLevels = DataLogger.Types.TLoggerLevels;
+  TLoggerTransactionTypeCommit = DataLogger.Types.TLoggerTransactionTypeCommit;
   TOnLogException = DataLogger.Types.TOnLogException;
 
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
@@ -54,9 +54,9 @@ type
     FEvent: TEvent;
     FListLoggerItem: TList<TLoggerItem>;
     FListProviders: TObjectList<TThread>;
-    FLogLevel: TLoggerType;
-    FDisableLogType: TLoggerTypes;
-    FOnlyLogType: TLoggerTypes;
+    FLogLevel: TLoggerLevel;
+    FDisableLogLevel: TLoggerLevels;
+    FOnlyLogLevel: TLoggerLevels;
     FSequence: UInt64;
     FName: string;
     FIsRequiredTagName: Boolean;
@@ -64,9 +64,9 @@ type
     constructor Create;
     procedure Start;
 
-    function AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustomType: string; const ATypeSlineBreak: Boolean): TDataLogger; overload;
-    function AddCache(const AType: TLoggerType; const AMessage: string; const ATagName: string): TDataLogger; overload;
-    function AddCache(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const ALevelSlineBreak: Boolean): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
     procedure SaveForced;
     procedure CloseProvider;
@@ -109,13 +109,13 @@ type
     function Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
     function Fatal(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function CustomType(const AType: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
-    function CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
-    function CustomType(const AType: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Log(const AType: TLoggerType; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
-    function Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
-    function Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
     function SlineBreak: TDataLogger;
 
@@ -126,9 +126,9 @@ type
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
-    function SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
-    function SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
-    function SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
+    function SetLogLevel(const ALogLevel: TLoggerLevel): TDataLogger;
+    function SetDisableLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
+    function SetOnlyLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
     function SetLogException(const AException: TOnLogException): TDataLogger;
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
     function SetInitialMessage(const AMessage: string): TDataLogger;
@@ -191,9 +191,9 @@ begin
   FListLoggerItem := TList<TLoggerItem>.Create;
   FListProviders := TObjectList<TThread>.Create(True);
 
-  SetLogLevel(TLoggerType.All);
-  SetDisableLogType([]);
-  SetOnlyLogType([TLoggerType.All]);
+  SetLogLevel(TLoggerLevel.All);
+  SetDisableLogLevel([]);
+  SetOnlyLogLevel([TLoggerLevel.All]);
   SetName('');
   SetIsRequiredTagName(False);
 
@@ -204,7 +204,7 @@ end;
 
 procedure TDataLogger.BeforeDestruction;
 begin
-  SetDisableLogType([TLoggerType.All]);
+  SetDisableLogLevel([TLoggerLevel.All]);
 
   Terminate;
   FEvent.SetEvent;
@@ -304,142 +304,142 @@ end;
 
 function TDataLogger.Trace(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Trace, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName);
 end;
 
 function TDataLogger.Trace(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Trace, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Trace, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Trace(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Trace, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName);
 end;
 
 function TDataLogger.Debug(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Debug, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName);
 end;
 
 function TDataLogger.Debug(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Debug, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Debug, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Debug(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Debug, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName);
 end;
 
 function TDataLogger.Info(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Info, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName);
 end;
 
 function TDataLogger.Info(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Info, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Info, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Info(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Info, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName);
 end;
 
 function TDataLogger.Success(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Success, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName);
 end;
 
 function TDataLogger.Success(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Success, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Success, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Success(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Success, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName);
 end;
 
 function TDataLogger.Warn(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Warn, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName);
 end;
 
 function TDataLogger.Warn(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Warn, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Warn, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Warn(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Warn, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName);
 end;
 
 function TDataLogger.Error(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Error, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName);
 end;
 
 function TDataLogger.Error(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Error, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Error, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Error(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Error, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName);
 end;
 
 function TDataLogger.Fatal(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Fatal, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName);
 end;
 
 function TDataLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Fatal, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(TLoggerLevel.Fatal, Format(AMessage, AArgs), ATagName);
 end;
 
 function TDataLogger.Fatal(const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Fatal, AMessage, ATagName);
+  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName);
 end;
 
-function TDataLogger.CustomType(const AType: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, AMessage, '', ATagName, AType, False);
+  Result := AddCache(TLoggerLevel.Custom, AMessage, '', ATagName, ALevel, False);
 end;
 
-function TDataLogger.CustomType(const AType: string; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, Format(AMessage, AArgs), '', ATagName, AType, False);
+  Result := AddCache(TLoggerLevel.Custom, Format(AMessage, AArgs), '', ATagName, ALevel, False);
 end;
 
-function TDataLogger.CustomType(const AType: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerType.Custom, '', AMessage.ToString, ATagName, AType, False);
+  Result := AddCache(TLoggerLevel.Custom, '', AMessage.ToString, ATagName, ALevel, False);
 end;
 
-function TDataLogger.Log(const AType: TLoggerType; const AMessage: string; const ATagName: string = ''): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(AType, AMessage, ATagName);
+  Result := AddCache(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.Log(const AType: TLoggerType; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(AType, Format(AMessage, AArgs), ATagName);
+  Result := AddCache(ALevel, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Log(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(AType, AMessage, ATagName);
+  Result := AddCache(ALevel, AMessage, ATagName);
 end;
 
 function TDataLogger.SlineBreak: TDataLogger;
 begin
-  Result := AddCache(TLoggerType.All, '', '', '', '', True);
+  Result := AddCache(TLoggerLevel.All, '', '', '', '', True);
 end;
 
 function TDataLogger.StartTransaction: TDataLogger;
@@ -542,7 +542,7 @@ begin
     TDataLoggerProvider<TObject>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
 end;
 
-function TDataLogger.SetLogLevel(const ALogLevel: TLoggerType): TDataLogger;
+function TDataLogger.SetLogLevel(const ALogLevel: TLoggerLevel): TDataLogger;
 begin
   Result := Self;
 
@@ -554,25 +554,25 @@ begin
   end;
 end;
 
-function TDataLogger.SetDisableLogType(const ALogType: TLoggerTypes): TDataLogger;
+function TDataLogger.SetDisableLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FDisableLogType := ALogType;
+    FDisableLogLevel := ALogLevels;
   finally
     UnLock;
   end;
 end;
 
-function TDataLogger.SetOnlyLogType(const ALogType: TLoggerTypes): TDataLogger;
+function TDataLogger.SetOnlyLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FOnlyLogType := ALogType;
+    FOnlyLogLevel := ALogLevels;
   finally
     UnLock;
   end;
@@ -831,7 +831,7 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustomType: string; const ATypeSlineBreak: Boolean): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const ALevelSlineBreak: Boolean): TDataLogger;
 var
   LLogItem: TLoggerItem;
 begin
@@ -840,25 +840,25 @@ begin
   if Terminated then
     Exit;
 
-  if FIsRequiredTagName and not(AType = TLoggerType.All) then
+  if FIsRequiredTagName and not(ALevel = TLoggerLevel.All) then
     if ATagName.Trim.IsEmpty then
-      raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is empty!', [AType.ToString]);
+      raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is empty!', [ALevel.ToString]);
 
   Lock;
   try
-    if not ATypeSlineBreak then
+    if not ALevelSlineBreak then
     begin
-      if (TLoggerType.All in FDisableLogType) or (AType in FDisableLogType) then
+      if (TLoggerLevel.All in FDisableLogLevel) or (ALevel in FDisableLogLevel) then
         Exit;
 
-      if not(TLoggerType.All in FOnlyLogType) and not(AType in FOnlyLogType) then
+      if not(TLoggerLevel.All in FOnlyLogLevel) and not(ALevel in FOnlyLogLevel) then
         Exit;
 
-      if not(AType in FOnlyLogType) then
-        if Ord(FLogLevel) > Ord(AType) then
+      if not(ALevel in FOnlyLogLevel) then
+        if Ord(FLogLevel) > Ord(ALevel) then
           Exit;
 
-      if not(AType = TLoggerType.All) then
+      if not(ALevel = TLoggerLevel.All) then
       begin
         if FSequence = 18446744073709551615 then
           FSequence := 0;
@@ -872,13 +872,13 @@ begin
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
     LLogItem.ThreadID := TThread.Current.ThreadID;
-    LLogItem.&Type := AType;
+    LLogItem.Level := ALevel;
 
-    LLogItem.TypeString := ACustomType;
-    if LLogItem.TypeString.Trim.IsEmpty then
-      LLogItem.TypeString := AType.ToString;
+    LLogItem.LevelString := ACustom;
+    if LLogItem.LevelString.Trim.IsEmpty then
+      LLogItem.LevelString := ALevel.ToString;
 
-    LLogItem.TypeLevel := Ord(AType);
+    LLogItem.LevelValue := Ord(ALevel);
 
     LLogItem.Tag := ATagName;
     LLogItem.Message := AMessageString;
@@ -895,7 +895,7 @@ begin
     LLogItem.ProcessID := TLoggerUtils.ProcessID;
     LLogItem.IPLocal := TLoggerUtils.IPLocal;
 
-    LLogItem.InternalItem.TypeSlineBreak := ATypeSlineBreak;
+    LLogItem.InternalItem.LevelSlineBreak := ALevelSlineBreak;
     LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
     FListLoggerItem.Add(LLogItem);
@@ -905,14 +905,14 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: string; const ATagName: string): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(AType, AMessage, '', ATagName, '', False);
+  Result := AddCache(ALevel, AMessage, '', ATagName, '', False);
 end;
 
-function TDataLogger.AddCache(const AType: TLoggerType; const AMessage: TJSONObject; const ATagName: string): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string): TDataLogger;
 begin
-  Result := AddCache(AType, '', AMessage.ToString, ATagName, '', False);
+  Result := AddCache(ALevel, '', AMessage.ToString, ATagName, '', False);
 end;
 
 function TDataLogger.ExtractCache: TArray<TLoggerItem>;

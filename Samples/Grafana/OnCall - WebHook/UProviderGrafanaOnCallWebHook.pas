@@ -45,7 +45,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('Custom Type','My Custom')    
+    .Custom('Custom Level','My Custom')    
     ;
 end;
 

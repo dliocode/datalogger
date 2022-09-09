@@ -25,7 +25,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_TYPE + ']: ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
 
   Logger
     .Trace('My trace')
@@ -35,7 +35,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('Custom Type','My Custom')    
+    .Custom('Custom Level','My Custom')    
     ;
     
   Readln;

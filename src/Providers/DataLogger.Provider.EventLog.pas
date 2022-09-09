@@ -137,19 +137,19 @@ begin
   try
     for LItem in ACache do
     begin
-      if LItem.InternalItem.TypeSlineBreak then
+      if LItem.InternalItem.LevelSlineBreak then
         Continue;
 
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
 
-      case LItem.&Type of
-        TLoggerType.Info:
+      case LItem.Level of
+        TLoggerLevel.Info:
           LEventType := EVENTLOG_INFORMATION_TYPE;
-        TLoggerType.Warn:
+        TLoggerLevel.Warn:
           LEventType := EVENTLOG_WARNING_TYPE;
-        TLoggerType.Error:
+        TLoggerLevel.Error:
           LEventType := EVENTLOG_ERROR_TYPE;
-        TLoggerType.Success:
+        TLoggerLevel.Success:
           LEventType := EVENTLOG_SUCCESS;
       else
         LEventType := EVENTLOG_INFORMATION_TYPE;

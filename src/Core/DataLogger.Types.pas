@@ -42,22 +42,21 @@ type
   EDataLoggerException = class(Exception)
   end;
 
-{$SCOPEDENUMS ON}
+{$SCOPEDENUMS ON}                   
+  TLoggerLevel = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
+  TLoggerLevels = set of TLoggerLevel;  
 
-  TLoggerType = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
-  TLoggerTypes = set of TLoggerType;
-
-  TLoggerTypeAutoCommit = (tcAll, tcBlock);
+  TLoggerTransactionTypeCommit = (tcAll, tcBlock);
 {$SCOPEDENUMS OFF}
 
-  TLoggerTypeHelper = record helper for TLoggerType
+  TLoggerLevelHelper = record helper for TLoggerLevel
   public
     procedure SetName(const AName: string);
     function ToString: string;
   end;
 
   TLoggerInternalItem = record
-    TypeSlineBreak: Boolean;
+    LevelSlineBreak: Boolean;
     TransactionID: string;
   end;
 
@@ -66,9 +65,9 @@ type
     Sequence: Int64;
     TimeStamp: TDateTime;
     ThreadID: Int64;
-    &Type: TLoggerType;
-    TypeString: string;
-    TypeLevel: Integer;
+    Level: TLoggerLevel;
+    LevelString: string;
+    LevelValue: Integer;
     Tag: string;
     Message: string;
     MessageJSON: string;
@@ -107,8 +106,8 @@ type
     LOG_TIMESTAMP = '${timestamp}';
     LOG_THREADID = '${thread_id}';
     LOG_PROCESSID = '${process_id}';
-    LOG_TYPE = '${type}';
-    LOG_TYPE_LEVEL = '${type_level}';
+    LOG_LEVEL = '${level}';
+    LOG_LEVEL_VALUE = '${level_value}';
     LOG_TAG = '${tag}';
     LOG_MESSAGE = '${message}';
 
@@ -122,21 +121,21 @@ type
     LOG_OSVERSION = '${os_version}';
     LOG_IP_LOCAL = '${ip_local}';
 
-    DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_TYPE + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+    DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
   end;
 
 implementation
 
-{ TLoggerTypeHelper }
+{ TLoggerLevelHelper }
 
-procedure TLoggerTypeHelper.SetName(const AName: string);
+procedure TLoggerLevelHelper.SetName(const AName: string);
 begin
-  Self := TLoggerType(GetEnumValue(TypeInfo(TLoggerType), AName));
+  Self := TLoggerLevel(GetEnumValue(TypeInfo(TLoggerLevel), AName));
 end;
 
-function TLoggerTypeHelper.ToString: string;
+function TLoggerLevelHelper.ToString: string;
 begin
-  Result := GetEnumName(TypeInfo(TLoggerType), Integer(Self));
+  Result := GetEnumName(TypeInfo(TLoggerLevel), Integer(Self));
 end;
 
 { TLoggerLogFormat }
@@ -162,8 +161,8 @@ begin
   _Add(TLoggerFormat.LOG_NAME, 'log_name', TJSONString.Create(AItem.Name));
   _Add(TLoggerFormat.LOG_SEQUENCE, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
   _Add(TLoggerFormat.LOG_THREADID, 'log_thread_id', TJSONNumber.Create(AItem.ThreadID));
-  _Add(TLoggerFormat.LOG_TYPE, 'log_type', TJSONString.Create(AItem.TypeString));
-  _Add(TLoggerFormat.LOG_TYPE_LEVEL, 'log_type_level', TJSONNumber.Create(AItem.TypeLevel));
+  _Add(TLoggerFormat.LOG_LEVEL, 'log_level', TJSONString.Create(AItem.LevelString));
+  _Add(TLoggerFormat.LOG_LEVEL_VALUE, 'log_level_value', TJSONNumber.Create(AItem.LevelValue));
   _Add(TLoggerFormat.LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
 
   if not AItem.MessageJSON.Trim.IsEmpty then
@@ -241,8 +240,8 @@ begin
   LLog := _Add(TLoggerFormat.LOG_SEQUENCE, IntToStr(AItem.Sequence));
   LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatTimestamp, AItem.TimeStamp));
   LLog := _Add(TLoggerFormat.LOG_THREADID, IntToStr(AItem.ThreadID));
-  LLog := _Add(TLoggerFormat.LOG_TYPE, AItem.TypeString);
-  LLog := _Add(TLoggerFormat.LOG_TYPE_LEVEL, IntToStr(AItem.TypeLevel));
+  LLog := _Add(TLoggerFormat.LOG_LEVEL, AItem.LevelString);
+  LLog := _Add(TLoggerFormat.LOG_LEVEL_VALUE, IntToStr(AItem.LevelValue));
   LLog := _Add(TLoggerFormat.LOG_TAG, AItem.Tag.Trim);
 
   if not AItem.MessageJSON.Trim.IsEmpty then

@@ -156,14 +156,14 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('http://listener.logz.io:8070?token=%s&type=%s', [FToken, LItem.TypeString]);
+    LLogItemREST.URL := Format('http://listener.logz.io:8070?token=%sLevel=%s', [FToken, LItem.LevelString]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

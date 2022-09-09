@@ -67,7 +67,7 @@ type
   public
     function RichEdit(const AValue: TCustomRichEdit): TProviderRichEdit;
     function UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
-    function ChangeColor(const ALogType: TLoggerType; const AColor: TColor): TProviderRichEdit;
+    function ChangeColor(const ALogLevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
     function MaxLogLines(const AValue: Integer): TProviderRichEdit;
     function ModeInsert(const AValue: TRichEditModeInsert): TProviderRichEdit;
     function CleanOnStart(const AValue: Boolean): TProviderRichEdit;
@@ -92,14 +92,14 @@ begin
   RichEdit(nil);
   UseColorInRichEdit(True);
 
-  ChangeColor(TLoggerType.Trace, $00A100AD);
-  ChangeColor(TLoggerType.Debug, $00AEB600);
-  ChangeColor(TLoggerType.Info, $000000);
-  ChangeColor(TLoggerType.Success, $0009AC00);
-  ChangeColor(TLoggerType.Warn, $0000A4D8);
-  ChangeColor(TLoggerType.Error, $001D2AAA);
-  ChangeColor(TLoggerType.Fatal, $001C0FD1);
-  ChangeColor(TLoggerType.Custom, $000000);
+  ChangeColor(TLoggerLevel.Trace, $00A100AD);
+  ChangeColor(TLoggerLevel.Debug, $00AEB600);
+  ChangeColor(TLoggerLevel.Info, $000000);
+  ChangeColor(TLoggerLevel.Success, $0009AC00);
+  ChangeColor(TLoggerLevel.Warn, $0000A4D8);
+  ChangeColor(TLoggerLevel.Error, $001D2AAA);
+  ChangeColor(TLoggerLevel.Fatal, $001C0FD1);
+  ChangeColor(TLoggerLevel.Custom, $000000);
 
   MaxLogLines(0);
   ModeInsert(TRichEditModeInsert.tmLast);
@@ -119,33 +119,33 @@ begin
   FUseColorInRichEdit := AValue;
 end;
 
-function TProviderRichEdit.ChangeColor(const ALogType: TLoggerType; const AColor: TColor): TProviderRichEdit;
+function TProviderRichEdit.ChangeColor(const ALogLevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
 begin
   Result := Self;
 
-  case ALogType of
-    TLoggerType.Trace:
+  case ALogLevel of
+    TLoggerLevel.Trace:
       FColorTrace := AColor;
 
-    TLoggerType.Debug:
+    TLoggerLevel.Debug:
       FColorDebug := AColor;
 
-    TLoggerType.Info:
+    TLoggerLevel.Info:
       FColorInfo := AColor;
 
-    TLoggerType.Success:
+    TLoggerLevel.Success:
       FColorSuccess := AColor;
 
-    TLoggerType.Warn:
+    TLoggerLevel.Warn:
       FColorWarn := AColor;
 
-    TLoggerType.Error:
+    TLoggerLevel.Error:
       FColorError := AColor;
 
-    TLoggerType.Fatal:
+    TLoggerLevel.Fatal:
       FColorFatal := AColor;
 
-    TLoggerType.Custom:
+    TLoggerLevel.Custom:
       FColorCustom := AColor;
   end;
 end;
@@ -188,14 +188,14 @@ begin
 
   try
     UseColorInRichEdit(LJO.GetValue<Boolean>('use_color_in_richedit', FUseColorInRichEdit));
-    ChangeColor(TLoggerType.Trace, StringToColor(LJO.GetValue<string>('change_color_trace', ColorToString(FColorTrace))));
-    ChangeColor(TLoggerType.Debug, StringToColor(LJO.GetValue<string>('change_color_debug', ColorToString(FColorDebug))));
-    ChangeColor(TLoggerType.Info, StringToColor(LJO.GetValue<string>('change_color_info', ColorToString(FColorInfo))));
-    ChangeColor(TLoggerType.Success, StringToColor(LJO.GetValue<string>('change_color_success', ColorToString(FColorSuccess))));
-    ChangeColor(TLoggerType.Warn, StringToColor(LJO.GetValue<string>('change_color_warn', ColorToString(FColorWarn))));
-    ChangeColor(TLoggerType.Error, StringToColor(LJO.GetValue<string>('change_color_error', ColorToString(FColorError))));
-    ChangeColor(TLoggerType.Fatal, StringToColor(LJO.GetValue<string>('change_color_fatal', ColorToString(FColorFatal))));
-    ChangeColor(TLoggerType.Custom, StringToColor(LJO.GetValue<string>('change_color_custom', ColorToString(FColorCustom))));
+    ChangeColor(TLoggerLevel.Trace, StringToColor(LJO.GetValue<string>('change_color_trace', ColorToString(FColorTrace))));
+    ChangeColor(TLoggerLevel.Debug, StringToColor(LJO.GetValue<string>('change_color_debug', ColorToString(FColorDebug))));
+    ChangeColor(TLoggerLevel.Info, StringToColor(LJO.GetValue<string>('change_color_info', ColorToString(FColorInfo))));
+    ChangeColor(TLoggerLevel.Success, StringToColor(LJO.GetValue<string>('change_color_success', ColorToString(FColorSuccess))));
+    ChangeColor(TLoggerLevel.Warn, StringToColor(LJO.GetValue<string>('change_color_warn', ColorToString(FColorWarn))));
+    ChangeColor(TLoggerLevel.Error, StringToColor(LJO.GetValue<string>('change_color_error', ColorToString(FColorError))));
+    ChangeColor(TLoggerLevel.Fatal, StringToColor(LJO.GetValue<string>('change_color_fatal', ColorToString(FColorFatal))));
+    ChangeColor(TLoggerLevel.Custom, StringToColor(LJO.GetValue<string>('change_color_custom', ColorToString(FColorCustom))));
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
 
     LValue := GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert));
@@ -261,7 +261,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       LLog := ''
     else
       LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
@@ -279,29 +279,29 @@ begin
       end);
 
     if FUseColorInRichEdit then
-      case LItem.&Type of
-        TLoggerType.Trace:
+      case LItem.Level of
+        TLoggerLevel.Trace:
           LColor := FColorTrace;
 
-        TLoggerType.Debug:
+        TLoggerLevel.Debug:
           LColor := FColorDebug;
 
-        TLoggerType.Info:
+        TLoggerLevel.Info:
           LColor := FColorInfo;
 
-        TLoggerType.Success:
+        TLoggerLevel.Success:
           LColor := FColorSuccess;
 
-        TLoggerType.Warn:
+        TLoggerLevel.Warn:
           LColor := FColorWarn;
 
-        TLoggerType.Error:
+        TLoggerLevel.Error:
           LColor := FColorError;
 
-        TLoggerType.Fatal:
+        TLoggerLevel.Fatal:
           LColor := FColorFatal;
 
-        TLoggerType.Custom:
+        TLoggerLevel.Custom:
           LColor := FColorCustom;
       end;
 

@@ -84,7 +84,6 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create; overload;
-    constructor Create(const AConfig: TEventsConfig); overload; deprecated 'Use TProviderEvents.Create.Config(TEventsConfig.Create.OnAny(TExecuteEvents)) - This function will be removed in future versions';
     destructor Destroy; override;
   end;
 
@@ -97,13 +96,6 @@ begin
   inherited Create;
 
   Config(nil);
-end;
-
-constructor TProviderEvents.Create(const AConfig: TEventsConfig);
-begin
-  Create;
-
-  Config(AConfig);
 end;
 
 destructor TProviderEvents.Destroy;
@@ -177,29 +169,29 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LRetriesCount := 0;
 
     while True do
       try
-        case LItem.&Type of
-          TLoggerType.Trace:
+        case LItem.Level of
+          TLoggerLevel.Trace:
             _Execute(FConfig.FOnTrace, LItem);
-          TLoggerType.Debug:
+          TLoggerLevel.Debug:
             _Execute(FConfig.FOnDebug, LItem);
-          TLoggerType.Info:
+          TLoggerLevel.Info:
             _Execute(FConfig.FOnInfo, LItem);
-          TLoggerType.Warn:
+          TLoggerLevel.Warn:
             _Execute(FConfig.FOnWarn, LItem);
-          TLoggerType.Error:
+          TLoggerLevel.Error:
             _Execute(FConfig.FOnError, LItem);
-          TLoggerType.Success:
+          TLoggerLevel.Success:
             _Execute(FConfig.FOnSuccess, LItem);
-          TLoggerType.Fatal:
+          TLoggerLevel.Fatal:
             _Execute(FConfig.FOnFatal, LItem);
-          TLoggerType.Custom:
+          TLoggerLevel.Custom:
             _Execute(FConfig.FOnCustom, LItem);
         end;
 

@@ -198,7 +198,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
@@ -211,7 +211,7 @@ begin
       LJOData.AddPair('stream',
         TJSONObject.Create
         .AddPair('service', FServiceName)
-        .AddPair('type', LItem.TypeString)
+        .AddPair('type', LItem.LevelString)
         );
 
       LJOData.AddPair('values', TJSONArray.Create.Add(TJSONArray.Create.Add(LDateUNIX).Add(LLog)));

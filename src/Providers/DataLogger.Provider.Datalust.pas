@@ -167,7 +167,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LJO := TJSONObject.Create;
@@ -175,7 +175,7 @@ begin
       LJOEvents := TJSONObject.Create;
       LJOEvents
         .AddPair('Timestamp', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)))
-        .AddPair('Level', LItem.TypeString)
+        .AddPair('Level', LItem.LevelString)
         .AddPair('Properties', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
 
       if not LItem.Message.Trim.IsEmpty then

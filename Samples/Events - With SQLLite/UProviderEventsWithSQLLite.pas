@@ -70,7 +70,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('Custom Type','My Custom')    
+    .Custom('Custom Level','My Custom')    
     ;
 end;
 
@@ -103,7 +103,7 @@ begin
             FDQueryOnAnySeq.AsLargeInt := LItem.Sequence;
             FDQueryOnAnyTimestamp.AsDateTime := LItem.TimeStamp;
             FDQueryOnAnyMessage.AsString := LItem.Message;
-            FDQueryOnAnyType.AsInteger := Integer(LItem.&Type);
+            FDQueryOnAnyType.AsInteger := LItem.LevelValue;
             FDQueryOnAny.Post;
           end)
         end)

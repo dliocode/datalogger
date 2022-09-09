@@ -144,7 +144,7 @@ begin
 
   for LItem in LCache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
@@ -157,29 +157,29 @@ begin
       LSysLogMessage.Msg.Process := LItem.ProcessId;
       LSysLogMessage.Msg.PID := LItem.ProcessId.ToInteger;
 
-      case LItem.&Type of
-        TLoggerType.Trace:
+      case LItem.Level of
+        TLoggerLevel.Trace:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
 
-        TLoggerType.Debug:
+        TLoggerLevel.Debug:
           LSysLogMessage.Severity := TIdSyslogSeverity.slDebug;
 
-        TLoggerType.Info:
+        TLoggerLevel.Info:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
 
-        TLoggerType.Warn:
+        TLoggerLevel.Warn:
           LSysLogMessage.Severity := TIdSyslogSeverity.slWarning;
 
-        TLoggerType.Error:
+        TLoggerLevel.Error:
           LSysLogMessage.Severity := TIdSyslogSeverity.slError;
 
-        TLoggerType.Success:
+        TLoggerLevel.Success:
           LSysLogMessage.Severity := TIdSyslogSeverity.slNotice;
 
-        TLoggerType.Fatal:
+        TLoggerLevel.Fatal:
           LSysLogMessage.Severity := TIdSyslogSeverity.slCritical;
 
-        TLoggerType.Custom:
+        TLoggerLevel.Custom:
           LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
       end;
 

@@ -78,11 +78,10 @@ object Form2: TForm2
     object Label1: TLabel
       Left = 1
       Top = 1
-      Width = 622
+      Width = 37
       Height = 15
       Align = alTop
       Caption = 'OnAny'
-      ExplicitWidth = 37
     end
     object DBGridOnAny: TDBGrid
       Left = 1

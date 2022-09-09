@@ -167,7 +167,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);

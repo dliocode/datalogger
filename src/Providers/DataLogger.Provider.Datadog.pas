@@ -192,7 +192,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LJA := TJSONArray.Create;
@@ -202,7 +202,7 @@ begin
       LJO.AddPair('ddtags', LItem.Tag);
       LJO.AddPair('host', LItem.ComputerName);
       LJO.AddPair('service', FService);
-      LJO.AddPair('status', LItem.TypeString.ToUpper);
+      LJO.AddPair('status', LItem.LevelString.ToUpper);
 
       LJA.Add(LJO);
 

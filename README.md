@@ -45,7 +45,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [Uso Padrão](#uso-padrao)
   * [Criar uma nova instância do DataLogger](#criar-uma-nova-instancia-do-datalogger)
   * [DataLogger Simple](#datalogger-simple)
-  * [CustomType](#customtype)
+  * [Custom](#Custom)
   * [Formato do Log](#formato-do-log)
     * [FormatLog Constant](#formatlog-constant)
     * [Como definir um formato](#como-definir-um-formato)
@@ -53,8 +53,8 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
     * [Como mudar o formato do TimeStamp](#como-mudar-o-formato-do-timestamp)
     * [Tipos de Tag para criar o formato do log](#tipos-de-tag-para-criar-o-formato-do-log)
   * [LogLevel](#loglevel)
-  * [Disable LogType](#disable-logtype)
-  * [Only LogType](#only-logtype)
+  * [Disable LogLevel](#disable-LogLevel)
+  * [Only LogLevel](#only-LogLevel)
   * [Log Exception](#log-exception)
   * [Max Retries](#max-retries)
   * [InitialMessage](#initialmessage)
@@ -162,7 +162,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('My Custom Type', 'My message with custom type');
+    .Custom('Custom Level', 'My message with custom level');
   Readln;
 end.
 ```
@@ -187,7 +187,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('My Custom Type', 'My message with custom type');
+    .Custom('Custom Level', 'My message with custom level');
   Readln;
 end.
 ```
@@ -215,16 +215,16 @@ begin
   Warn('My message warn');
   Error('My message error');
   Fatal('My message fatal');
-  CustomType('My Type', 'My message custom');
+  Custom('My Type', 'My message custom');
 
   Readln;
 end.
 
 ```
 
-## CustomType
+## Custom
 
-O _CustomType_ é uma forma de criar seu próprio _type_.
+O _Custom_ é a forma de definir dar o nome para o seu próprio _level_.
 
 ```delphi
 uses
@@ -233,11 +233,11 @@ uses
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  Logger.CustomType('My Custom Type', 'My Message with custom type!');
+  Logger.Custom('Custom Level', 'My message with custom level!');
 
-  // Output: 2022-12-01 09:00:05:500 [My Custom Type] My Message with custom type!	
+  // Output: 2022-12-01 09:00:05.500 [Custom Level] My message with custom level!	
 
   Readln;
 end.
@@ -248,7 +248,7 @@ end.
 Formato de log padrão: 
 
 ```
-${timestamp} [TID ${thread_id}] [PID ${process_id}] [SEQ ${sequence}] [${type}] [${tag}] ${message}
+${timestamp} [TID ${thread_id}] [PID ${process_id}] [SEQ ${sequence}] [${level}] [${tag}] ${message}
 ```
 
 ### FormatLog Constant
@@ -261,7 +261,8 @@ TLoggerFormat.LOG_SEQUENCE = '${sequence}';
 TLoggerFormat.LOG_TIMESTAMP = '${timestamp}';
 TLoggerFormat.LOG_THREADID = '${thread_id}';
 TLoggerFormat.LOG_PROCESSID = '${process_id}';
-TLoggerFormat.LOG_TYPE = '${type}';
+TLoggerFormat.LOG_LEVEL = '${level}';
+TLoggerFormat.LOG_LEVEL_VALUE = '${level_value}';
 TLoggerFormat.LOG_TAG = '${tag}';
 TLoggerFormat.LOG_MESSAGE = '${message}';
 
@@ -289,19 +290,19 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Usando constant
   // Logger.SetLogFormat(Format('%s [%s] %s', 
-  //   [TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_LOG_TYPE,  TLoggerFormat.LOG_MESSAGE])
+  //   [TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_LEVEL,  TLoggerFormat.LOG_MESSAGE])
   // );
 
   // Gerando os logs
   Logger.Info('Minha mensagem no Log do tipo INFO');
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
-  // Output: 2022-12-01 09:00:05:500 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -318,8 +319,8 @@ uses
   DataLogger.Provider.TextFile;
 
 begin
-  // Formato do console '${timestamp} [${type}] ${message}'
-  Logger.AddProvider(TProviderConsole.Create.SetLogFormat('${timestamp} [${type}] ${message}'));
+  // Formato do console '${timestamp} [${level}] ${message}'
+  Logger.AddProvider(TProviderConsole.Create.SetLogFormat('${timestamp} [${level}] ${message}'));
 
   // Formato do text file '${timestamp} - ${message}'  
   Logger.AddProvider(TProviderTextFile.Create.SetLogFormat('${timestamp} - ${message}'));  
@@ -329,19 +330,19 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output Console: 
-  // 2022-12-01 09:00:05:500 [INFO] Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   // Output TextFile: 
-  // 2022-12-01 09:00:05:500 - Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05:600 - Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.500 - Minha mensagem no Log do tipo INFO
+  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
 ```
 
 ### Como mudar o formato do TimeStamp
-* Formato de TimeStamp padrão: `yyyy-mm-dd hh:mm:ss:zzz`
+* Formato de TimeStamp padrão: `yyyy-mm-dd hh:mm:ss.zzz`
 
 ```delphi
 uses
@@ -355,11 +356,11 @@ begin
   Logger.SetFormatTimestamp('dd/mm/yyyy hh:mm:ss')
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Usando constant
   // Logger.SetLogFormat(Format('%s [%s] %s', 
-  //   [TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_LOG_TYPE,  TLoggerFormat.LOG_MESSAGE])
+  //   [TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_LEVEL,  TLoggerFormat.LOG_MESSAGE])
   // );
 
   // Gerando os logs
@@ -392,11 +393,11 @@ TLoggerFormat.LOG_THREADID;
 // Exibe o id do processo do app.
 TLoggerFormat.LOG_PROCESSID;
 
-// Exibe o tipo do log, sendo eles: TRACE/DEBUG/INFO/SUCCESS/WARN/ERROR/FATAL
-TLoggerFormat.LOG_TYPE;
+// Exibe o tipo do log, sendo eles: TRACE / DEBUG / INFO / SUCCESS / WARN / ERROR / FATAL
+TLoggerFormat.LOG_LEVEL;
 
 // Exibe o tipo do log no formato numérico, sendo eles: 1=TRACE / 2=DEBUG / 3=INFO / 4=SUCCESS / 5=WARN / 6=ERROR / 7=FATAL / 8=CUSTOM
-TLoggerFormat.LOG_TYPE_LEVEL;
+TLoggerFormat.LOG_LEVEL_VALUE;
 
 // Exibe a tag do log, essa informação é preenchida a após a mensagem; Ex: Logger.Debug('Minha mensagem','Minha Tag');
 TLoggerFormat.LOG_TAG;
@@ -434,27 +435,27 @@ TLoggerFormat.LOG_IP_LOCAL
 
 ```
 
-## LogLevel
+## SetLogLevel
 
-É possível definir o nível do registro do log com base no ```TLoggerType```.
+É possível mostrar somente os _logs_ a partir de um _level_ definido, com base no ```TLoggerLevel```.
 
-SetLogLevel valor padrão = ```TLoggerType.All```
+SetLogLevel valor padrão = ```TLoggerLevel.All```
 
-### LoggerType / Level
+### TLoggerLevel
 
 * Quando definido um level, será exibido somente a opção escolhida e seus tipos superiores.
-* Ex: ``` Logger.SetLogLevel(TLoggerType.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
+* Ex: ``` Logger.SetLogLevel(TLoggerLevel.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
 
 ```delphi
-  TLoggerType.All = 'Utilizado para operações internas'
-  TLoggerType.Trace = 'Level 1'
-  TLoggerType.Debug = 'Level 2'
-  TLoggerType.Info = 'Level 3'
-  TLoggerType.Success = 'Level 4'
-  TLoggerType.Warn = 'Level 5'
-  TLoggerType.Error = 'Level 6'
-  TLoggerType.Fatal = 'Level 7'
-  TLoggerType.Custom = 'Level 8'
+  TLoggerLevel.All = 'Utilizado para operações internas'
+  TLoggerLevel.Trace = 'Level 1'
+  TLoggerLevel.Debug = 'Level 2'
+  TLoggerLevel.Info = 'Level 3'
+  TLoggerLevel.Success = 'Level 4'
+  TLoggerLevel.Warn = 'Level 5'
+  TLoggerLevel.Error = 'Level 6'
+  TLoggerLevel.Fatal = 'Level 7'
+  TLoggerLevel.Custom = 'Level 8'
 ```
 
 ```delphi
@@ -466,31 +467,31 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Definindo o LogLevel
-  Logger.SetLogLevel(TLoggerType.Warn);
+  Logger.SetLogLevel(TLoggerLevel.Warn);
 
   // Gerando os logs
   Logger.Info('Minha mensagem no Log do tipo INFO');
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
-  // Output: 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
 ```
 
-## Disable LogType
+## Disable LogLevel
 
-É possível desabilitar vários tipos de log, com base no ```TLoggerType```.
+É possível desabilitar alguns _levels_ do log, com base no ```TLoggerLevel```.
 
-SetDisableLogType valor padrão = ```[]```
+SetDisableLogLevel valor padrão = ```[]```
 
-### SetDisableLogType
+### SetDisableLogLevel
 
 * Quando desabilitado será exibido somente as opções que não estão desabilitadas.
-* Ex: ``` Logger.SetDisableLogType([TLoggerType.Info, TLoggerType.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal / Custom ```.
+* Ex: ``` Logger.SetDisableLogLevel([TLoggerLevel.Info, TLoggerLevel.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal / Custom ```.
 
 ```delphi
 uses
@@ -501,10 +502,10 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  // Definindo o DisableLogType
-  Logger.SetDisableLogType([TLoggerType.Info, TLoggerType.Warn]);
+  // Definindo o DisableLogLevel
+  Logger.SetDisableLogLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);
 
   // Gerando os logs
   Logger.Debug('Minha mensagem no Log do tipo DEBUG');
@@ -520,16 +521,16 @@ begin
 end.
 ```
 
-## Only LogType
+## Only LogLevel
 
-É possível habilitar vários tipos de log, com base no ```TLoggerType```.
+É possível mostrar somente alguns _levels_ do log, com base no ```TLoggerLevel```.
 
-SetOnlyLogType valor padrão = ```[TLoggerType.All]```
+SetOnlyLogLevel valor padrão = ```[TLoggerLevel.All]```
 
-### SetOnlyLogType
+### SetOnlyLogLevel
 
 * Quando definido será exibido somente as opções registradas.
-* Ex: ``` Logger.SetOnlyLogType([TLoggerType.Error]); ``` - Será registrado somente os _logs_ com o tipo ``` Error ```.
+* Ex: ``` Logger.SetOnlyLogLevel([TLoggerLevel.Error]); ``` - Será registrado somente os _logs_ com o tipo ``` Error ```.
 
 ```delphi
 uses
@@ -540,10 +541,10 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  // Definindo o OnlyLogType
-  Logger.SetOnlyLogType([TLoggerType.Error]);
+  // Definindo o OnlyLogLevel
+  Logger.SetOnlyLogLevel([TLoggerLevel.Error]);
 
   // Gerando os logs
   Logger.Debug('Minha mensagem no Log do tipo DEBUG');
@@ -552,7 +553,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -573,7 +574,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Definindo o LogException
   Logger.SetLogException(
@@ -594,7 +595,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -615,7 +616,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Definindo o máximo de tentativas
   Logger.SetMaxRetries(5);
@@ -624,7 +625,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -645,7 +646,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Definindo a mensagem inicial
   Logger.SetInitialMessage('DLIOCODE ');
@@ -654,7 +655,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // DLIOCODE 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // DLIOCODE 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -675,7 +676,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Definindo a mensagem final
   Logger.SetFinalMessage(' DLIOCODE');
@@ -684,7 +685,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR DLIOCODE 
+  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR DLIOCODE 
 
   Readln;
 end.
@@ -705,7 +706,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${name} ${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${name} ${timestamp} [${level}] ${message}');
 
   // Definindo o name
   Logger.SetName('MyLogger');
@@ -714,7 +715,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // MyLogger 2022-12-01 09:00:05:600 [ERROR] Minha mensagem no Log do tipo ERROR  
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
 
   Readln;
 end.
@@ -761,7 +762,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create.UseTransaction(True));
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Iniciando a transaction
   Logger.StartTransaction;
@@ -804,7 +805,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create.UseTransaction(True));
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
   // Iniciando a transaction
   Logger.StartTransaction;

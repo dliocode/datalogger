@@ -197,24 +197,24 @@ var
         begin
           LParseMode := TELEGRAM_API_HTML;
 
-          case LItem.&Type of
-            TLoggerType.All:
+          case LItem.Level of
+            TLoggerLevel.All:
               ;
-            TLoggerType.Trace:
+            TLoggerLevel.Trace:
               ;
-            TLoggerType.Debug:
+            TLoggerLevel.Debug:
               ;
-            TLoggerType.Info:
+            TLoggerLevel.Info:
               ;
-            TLoggerType.Success:
+            TLoggerLevel.Success:
               ;
-            TLoggerType.Warn:
+            TLoggerLevel.Warn:
               LMessage := '<u>' + LMessage + '</u>';
 
-            TLoggerType.Error, TLoggerType.Fatal:
+            TLoggerLevel.Error, TLoggerLevel.Fatal:
               LMessage := '<b>' + LMessage + '</b>';
 
-            TLoggerType.Custom:
+            TLoggerLevel.Custom:
               ;
           end;
         end;
@@ -227,24 +227,24 @@ var
           for I := Low(FormattingMarkdown) to High(FormattingMarkdown) do
             LMessage := LMessage.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
 
-          case LItem.&Type of
-            TLoggerType.All:
+          case LItem.Level of
+            TLoggerLevel.All:
               ;
-            TLoggerType.Trace:
+            TLoggerLevel.Trace:
               ;
-            TLoggerType.Debug:
+            TLoggerLevel.Debug:
               ;
-            TLoggerType.Info:
+            TLoggerLevel.Info:
               ;
-            TLoggerType.Success:
+            TLoggerLevel.Success:
               ;
-            TLoggerType.Warn:
+            TLoggerLevel.Warn:
               LMessage := '__' + LMessage + '__';
 
-            TLoggerType.Error, TLoggerType.Fatal:
+            TLoggerLevel.Error, TLoggerLevel.Fatal:
               LMessage := '*' + LMessage + '*';
 
-            TLoggerType.Custom:
+            TLoggerLevel.Custom:
               ;
           end;
         end;
@@ -259,7 +259,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.TypeSlineBreak then
+    if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
     LParseMode := '';

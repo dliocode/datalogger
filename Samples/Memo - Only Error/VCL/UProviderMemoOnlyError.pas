@@ -48,7 +48,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('Custom Type','My Custom')    
+    .Custom('Custom Level','My Custom')    
     ;
 end;
 
@@ -62,11 +62,11 @@ begin
     TProviderMemo.Create.Memo(MemoOnlyError)
 
     // Show only error
-    .SetOnlyLogType([TLoggerType.Error])
+    .SetOnlyLogLevel([TLoggerLevel.Error])
   );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

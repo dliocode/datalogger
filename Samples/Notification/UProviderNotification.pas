@@ -41,7 +41,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('Custom Type','My Custom')    
+    .Custom('Custom Level','My Custom')    
     ;
 end;
 
@@ -57,8 +57,8 @@ begin
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 
- // Exibe somente com erro
- Logger.SetOnlyLogType([TLoggerType.Custom]);
+ // Show only custom
+ Logger.SetOnlyLogLevel([TLoggerLevel.Custom]);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);
