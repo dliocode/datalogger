@@ -148,7 +148,7 @@ function TProviderRESTNetHTTPClient.BearerToken(const AValue: string): TProvider
 begin
   Result := Self;
 
-  if AValue.Trim.ToLower.Contains('bearer') then
+  if AValue.Trim.ToLower.Contains('bearer ') then
     Token(AValue)
   else
     Token('Bearer ' + AValue);
@@ -225,6 +225,7 @@ begin
     URL(LJO.GetValue<string>('url', FURL));
     ContentType(LJO.GetValue<string>('content_type', FContentType));
     Token(LJO.GetValue<string>('token', FToken));
+    
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 

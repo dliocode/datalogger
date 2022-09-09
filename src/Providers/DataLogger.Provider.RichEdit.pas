@@ -196,7 +196,6 @@ begin
     ChangeColor(TLoggerType.Error, StringToColor(LJO.GetValue<string>('change_color_error', ColorToString(FColorError))));
     ChangeColor(TLoggerType.Fatal, StringToColor(LJO.GetValue<string>('change_color_fatal', ColorToString(FColorFatal))));
     ChangeColor(TLoggerType.Custom, StringToColor(LJO.GetValue<string>('change_color_custom', ColorToString(FColorCustom))));
-
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
 
     LValue := GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert));
