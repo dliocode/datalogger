@@ -41,7 +41,8 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('danilo', 'aaaa');
+    .CustomType('CUSTOM TYPE','My Custom')    
+    ;
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);

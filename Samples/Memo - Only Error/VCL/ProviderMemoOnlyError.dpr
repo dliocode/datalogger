@@ -2,12 +2,7 @@ program ProviderMemoOnlyError;
 
 uses
   Vcl.Forms,
-  UProviderMemoOnlyError in 'UProviderMemoOnlyError.pas' {Form2},
-  DataLogger in '..\..\..\src\Core\DataLogger.pas',
-  DataLogger.Provider in '..\..\..\src\Core\DataLogger.Provider.pas',
-  DataLogger.Types in '..\..\..\src\Core\DataLogger.Types.pas',
-  DataLogger.Utils in '..\..\..\src\Core\DataLogger.Utils.pas',
-  DataLogger.Provider.Memo in '..\..\..\src\Providers\DataLogger.Provider.Memo.pas';
+  UProviderMemoOnlyError in 'UProviderMemoOnlyError.pas' {Form2};
 
 {$R *.res}
 

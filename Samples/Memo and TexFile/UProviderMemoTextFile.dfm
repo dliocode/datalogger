@@ -32,7 +32,6 @@ object Form2: TForm2
     ParentFont = False
     TabOrder = 0
     OnClick = pnlInfoClick
-    ExplicitTop = 2
   end
   object Panel1: TPanel
     Left = 0
@@ -58,9 +57,5 @@ object Form2: TForm2
     Height = 379
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 232
-    ExplicitTop = 200
-    ExplicitWidth = 185
-    ExplicitHeight = 89
   end
 end

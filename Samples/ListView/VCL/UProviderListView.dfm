@@ -19,9 +19,6 @@ object Form2: TForm2
     Height = 41
     Align = alTop
     TabOrder = 0
-    ExplicitLeft = 232
-    ExplicitTop = 224
-    ExplicitWidth = 185
     object btnMakeLog: TButton
       Left = 272
       Top = 8
@@ -52,8 +49,6 @@ object Form2: TForm2
     ParentFont = False
     TabOrder = 1
     OnClick = pnlInfoClick
-    ExplicitLeft = 8
-    ExplicitWidth = 294
   end
   object ListView1: TListView
     Left = 0
@@ -68,9 +63,5 @@ object Form2: TForm2
       end>
     TabOrder = 2
     ViewStyle = vsReport
-    ExplicitLeft = 192
-    ExplicitTop = 168
-    ExplicitWidth = 250
-    ExplicitHeight = 150
   end
 end

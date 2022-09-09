@@ -45,7 +45,9 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .CustomType('CUSTOM TYPE','My Custom')    
+    ;
 end;
 
 procedure TForm2.btnShowExplorerClick(Sender: TObject);

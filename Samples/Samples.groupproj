@@ -1,0 +1,681 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{A4E15C0A-8FE3-4E57-8F2C-34CFBEC8BEFF}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Axiom\ProviderAxiom.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Console\ProviderConsole.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Datadog\ProviderDatadog.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Datalust\ProviderDatalust.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="DiscordHook\ProviderDiscordHook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ElasticSearch\ProviderElasticSearch.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Email\ProviderEmail.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="EventLog\ProviderEventLog.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Events\ProviderEvents.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Events - With DataSet\ProviderEventsWithDataSet.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Events - With SQLLite\ProviderEventsWithSQLLite.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Firebase\RealtimeDatabase\ProviderFirebaseRealtimeDatabase.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Grafana\Loki\ProviderGrafanaLoki.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Grafana\OnCall - WebHook\ProviderGrafanaOnCallWebHook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="GraphJSON\ProviderGraphJSON.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ListBox\FMX\ProviderListBox.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ListBox\VCL\ProviderListBox.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ListView\FMX\ProviderListView.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ListView\VCL\ProviderListView.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logflare\ProviderLogflare.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Loggly\ProviderLoggly.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logstach\ProviderLogstach.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logtail\ProviderLogtail.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logz\ProviderLogz.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mailgun-Api\ProviderMailgunApi.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mailjet-Api\ProviderMailjetApi.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Mattermost\ProviderMattermost.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="MattermostHook\ProviderMattermostHook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Memo\FMX\ProviderMemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Memo\VCL\ProviderMemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Memo - Only Error\VCL\ProviderMemoOnlyError.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Memo and TexFile\ProviderMemoTextFile.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Memory\ProviderMemory.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="MongoDB\Cloud\ProviderMongoDBCloud.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="NewRelic\ProviderNewRelic.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Notification\ProviderNotification.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Novu\ProviderNovu.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="OutputDebugString\ProviderOutputDebugString.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="PaperTrail\ProviderPaperTrail.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Postmark-Api\ProviderPostmarkApi.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="RabbitMQ\ProviderRabbitMQ.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Redis\ProviderRedis.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="REST\ProviderREST.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="RichEdit\ProviderRichEdit.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Sematext-Logs\ProviderSematextLogs.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SendEmail\ProviderSendEmail.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SendGrid-WebApi\ProviderSendGridWebApi.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Slack\ProviderSlack.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Socket\ProviderSocket.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Splunk\ProviderSplunk.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SysLog\ProviderSysLog.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Telegram\ProviderTelegram.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="TextFile\ProviderTextFile.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Transaction\DataLoggerTransaction.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Transaction Aninhada\DataLoggerTransactionAninhada.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Twilio\SMS\ProviderTwilioSMS.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Twilio\WhatsApp\ProviderTwilioWhatsApp.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="ProviderAxiom">
+        <MSBuild Projects="Axiom\ProviderAxiom.dproj"/>
+    </Target>
+    <Target Name="ProviderAxiom:Clean">
+        <MSBuild Projects="Axiom\ProviderAxiom.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderAxiom:Make">
+        <MSBuild Projects="Axiom\ProviderAxiom.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderConsole">
+        <MSBuild Projects="Console\ProviderConsole.dproj"/>
+    </Target>
+    <Target Name="ProviderConsole:Clean">
+        <MSBuild Projects="Console\ProviderConsole.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderConsole:Make">
+        <MSBuild Projects="Console\ProviderConsole.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderDatadog">
+        <MSBuild Projects="Datadog\ProviderDatadog.dproj"/>
+    </Target>
+    <Target Name="ProviderDatadog:Clean">
+        <MSBuild Projects="Datadog\ProviderDatadog.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderDatadog:Make">
+        <MSBuild Projects="Datadog\ProviderDatadog.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderDatalust">
+        <MSBuild Projects="Datalust\ProviderDatalust.dproj"/>
+    </Target>
+    <Target Name="ProviderDatalust:Clean">
+        <MSBuild Projects="Datalust\ProviderDatalust.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderDatalust:Make">
+        <MSBuild Projects="Datalust\ProviderDatalust.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderDiscordHook">
+        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj"/>
+    </Target>
+    <Target Name="ProviderDiscordHook:Clean">
+        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderDiscordHook:Make">
+        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderElasticSearch">
+        <MSBuild Projects="ElasticSearch\ProviderElasticSearch.dproj"/>
+    </Target>
+    <Target Name="ProviderElasticSearch:Clean">
+        <MSBuild Projects="ElasticSearch\ProviderElasticSearch.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderElasticSearch:Make">
+        <MSBuild Projects="ElasticSearch\ProviderElasticSearch.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderEmail">
+        <MSBuild Projects="Email\ProviderEmail.dproj"/>
+    </Target>
+    <Target Name="ProviderEmail:Clean">
+        <MSBuild Projects="Email\ProviderEmail.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderEmail:Make">
+        <MSBuild Projects="Email\ProviderEmail.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderEventLog">
+        <MSBuild Projects="EventLog\ProviderEventLog.dproj"/>
+    </Target>
+    <Target Name="ProviderEventLog:Clean">
+        <MSBuild Projects="EventLog\ProviderEventLog.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderEventLog:Make">
+        <MSBuild Projects="EventLog\ProviderEventLog.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderEvents">
+        <MSBuild Projects="Events\ProviderEvents.dproj"/>
+    </Target>
+    <Target Name="ProviderEvents:Clean">
+        <MSBuild Projects="Events\ProviderEvents.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderEvents:Make">
+        <MSBuild Projects="Events\ProviderEvents.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderEventsWithDataSet">
+        <MSBuild Projects="Events - With DataSet\ProviderEventsWithDataSet.dproj"/>
+    </Target>
+    <Target Name="ProviderEventsWithDataSet:Clean">
+        <MSBuild Projects="Events - With DataSet\ProviderEventsWithDataSet.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderEventsWithDataSet:Make">
+        <MSBuild Projects="Events - With DataSet\ProviderEventsWithDataSet.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderEventsWithSQLLite">
+        <MSBuild Projects="Events - With SQLLite\ProviderEventsWithSQLLite.dproj"/>
+    </Target>
+    <Target Name="ProviderEventsWithSQLLite:Clean">
+        <MSBuild Projects="Events - With SQLLite\ProviderEventsWithSQLLite.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderEventsWithSQLLite:Make">
+        <MSBuild Projects="Events - With SQLLite\ProviderEventsWithSQLLite.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderFirebaseRealtimeDatabase">
+        <MSBuild Projects="Firebase\RealtimeDatabase\ProviderFirebaseRealtimeDatabase.dproj"/>
+    </Target>
+    <Target Name="ProviderFirebaseRealtimeDatabase:Clean">
+        <MSBuild Projects="Firebase\RealtimeDatabase\ProviderFirebaseRealtimeDatabase.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderFirebaseRealtimeDatabase:Make">
+        <MSBuild Projects="Firebase\RealtimeDatabase\ProviderFirebaseRealtimeDatabase.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderGrafanaLoki">
+        <MSBuild Projects="Grafana\Loki\ProviderGrafanaLoki.dproj"/>
+    </Target>
+    <Target Name="ProviderGrafanaLoki:Clean">
+        <MSBuild Projects="Grafana\Loki\ProviderGrafanaLoki.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderGrafanaLoki:Make">
+        <MSBuild Projects="Grafana\Loki\ProviderGrafanaLoki.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderGrafanaOnCallWebHook">
+        <MSBuild Projects="Grafana\OnCall - WebHook\ProviderGrafanaOnCallWebHook.dproj"/>
+    </Target>
+    <Target Name="ProviderGrafanaOnCallWebHook:Clean">
+        <MSBuild Projects="Grafana\OnCall - WebHook\ProviderGrafanaOnCallWebHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderGrafanaOnCallWebHook:Make">
+        <MSBuild Projects="Grafana\OnCall - WebHook\ProviderGrafanaOnCallWebHook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderGraphJSON">
+        <MSBuild Projects="GraphJSON\ProviderGraphJSON.dproj"/>
+    </Target>
+    <Target Name="ProviderGraphJSON:Clean">
+        <MSBuild Projects="GraphJSON\ProviderGraphJSON.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderGraphJSON:Make">
+        <MSBuild Projects="GraphJSON\ProviderGraphJSON.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderListBox">
+        <MSBuild Projects="ListBox\VCL\ProviderListBox.dproj"/>
+    </Target>
+    <Target Name="ProviderListBox:Clean">
+        <MSBuild Projects="ListBox\VCL\ProviderListBox.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderListBox:Make">
+        <MSBuild Projects="ListBox\VCL\ProviderListBox.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderListView">
+        <MSBuild Projects="ListView\VCL\ProviderListView.dproj"/>
+    </Target>
+    <Target Name="ProviderListView:Clean">
+        <MSBuild Projects="ListView\VCL\ProviderListView.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderListView:Make">
+        <MSBuild Projects="ListView\VCL\ProviderListView.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogflare">
+        <MSBuild Projects="Logflare\ProviderLogflare.dproj"/>
+    </Target>
+    <Target Name="ProviderLogflare:Clean">
+        <MSBuild Projects="Logflare\ProviderLogflare.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogflare:Make">
+        <MSBuild Projects="Logflare\ProviderLogflare.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLoggly">
+        <MSBuild Projects="Loggly\ProviderLoggly.dproj"/>
+    </Target>
+    <Target Name="ProviderLoggly:Clean">
+        <MSBuild Projects="Loggly\ProviderLoggly.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLoggly:Make">
+        <MSBuild Projects="Loggly\ProviderLoggly.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogstach">
+        <MSBuild Projects="Logstach\ProviderLogstach.dproj"/>
+    </Target>
+    <Target Name="ProviderLogstach:Clean">
+        <MSBuild Projects="Logstach\ProviderLogstach.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogstach:Make">
+        <MSBuild Projects="Logstach\ProviderLogstach.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogtail">
+        <MSBuild Projects="Logtail\ProviderLogtail.dproj"/>
+    </Target>
+    <Target Name="ProviderLogtail:Clean">
+        <MSBuild Projects="Logtail\ProviderLogtail.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogtail:Make">
+        <MSBuild Projects="Logtail\ProviderLogtail.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogz">
+        <MSBuild Projects="Logz\ProviderLogz.dproj"/>
+    </Target>
+    <Target Name="ProviderLogz:Clean">
+        <MSBuild Projects="Logz\ProviderLogz.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogz:Make">
+        <MSBuild Projects="Logz\ProviderLogz.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMailgunApi">
+        <MSBuild Projects="Mailgun-Api\ProviderMailgunApi.dproj"/>
+    </Target>
+    <Target Name="ProviderMailgunApi:Clean">
+        <MSBuild Projects="Mailgun-Api\ProviderMailgunApi.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMailgunApi:Make">
+        <MSBuild Projects="Mailgun-Api\ProviderMailgunApi.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMailjetApi">
+        <MSBuild Projects="Mailjet-Api\ProviderMailjetApi.dproj"/>
+    </Target>
+    <Target Name="ProviderMailjetApi:Clean">
+        <MSBuild Projects="Mailjet-Api\ProviderMailjetApi.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMailjetApi:Make">
+        <MSBuild Projects="Mailjet-Api\ProviderMailjetApi.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMattermost">
+        <MSBuild Projects="Mattermost\ProviderMattermost.dproj"/>
+    </Target>
+    <Target Name="ProviderMattermost:Clean">
+        <MSBuild Projects="Mattermost\ProviderMattermost.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMattermost:Make">
+        <MSBuild Projects="Mattermost\ProviderMattermost.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMattermostHook">
+        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj"/>
+    </Target>
+    <Target Name="ProviderMattermostHook:Clean">
+        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMattermostHook:Make">
+        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMemo">
+        <MSBuild Projects="Memo\VCL\ProviderMemo.dproj"/>
+    </Target>
+    <Target Name="ProviderMemo:Clean">
+        <MSBuild Projects="Memo\VCL\ProviderMemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMemo:Make">
+        <MSBuild Projects="Memo\VCL\ProviderMemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMemoOnlyError">
+        <MSBuild Projects="Memo - Only Error\VCL\ProviderMemoOnlyError.dproj"/>
+    </Target>
+    <Target Name="ProviderMemoOnlyError:Clean">
+        <MSBuild Projects="Memo - Only Error\VCL\ProviderMemoOnlyError.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMemoOnlyError:Make">
+        <MSBuild Projects="Memo - Only Error\VCL\ProviderMemoOnlyError.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMemoTextFile">
+        <MSBuild Projects="Memo and TexFile\ProviderMemoTextFile.dproj"/>
+    </Target>
+    <Target Name="ProviderMemoTextFile:Clean">
+        <MSBuild Projects="Memo and TexFile\ProviderMemoTextFile.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMemoTextFile:Make">
+        <MSBuild Projects="Memo and TexFile\ProviderMemoTextFile.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMemory">
+        <MSBuild Projects="Memory\ProviderMemory.dproj"/>
+    </Target>
+    <Target Name="ProviderMemory:Clean">
+        <MSBuild Projects="Memory\ProviderMemory.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMemory:Make">
+        <MSBuild Projects="Memory\ProviderMemory.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderMongoDBCloud">
+        <MSBuild Projects="MongoDB\Cloud\ProviderMongoDBCloud.dproj"/>
+    </Target>
+    <Target Name="ProviderMongoDBCloud:Clean">
+        <MSBuild Projects="MongoDB\Cloud\ProviderMongoDBCloud.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMongoDBCloud:Make">
+        <MSBuild Projects="MongoDB\Cloud\ProviderMongoDBCloud.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderNewRelic">
+        <MSBuild Projects="NewRelic\ProviderNewRelic.dproj"/>
+    </Target>
+    <Target Name="ProviderNewRelic:Clean">
+        <MSBuild Projects="NewRelic\ProviderNewRelic.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderNewRelic:Make">
+        <MSBuild Projects="NewRelic\ProviderNewRelic.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderNotification">
+        <MSBuild Projects="Notification\ProviderNotification.dproj"/>
+    </Target>
+    <Target Name="ProviderNotification:Clean">
+        <MSBuild Projects="Notification\ProviderNotification.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderNotification:Make">
+        <MSBuild Projects="Notification\ProviderNotification.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderNovu">
+        <MSBuild Projects="Novu\ProviderNovu.dproj"/>
+    </Target>
+    <Target Name="ProviderNovu:Clean">
+        <MSBuild Projects="Novu\ProviderNovu.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderNovu:Make">
+        <MSBuild Projects="Novu\ProviderNovu.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderOutputDebugString">
+        <MSBuild Projects="OutputDebugString\ProviderOutputDebugString.dproj"/>
+    </Target>
+    <Target Name="ProviderOutputDebugString:Clean">
+        <MSBuild Projects="OutputDebugString\ProviderOutputDebugString.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderOutputDebugString:Make">
+        <MSBuild Projects="OutputDebugString\ProviderOutputDebugString.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderPaperTrail">
+        <MSBuild Projects="PaperTrail\ProviderPaperTrail.dproj"/>
+    </Target>
+    <Target Name="ProviderPaperTrail:Clean">
+        <MSBuild Projects="PaperTrail\ProviderPaperTrail.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderPaperTrail:Make">
+        <MSBuild Projects="PaperTrail\ProviderPaperTrail.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderPostmarkApi">
+        <MSBuild Projects="Postmark-Api\ProviderPostmarkApi.dproj"/>
+    </Target>
+    <Target Name="ProviderPostmarkApi:Clean">
+        <MSBuild Projects="Postmark-Api\ProviderPostmarkApi.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderPostmarkApi:Make">
+        <MSBuild Projects="Postmark-Api\ProviderPostmarkApi.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderRabbitMQ">
+        <MSBuild Projects="RabbitMQ\ProviderRabbitMQ.dproj"/>
+    </Target>
+    <Target Name="ProviderRabbitMQ:Clean">
+        <MSBuild Projects="RabbitMQ\ProviderRabbitMQ.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderRabbitMQ:Make">
+        <MSBuild Projects="RabbitMQ\ProviderRabbitMQ.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderRedis">
+        <MSBuild Projects="Redis\ProviderRedis.dproj"/>
+    </Target>
+    <Target Name="ProviderRedis:Clean">
+        <MSBuild Projects="Redis\ProviderRedis.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderRedis:Make">
+        <MSBuild Projects="Redis\ProviderRedis.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderREST">
+        <MSBuild Projects="REST\ProviderREST.dproj"/>
+    </Target>
+    <Target Name="ProviderREST:Clean">
+        <MSBuild Projects="REST\ProviderREST.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderREST:Make">
+        <MSBuild Projects="REST\ProviderREST.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderRichEdit">
+        <MSBuild Projects="RichEdit\ProviderRichEdit.dproj"/>
+    </Target>
+    <Target Name="ProviderRichEdit:Clean">
+        <MSBuild Projects="RichEdit\ProviderRichEdit.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderRichEdit:Make">
+        <MSBuild Projects="RichEdit\ProviderRichEdit.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSematextLogs">
+        <MSBuild Projects="Sematext-Logs\ProviderSematextLogs.dproj"/>
+    </Target>
+    <Target Name="ProviderSematextLogs:Clean">
+        <MSBuild Projects="Sematext-Logs\ProviderSematextLogs.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSematextLogs:Make">
+        <MSBuild Projects="Sematext-Logs\ProviderSematextLogs.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSendEmail">
+        <MSBuild Projects="SendEmail\ProviderSendEmail.dproj"/>
+    </Target>
+    <Target Name="ProviderSendEmail:Clean">
+        <MSBuild Projects="SendEmail\ProviderSendEmail.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSendEmail:Make">
+        <MSBuild Projects="SendEmail\ProviderSendEmail.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSendGridWebApi">
+        <MSBuild Projects="SendGrid-WebApi\ProviderSendGridWebApi.dproj"/>
+    </Target>
+    <Target Name="ProviderSendGridWebApi:Clean">
+        <MSBuild Projects="SendGrid-WebApi\ProviderSendGridWebApi.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSendGridWebApi:Make">
+        <MSBuild Projects="SendGrid-WebApi\ProviderSendGridWebApi.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSlack">
+        <MSBuild Projects="Slack\ProviderSlack.dproj"/>
+    </Target>
+    <Target Name="ProviderSlack:Clean">
+        <MSBuild Projects="Slack\ProviderSlack.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSlack:Make">
+        <MSBuild Projects="Slack\ProviderSlack.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSocket">
+        <MSBuild Projects="Socket\ProviderSocket.dproj"/>
+    </Target>
+    <Target Name="ProviderSocket:Clean">
+        <MSBuild Projects="Socket\ProviderSocket.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSocket:Make">
+        <MSBuild Projects="Socket\ProviderSocket.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSplunk">
+        <MSBuild Projects="Splunk\ProviderSplunk.dproj"/>
+    </Target>
+    <Target Name="ProviderSplunk:Clean">
+        <MSBuild Projects="Splunk\ProviderSplunk.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSplunk:Make">
+        <MSBuild Projects="Splunk\ProviderSplunk.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSysLog">
+        <MSBuild Projects="SysLog\ProviderSysLog.dproj"/>
+    </Target>
+    <Target Name="ProviderSysLog:Clean">
+        <MSBuild Projects="SysLog\ProviderSysLog.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSysLog:Make">
+        <MSBuild Projects="SysLog\ProviderSysLog.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderTelegram">
+        <MSBuild Projects="Telegram\ProviderTelegram.dproj"/>
+    </Target>
+    <Target Name="ProviderTelegram:Clean">
+        <MSBuild Projects="Telegram\ProviderTelegram.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderTelegram:Make">
+        <MSBuild Projects="Telegram\ProviderTelegram.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderTextFile">
+        <MSBuild Projects="TextFile\ProviderTextFile.dproj"/>
+    </Target>
+    <Target Name="ProviderTextFile:Clean">
+        <MSBuild Projects="TextFile\ProviderTextFile.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderTextFile:Make">
+        <MSBuild Projects="TextFile\ProviderTextFile.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DataLoggerTransaction">
+        <MSBuild Projects="Transaction\DataLoggerTransaction.dproj"/>
+    </Target>
+    <Target Name="DataLoggerTransaction:Clean">
+        <MSBuild Projects="Transaction\DataLoggerTransaction.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DataLoggerTransaction:Make">
+        <MSBuild Projects="Transaction\DataLoggerTransaction.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DataLoggerTransactionAninhada">
+        <MSBuild Projects="Transaction Aninhada\DataLoggerTransactionAninhada.dproj"/>
+    </Target>
+    <Target Name="DataLoggerTransactionAninhada:Clean">
+        <MSBuild Projects="Transaction Aninhada\DataLoggerTransactionAninhada.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DataLoggerTransactionAninhada:Make">
+        <MSBuild Projects="Transaction Aninhada\DataLoggerTransactionAninhada.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderTwilioSMS">
+        <MSBuild Projects="Twilio\SMS\ProviderTwilioSMS.dproj"/>
+    </Target>
+    <Target Name="ProviderTwilioSMS:Clean">
+        <MSBuild Projects="Twilio\SMS\ProviderTwilioSMS.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderTwilioSMS:Make">
+        <MSBuild Projects="Twilio\SMS\ProviderTwilioSMS.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderTwilioWhatsApp">
+        <MSBuild Projects="Twilio\WhatsApp\ProviderTwilioWhatsApp.dproj"/>
+    </Target>
+    <Target Name="ProviderTwilioWhatsApp:Clean">
+        <MSBuild Projects="Twilio\WhatsApp\ProviderTwilioWhatsApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderTwilioWhatsApp:Make">
+        <MSBuild Projects="Twilio\WhatsApp\ProviderTwilioWhatsApp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="ProviderAxiom;ProviderConsole;ProviderDatadog;ProviderDatalust;ProviderDiscordHook;ProviderElasticSearch;ProviderEmail;ProviderEventLog;ProviderEvents;ProviderEventsWithDataSet;ProviderEventsWithSQLLite;ProviderFirebaseRealtimeDatabase;ProviderGrafanaLoki;ProviderGrafanaOnCallWebHook;ProviderGraphJSON;ProviderListBox;ProviderListBox;ProviderListView;ProviderListView;ProviderLogflare;ProviderLoggly;ProviderLogstach;ProviderLogtail;ProviderLogz;ProviderMailgunApi;ProviderMailjetApi;ProviderMattermost;ProviderMattermostHook;ProviderMemo;ProviderMemo;ProviderMemoOnlyError;ProviderMemoTextFile;ProviderMemory;ProviderMongoDBCloud;ProviderNewRelic;ProviderNotification;ProviderNovu;ProviderOutputDebugString;ProviderPaperTrail;ProviderPostmarkApi;ProviderRabbitMQ;ProviderRedis;ProviderREST;ProviderRichEdit;ProviderSematextLogs;ProviderSendEmail;ProviderSendGridWebApi;ProviderSlack;ProviderSocket;ProviderSplunk;ProviderSysLog;ProviderTelegram;ProviderTextFile;DataLoggerTransaction;DataLoggerTransactionAninhada;ProviderTwilioSMS;ProviderTwilioWhatsApp"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="ProviderAxiom:Clean;ProviderConsole:Clean;ProviderDatadog:Clean;ProviderDatalust:Clean;ProviderDiscordHook:Clean;ProviderElasticSearch:Clean;ProviderEmail:Clean;ProviderEventLog:Clean;ProviderEvents:Clean;ProviderEventsWithDataSet:Clean;ProviderEventsWithSQLLite:Clean;ProviderFirebaseRealtimeDatabase:Clean;ProviderGrafanaLoki:Clean;ProviderGrafanaOnCallWebHook:Clean;ProviderGraphJSON:Clean;ProviderListBox:Clean;ProviderListBox:Clean;ProviderListView:Clean;ProviderListView:Clean;ProviderLogflare:Clean;ProviderLoggly:Clean;ProviderLogstach:Clean;ProviderLogtail:Clean;ProviderLogz:Clean;ProviderMailgunApi:Clean;ProviderMailjetApi:Clean;ProviderMattermost:Clean;ProviderMattermostHook:Clean;ProviderMemo:Clean;ProviderMemo:Clean;ProviderMemoOnlyError:Clean;ProviderMemoTextFile:Clean;ProviderMemory:Clean;ProviderMongoDBCloud:Clean;ProviderNewRelic:Clean;ProviderNotification:Clean;ProviderNovu:Clean;ProviderOutputDebugString:Clean;ProviderPaperTrail:Clean;ProviderPostmarkApi:Clean;ProviderRabbitMQ:Clean;ProviderRedis:Clean;ProviderREST:Clean;ProviderRichEdit:Clean;ProviderSematextLogs:Clean;ProviderSendEmail:Clean;ProviderSendGridWebApi:Clean;ProviderSlack:Clean;ProviderSocket:Clean;ProviderSplunk:Clean;ProviderSysLog:Clean;ProviderTelegram:Clean;ProviderTextFile:Clean;DataLoggerTransaction:Clean;DataLoggerTransactionAninhada:Clean;ProviderTwilioSMS:Clean;ProviderTwilioWhatsApp:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="ProviderAxiom:Make;ProviderConsole:Make;ProviderDatadog:Make;ProviderDatalust:Make;ProviderDiscordHook:Make;ProviderElasticSearch:Make;ProviderEmail:Make;ProviderEventLog:Make;ProviderEvents:Make;ProviderEventsWithDataSet:Make;ProviderEventsWithSQLLite:Make;ProviderFirebaseRealtimeDatabase:Make;ProviderGrafanaLoki:Make;ProviderGrafanaOnCallWebHook:Make;ProviderGraphJSON:Make;ProviderListBox:Make;ProviderListBox:Make;ProviderListView:Make;ProviderListView:Make;ProviderLogflare:Make;ProviderLoggly:Make;ProviderLogstach:Make;ProviderLogtail:Make;ProviderLogz:Make;ProviderMailgunApi:Make;ProviderMailjetApi:Make;ProviderMattermost:Make;ProviderMattermostHook:Make;ProviderMemo:Make;ProviderMemo:Make;ProviderMemoOnlyError:Make;ProviderMemoTextFile:Make;ProviderMemory:Make;ProviderMongoDBCloud:Make;ProviderNewRelic:Make;ProviderNotification:Make;ProviderNovu:Make;ProviderOutputDebugString:Make;ProviderPaperTrail:Make;ProviderPostmarkApi:Make;ProviderRabbitMQ:Make;ProviderRedis:Make;ProviderREST:Make;ProviderRichEdit:Make;ProviderSematextLogs:Make;ProviderSendEmail:Make;ProviderSendGridWebApi:Make;ProviderSlack:Make;ProviderSocket:Make;ProviderSplunk:Make;ProviderSysLog:Make;ProviderTelegram:Make;ProviderTextFile:Make;DataLoggerTransaction:Make;DataLoggerTransactionAninhada:Make;ProviderTwilioSMS:Make;ProviderTwilioWhatsApp:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

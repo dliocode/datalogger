@@ -41,13 +41,22 @@ object Form2: TForm2
     Align = alTop
     TabOrder = 1
     object btnMakeLog: TButton
-      Left = 272
-      Top = 8
+      Left = 80
+      Top = 6
       Width = 75
       Height = 25
       Caption = 'Make Log'
       TabOrder = 0
       OnClick = btnMakeLogClick
+    end
+    object btnMakeLogCustom: TButton
+      Left = 360
+      Top = 6
+      Width = 137
+      Height = 25
+      Caption = 'Make LogCustom'
+      TabOrder = 1
+      OnClick = btnMakeLogCustomClick
     end
   end
   object Memo1: TMemo

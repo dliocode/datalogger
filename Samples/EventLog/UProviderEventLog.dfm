@@ -50,6 +50,5 @@ object Form2: TForm2
     ParentFont = False
     TabOrder = 2
     OnClick = pnlInfoClick
-    ExplicitLeft = 8
   end
 end

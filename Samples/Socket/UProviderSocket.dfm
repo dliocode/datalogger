@@ -75,7 +75,7 @@ object Form2: TForm2
       Width = 121
       Height = 23
       EditLabel.Width = 75
-      EditLabel.Height = 15
+      EditLabel.Height = 23
       EditLabel.Caption = 'Count Clients '
       LabelPosition = lpLeft
       TabOrder = 3

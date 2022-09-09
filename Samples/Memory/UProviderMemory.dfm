@@ -19,8 +19,6 @@ object Form2: TForm2
     Height = 41
     Align = alTop
     TabOrder = 0
-    ExplicitLeft = 8
-    ExplicitTop = 15
     object btnMakeLog: TButton
       Left = 8
       Top = 7
@@ -69,8 +67,6 @@ object Form2: TForm2
     ParentFont = False
     TabOrder = 1
     OnClick = pnlInfoClick
-    ExplicitLeft = 8
-    ExplicitWidth = 294
   end
   object Memo1: TMemo
     Left = 0
@@ -79,9 +75,5 @@ object Form2: TForm2
     Height = 379
     Align = alClient
     TabOrder = 2
-    ExplicitLeft = 232
-    ExplicitTop = 200
-    ExplicitWidth = 185
-    ExplicitHeight = 89
   end
 end

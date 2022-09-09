@@ -32,8 +32,6 @@ object Form2: TForm2
     ParentFont = False
     TabOrder = 0
     OnClick = pnlInfoClick
-    ExplicitLeft = 8
-    ExplicitWidth = 294
   end
   object Panel1: TPanel
     Left = 0
@@ -42,8 +40,6 @@ object Form2: TForm2
     Height = 41
     Align = alTop
     TabOrder = 1
-    ExplicitLeft = 8
-    ExplicitTop = 15
     object btnMakeLog: TButton
       Left = 272
       Top = 8

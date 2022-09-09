@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Winapi.ShellAPI,
+  Winapi.ShellAPI, System.JSON,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
@@ -13,9 +13,11 @@ type
     Panel1: TPanel;
     btnMakeLog: TButton;
     Memo1: TMemo;
+    btnMakeLogCustom: TButton;
     procedure btnMakeLogClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure pnlInfoClick(Sender: TObject);
+    procedure btnMakeLogCustomClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -41,7 +43,27 @@ begin
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .CustomType('CUSTOM TYPE','My Custom')    
+    ;
+end;
+
+procedure TForm2.btnMakeLogCustomClick(Sender: TObject);
+var
+  LJO: TJSONObject;
+begin
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('fields_custom1', 'my_value 1');
+    LJO.AddPair('fields_custom2', 'my_value 2');
+    LJO.AddPair('fields_custom3', 'my_value 3');
+    LJO.AddPair('fields_custom4', 'my_value 4');
+    LJO.AddPair('fields_custom5', 'my_value 5');
+
+    Logger.Debug(LJO);
+  finally
+    LJO.Free;
+  end;
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);

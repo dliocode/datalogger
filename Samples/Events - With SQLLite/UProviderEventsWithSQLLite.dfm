@@ -75,7 +75,6 @@ object Form2: TForm2
     Height = 379
     Align = alClient
     TabOrder = 2
-    ExplicitHeight = 173
     object Label1: TLabel
       Left = 1
       Top = 1
@@ -160,6 +159,7 @@ object Form2: TForm2
       FieldName = 'Id'
       Origin = 'Id'
       ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = True
     end
     object FDQueryOnAnySeq: TLargeintField
       FieldName = 'Seq'

@@ -20,7 +20,6 @@ object Form2: TForm2
     Align = alClient
     Caption = 'Panel2'
     TabOrder = 2
-    ExplicitTop = 60
     object PanelAll: TPanel
       Left = 1
       Top = 1
@@ -37,8 +36,6 @@ object Form2: TForm2
         Height = 15
         Align = alTop
         Caption = 'Logger Type -> All'
-        ExplicitLeft = 1
-        ExplicitTop = 1
         ExplicitWidth = 97
       end
       object MemoAll: TMemo
@@ -48,9 +45,6 @@ object Form2: TForm2
         Height = 354
         Align = alClient
         TabOrder = 0
-        ExplicitLeft = 2
-        ExplicitTop = 88
-        ExplicitHeight = 288
       end
     end
     object PanelOnlyError: TPanel
@@ -61,8 +55,6 @@ object Form2: TForm2
       Align = alClient
       Caption = 'PanelAll'
       TabOrder = 1
-      ExplicitLeft = 1
-      ExplicitWidth = 304
       object Label2: TLabel
         AlignWithMargins = True
         Left = 4
@@ -80,7 +72,6 @@ object Form2: TForm2
         Height = 354
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 302
       end
     end
   end

@@ -37,14 +37,15 @@ uses
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
   Logger
-    .Trace('My Trace')
+    .Trace('My trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .CustomType('My Custom', 'My Custom');
+    .CustomType('CUSTOM TYPE','My Custom')    
+    ;
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
