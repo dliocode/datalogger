@@ -503,7 +503,7 @@ begin
     Result := TJSON.Format(AValue)
 {$ENDIF}
   else
-    Result := AValue.toString;
+    Result := AValue.ToString;
 end;
 
 initialization
