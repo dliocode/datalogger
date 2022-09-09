@@ -96,14 +96,18 @@ begin
       TEventsConfig.Create
         .OnAny(
         procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+        var
+          LItem: TLoggerItem;
         begin
+          LItem := AItem;
+          
           TThread.Synchronize(nil,
           procedure
           begin
             FDMemTableOnAny.Append;
-            FDMemTableOnAnySeq.AsInteger := AItem.Sequence;
-            FDMemTableOnAnyTimeStamp.AsDateTime := AItem.TimeStamp;
-            FDMemTableOnAnyMessage.AsString := AItem.Message;
+            FDMemTableOnAnySeq.AsLargeInt := LItem.Sequence;
+            FDMemTableOnAnyTimeStamp.AsDateTime := LItem.TimeStamp;
+            FDMemTableOnAnyMessage.AsString := LItem.Message;
             FDMemTableOnAny.Post;
           end);
         end)
@@ -116,14 +120,18 @@ begin
 
         .OnError(
         procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+        var
+          LItem: TLoggerItem;
         begin
+          LItem := AItem;
+          
           TThread.Synchronize(nil,
           procedure
           begin
             FDMemTableOnError.Append;
-            FDMemTableOnErrorSeq.AsInteger := AItem.Sequence;
-            FDMemTableOnErrorTimeStamp.AsDateTime := AItem.TimeStamp;
-            FDMemTableOnErrorMessage.AsString := AItem.Message;
+            FDMemTableOnErrorSeq.AsLargeInt := LItem.Sequence;
+            FDMemTableOnErrorTimeStamp.AsDateTime := LItem.TimeStamp;
+            FDMemTableOnErrorMessage.AsString := LItem.Message;
             FDMemTableOnError.Post;
           end)
         end)

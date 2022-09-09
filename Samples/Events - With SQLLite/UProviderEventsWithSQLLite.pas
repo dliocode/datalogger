@@ -90,16 +90,20 @@ begin
       TEventsConfig.Create
         .OnAny(
         procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+        var
+          LItem: TLoggerItem;
         begin
+          LItem := AItem;
+          
           TThread.Synchronize(nil,
           procedure
           begin
             FDQueryOnAny.Append;
   //          FDQueryOnAnyId.AsInteger := 0;
-            FDQueryOnAnySeq.AsInteger := AItem.Sequence;
-            FDQueryOnAnyTimestamp.AsDateTime := AItem.TimeStamp;
-            FDQueryOnAnyMessage.AsString := AItem.Message;
-            FDQueryOnAnyType.AsInteger := Integer(AItem.&Type);
+            FDQueryOnAnySeq.AsLargeInt := LItem.Sequence;
+            FDQueryOnAnyTimestamp.AsDateTime := LItem.TimeStamp;
+            FDQueryOnAnyMessage.AsString := LItem.Message;
+            FDQueryOnAnyType.AsInteger := Integer(LItem.&Type);
             FDQueryOnAny.Post;
           end)
         end)
