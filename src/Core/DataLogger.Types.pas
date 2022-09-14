@@ -42,9 +42,9 @@ type
   EDataLoggerException = class(Exception)
   end;
 
-{$SCOPEDENUMS ON}                   
+{$SCOPEDENUMS ON}
   TLoggerLevel = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
-  TLoggerLevels = set of TLoggerLevel;  
+  TLoggerLevels = set of TLoggerLevel;
 
   TLoggerTransactionTypeCommit = (tcAll, tcBlock);
 {$SCOPEDENUMS OFF}

@@ -36,14 +36,12 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
   System.SysUtils, System.JSON;
 
 type
-
 {$SCOPEDENUMS ON}
 {$IF DEFINED(MSWINDOWS)}
   TColor = (Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White);
@@ -330,6 +328,7 @@ procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: st
   end;
 
 {$IF DEFINED(MSWINDOWS)}
+
 var
   LHandleOutput: THandle;
   LBufferInfo: TConsoleScreenBufferInfo;
@@ -348,6 +347,7 @@ begin
 end;
 
 {$ELSEIF DEFINED(LINUX)}
+
 var
   LColor: Integer;
 begin
@@ -367,9 +367,11 @@ begin
 end;
 
 {$ELSE}
+
 begin
   Writeln(ALog);
-end;  
+end;
+
 {$ENDIF}
 
 procedure ForceReferenceToClass(C: TClass);

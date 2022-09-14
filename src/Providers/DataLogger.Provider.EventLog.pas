@@ -123,6 +123,7 @@ end;
 
 procedure TProviderEventLog.Save(const ACache: TArray<TLoggerItem>);
 {$IF DEFINED(MSWINDOWS)}
+
 var
   LEventLogger: TEventLogger;
   LRetriesCount: Integer;
@@ -186,10 +187,13 @@ begin
     LEventLogger.Free;
   end;
 end;
+
 {$ELSE}
+
 begin
 end;
-{$ENDIF}       
+
+{$ENDIF}
 
 procedure ForceReferenceToClass(C: TClass);
 begin
