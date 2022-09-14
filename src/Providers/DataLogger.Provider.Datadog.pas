@@ -88,7 +88,7 @@ implementation
 constructor TProviderDatadog.Create;
 begin
   inherited Create;
-  
+
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://http-intake.logs.datadoghq.com/api/v2/logs');

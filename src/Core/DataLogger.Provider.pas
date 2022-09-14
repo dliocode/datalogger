@@ -87,7 +87,7 @@ type
     function SetFinalMessage(const AMessage: string): T;
 
     function UseTransaction(const AUseTransaction: Boolean): T;
-    function TransactionAutoCommit(const ALogLevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T; 
+    function TransactionAutoCommit(const ALogLevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
 
     function StartTransaction(const AID: string; const AUseLock: Boolean = True): T;
     function CommitTransaction(const AID: string; const ALevelCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock; const AUseLock: Boolean = True): T;
@@ -245,7 +245,7 @@ begin
   Result := FOwner;
 
   FTransactionAutoCommitLogLevel := ALogLevels;
-  FTransactionAutoCommitType := ATypeAutoCommit;  
+  FTransactionAutoCommitType := ATypeAutoCommit;
 end;
 
 function TDataLoggerProvider<T>.StartTransaction(const AID: string; const AUseLock: Boolean = True): T;

@@ -225,7 +225,7 @@ begin
     URL(LJO.GetValue<string>('url', FURL));
     ContentType(LJO.GetValue<string>('content_type', FContentType));
     Token(LJO.GetValue<string>('token', FToken));
-    
+
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 

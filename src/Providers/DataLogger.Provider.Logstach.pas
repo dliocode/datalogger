@@ -71,7 +71,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
-    destructor Destroy; override;  
+    destructor Destroy; override;
   end;
 
 implementation

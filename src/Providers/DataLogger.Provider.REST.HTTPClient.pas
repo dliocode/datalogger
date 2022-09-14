@@ -51,7 +51,7 @@ type
     Field: string;
     Value: string;
     ContentType: string;
-    
+
     class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
   end;
 
@@ -231,10 +231,10 @@ begin
     URL(LJO.GetValue<string>('url', FURL));
     ContentType(LJO.GetValue<string>('content_type', FContentType));
     Token(LJO.GetValue<string>('token', FToken));
-    
+
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
-    
+
     SetJSONInternal(LJO);
   finally
     LJO.Free;

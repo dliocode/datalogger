@@ -84,7 +84,7 @@ type
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; 
+    constructor Create;
     destructor Destroy; override;
   end;
 

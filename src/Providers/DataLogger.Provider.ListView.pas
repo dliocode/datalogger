@@ -126,10 +126,10 @@ begin
 
   try
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
-    
+
     LValue := GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert));
     FModeInsert := TListViewModeInsert(GetEnumValue(TypeInfo(TListViewModeInsert), LJO.GetValue<string>('mode_insert', LValue)));
-    
+
     CleanOnStart(LJO.GetValue<Boolean>('clean_on_start', FCleanOnStart));
 
     SetJSONInternal(LJO);
