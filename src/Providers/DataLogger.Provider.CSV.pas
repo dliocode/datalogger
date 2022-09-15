@@ -30,7 +30,9 @@
   ********************************************************************************
 }
 
-unit DataLogger.Provider.TextFile;
+// COMMA-SEPARATED-VALUES
+
+unit DataLogger.Provider.CSV;
 
 interface
 
@@ -39,9 +41,9 @@ uses
   System.IOUtils, System.SysUtils, System.Classes, System.Zip, System.JSON;
 
 type
-  TProviderTextFileExecuteCompress = reference to procedure(const ADirLogFileName: string; const AFileName: string; var ARemoveFile: Boolean);
+  TProviderCSVExecuteCompress = reference to procedure(const ADirLogFileName: string; const AFileName: string; var ARemoveFile: Boolean);
 
-  TProviderTextFile = class(TDataLoggerProvider<TProviderTextFile>)
+  TProviderCSV = class(TDataLoggerProvider<TProviderCSV>)
   private
     FLogDir: string;
     FPrefixFileName: string;
@@ -49,11 +51,12 @@ type
     FMaxFileSizeInKiloByte: Int64;
     FMaxBackupFileCount: Int64;
     FCompress: Boolean;
-    FCompressCustom: TProviderTextFileExecuteCompress;
+    FCompressCustom: TProviderCSVExecuteCompress;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
     FFormatDateTime: string;
     FEncoding: TEncoding;
+    FSeparator: Char;
 
     FWriter: TStreamWriter;
     FRotateInternal: Int64;
@@ -70,16 +73,17 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function LogDir(const AValue: string): TProviderTextFile;
-    function PrefixFileName(const AValue: string): TProviderTextFile;
-    function Extension(const AValue: string): TProviderTextFile;
-    function MaxFileSizeInKiloByte(const AValue: Int64): TProviderTextFile;
-    function MaxBackupFileCount(const AValue: Int64): TProviderTextFile;
-    function Compress(const AValue: Boolean): TProviderTextFile;
-    function CompressCustom(const AValue: TProviderTextFileExecuteCompress): TProviderTextFile;
-    function CleanOnStart(const AValue: Boolean): TProviderTextFile;
-    function FormatDateTime(const AValue: string): TProviderTextFile;
-    function Encoding(const AValue: TEncoding): TProviderTextFile;
+    function LogDir(const AValue: string): TProviderCSV;
+    function PrefixFileName(const AValue: string): TProviderCSV;
+    function Separator(const AValue: Char): TProviderCSV;
+    function Extension(const AValue: string): TProviderCSV;
+    function MaxFileSizeInKiloByte(const AValue: Int64): TProviderCSV;
+    function MaxBackupFileCount(const AValue: Int64): TProviderCSV;
+    function Compress(const AValue: Boolean): TProviderCSV;
+    function CompressCustom(const AValue: TProviderCSVExecuteCompress): TProviderCSV;
+    function CleanOnStart(const AValue: Boolean): TProviderCSV;
+    function FormatDateTime(const AValue: string): TProviderCSV;
+    function Encoding(const AValue: TEncoding): TProviderCSV;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -90,15 +94,16 @@ type
 
 implementation
 
-{ TProviderTextFile }
+{ TProviderCSV }
 
-constructor TProviderTextFile.Create;
+constructor TProviderCSV.Create;
 begin
   inherited Create;
 
   LogDir('.');
   PrefixFileName('');
-  Extension('.txt');
+  Separator(',');
+  Extension('.csv');
   MaxFileSizeInKiloByte(0);
   MaxBackupFileCount(0);
   Compress(False);
@@ -110,28 +115,36 @@ begin
 
   FWriter := nil;
   FRotateInternal := 0;
+
+  SetIgnoreLogFormat(True);
 end;
 
-destructor TProviderTextFile.Destroy;
+destructor TProviderCSV.Destroy;
 begin
   FreeWriter;
 
   inherited;
 end;
 
-function TProviderTextFile.LogDir(const AValue: string): TProviderTextFile;
+function TProviderCSV.LogDir(const AValue: string): TProviderCSV;
 begin
   Result := Self;
   FLogDir := AValue.Replace('/', TPath.DirectorySeparatorChar).Replace('\', TPath.DirectorySeparatorChar);
 end;
 
-function TProviderTextFile.PrefixFileName(const AValue: string): TProviderTextFile;
+function TProviderCSV.PrefixFileName(const AValue: string): TProviderCSV;
 begin
   Result := Self;
   FPrefixFileName := AValue;
 end;
 
-function TProviderTextFile.Extension(const AValue: string): TProviderTextFile;
+function TProviderCSV.Separator(const AValue: Char): TProviderCSV;
+begin
+  Result := Self;
+  FSeparator := AValue;
+end;
+
+function TProviderCSV.Extension(const AValue: string): TProviderCSV;
 begin
   Result := Self;
 
@@ -140,49 +153,49 @@ begin
     FExtension := '.' + AValue;
 end;
 
-function TProviderTextFile.MaxFileSizeInKiloByte(const AValue: Int64): TProviderTextFile;
+function TProviderCSV.MaxFileSizeInKiloByte(const AValue: Int64): TProviderCSV;
 begin
   Result := Self;
   FMaxFileSizeInKiloByte := AValue;
 end;
 
-function TProviderTextFile.MaxBackupFileCount(const AValue: Int64): TProviderTextFile;
+function TProviderCSV.MaxBackupFileCount(const AValue: Int64): TProviderCSV;
 begin
   Result := Self;
   FMaxBackupFileCount := AValue;
 end;
 
-function TProviderTextFile.Compress(const AValue: Boolean): TProviderTextFile;
+function TProviderCSV.Compress(const AValue: Boolean): TProviderCSV;
 begin
   Result := Self;
   FCompress := AValue;
 end;
 
-function TProviderTextFile.CompressCustom(const AValue: TProviderTextFileExecuteCompress): TProviderTextFile;
+function TProviderCSV.CompressCustom(const AValue: TProviderCSVExecuteCompress): TProviderCSV;
 begin
   Result := Self;
   FCompressCustom := AValue;
 end;
 
-function TProviderTextFile.CleanOnStart(const AValue: Boolean): TProviderTextFile;
+function TProviderCSV.CleanOnStart(const AValue: Boolean): TProviderCSV;
 begin
   Result := Self;
   FCleanOnStart := AValue;
 end;
 
-function TProviderTextFile.FormatDateTime(const AValue: string): TProviderTextFile;
+function TProviderCSV.FormatDateTime(const AValue: string): TProviderCSV;
 begin
   Result := Self;
   FFormatDateTime := AValue;
 end;
 
-function TProviderTextFile.Encoding(const AValue: TEncoding): TProviderTextFile;
+function TProviderCSV.Encoding(const AValue: TEncoding): TProviderCSV;
 begin
   Result := Self;
   FEncoding := AValue
 end;
 
-procedure TProviderTextFile.LoadFromJSON(const AJSON: string);
+procedure TProviderCSV.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -215,7 +228,7 @@ begin
   end;
 end;
 
-function TProviderTextFile.ToJSON(const AFormat: Boolean): string;
+function TProviderCSV.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -238,12 +251,12 @@ begin
   end;
 end;
 
-procedure TProviderTextFile.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderCSV.Save(const ACache: TArray<TLoggerItem>);
 var
   LItem: TLoggerItem;
   LFileName: string;
   LRetriesCount: Integer;
-  LLog: string;
+  LFileExist: Boolean;
 begin
   LFileName := GetLogFileName(0);
   if FOldFileName.Trim.IsEmpty then
@@ -283,27 +296,33 @@ begin
       FCleanOnRun := True;
     end;
 
+  LFileExist := TFile.Exists(LFileName);
+
   CreateWriter;
   try
+    if not LFileExist then
+      InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+
     for LItem in ACache do
     begin
       if LItem.InternalItem.LevelSlineBreak then
-        LLog := ''
-      else
-        LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+        Continue;
 
-      InternalWriteLog(LLog);
+      InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, False));
 
       if FMaxFileSizeInKiloByte > 0 then
         if FWriter.BaseStream.Size > FMaxFileSizeInKiloByte * 1024 then
+        begin
           RotateLog;
+          InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+        end;
     end;
   finally
     FreeWriter;
   end;
 end;
 
-function TProviderTextFile.GetLogFileName(const AFileNumber: Int64): string;
+function TProviderCSV.GetLogFileName(const AFileNumber: Int64): string;
 var
   LFileName: string;
 begin
@@ -329,7 +348,7 @@ begin
     Result := LFileName;
 end;
 
-procedure TProviderTextFile.CreateWriter;
+procedure TProviderCSV.CreateWriter;
 var
   LLogFileName: string;
   LFileStream: TFileStream;
@@ -372,7 +391,7 @@ begin
     end;
 end;
 
-procedure TProviderTextFile.FreeWriter;
+procedure TProviderCSV.FreeWriter;
 begin
   if not Assigned(FWriter) then
     Exit;
@@ -381,13 +400,13 @@ begin
   FWriter := nil;
 end;
 
-procedure TProviderTextFile.InternalWriteLog(const AValue: string);
+procedure TProviderCSV.InternalWriteLog(const AValue: string);
 begin
   FWriter.WriteLine(AValue);
   FWriter.Flush;
 end;
 
-procedure TProviderTextFile.MoveFile(const ASourceFileName: string; const ADestFileName: string);
+procedure TProviderCSV.MoveFile(const ASourceFileName: string; const ADestFileName: string);
 var
   LRetriesCount: Integer;
 begin
@@ -410,7 +429,7 @@ begin
     end;
 end;
 
-procedure TProviderTextFile.RotateLog;
+procedure TProviderCSV.RotateLog;
 var
   LNow: TDateTime;
   LRotateDateTime: string;
@@ -476,7 +495,7 @@ begin
   InternalWriteLog('');
 end;
 
-procedure TProviderTextFile.ZipFile(const ADirFileName: string; const AFileName: string);
+procedure TProviderCSV.ZipFile(const ADirFileName: string; const AFileName: string);
 begin
   TThread.CreateAnonymousThread(
     procedure
@@ -497,7 +516,7 @@ begin
     .Start;
 end;
 
-procedure TProviderTextFile.CreateZipFile(const ADirFileName: string; const AFileName: string);
+procedure TProviderCSV.CreateZipFile(const ADirFileName: string; const AFileName: string);
 var
   LZipFileName: string;
   LZipFile: TZipFile;
@@ -525,6 +544,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderTextFile);
+ForceReferenceToClass(TProviderCSV);
 
 end.

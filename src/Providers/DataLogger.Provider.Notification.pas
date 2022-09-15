@@ -151,7 +151,7 @@ begin
     if FIncludeLogLevelInTitle then
       LName := LName + ' - ' + LItem.LevelString;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     LRetriesCount := 0;
 

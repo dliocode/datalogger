@@ -67,6 +67,10 @@ type
     FFormatTimestamp: string;
     FLogException: TOnLogException;
     FMaxRetries: Integer;
+    FIgnoreLogFormat: Boolean;
+    FIgnoreLogFormatSeparator: string;
+    FIgnoreLogFormatIncludeKey: Boolean;
+    FIgnoreLogFormatIncludeKeySeparator: string;
 
     procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
@@ -85,6 +89,7 @@ type
     function SetMaxRetries(const AMaxRetries: Integer): T;
     function SetInitialMessage(const AMessage: string): T;
     function SetFinalMessage(const AMessage: string): T;
+    function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
 
     function UseTransaction(const AUseTransaction: Boolean): T;
     function TransactionAutoCommit(const ALogLevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
@@ -137,6 +142,10 @@ begin
   SetOnlyLogLevel([TLoggerLevel.All]);
   SetLogException(nil);
   SetMaxRetries(5);
+  SetInitialMessage('');
+  SetFinalMessage('');
+  SetIgnoreLogFormat(False);
+
   UseTransaction(False);
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
 
@@ -232,6 +241,16 @@ function TDataLoggerProvider<T>.SetFinalMessage(const AMessage: string): T;
 begin
   Result := FOwner;
   FFinalMessage := AMessage;
+end;
+
+function TDataLoggerProvider<T>.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
+begin
+  Result := FOwner;
+
+  FIgnoreLogFormat := AIgnoreLogFormat;
+  FIgnoreLogFormatSeparator := ASeparator;
+  FIgnoreLogFormatIncludeKey := AIncludeKey;
+  FIgnoreLogFormatIncludeKeySeparator := AIncludeKeySeparator;
 end;
 
 function TDataLoggerProvider<T>.UseTransaction(const AUseTransaction: Boolean): T;

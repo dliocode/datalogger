@@ -90,6 +90,8 @@ begin
   FHTTP.URL('https://localhost:9200');
 
   Index('logger');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderElasticSearch.Destroy;
@@ -183,7 +185,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, True);
+    LLogItemREST.Stream := TLoggerLogFormat.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := Format('%s/%s/_doc', [FHTTP.URL.Trim(['/']), FIndex.ToLower]);
 

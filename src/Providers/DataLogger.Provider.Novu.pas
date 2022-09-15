@@ -99,6 +99,8 @@ begin
   SubscriberID('');
   EmailTo([]);
   Subject('DataLogger');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderNovu.Destroy;
@@ -209,7 +211,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LJOLog := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True);
+    LJOLog := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       for I := Low(FEmailTo) to High(FEmailTo) do
       begin

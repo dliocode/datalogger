@@ -89,6 +89,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://localhost:8088');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderSplunk.Destroy;
@@ -174,7 +176,7 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('event', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+      LJO.AddPair('event', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

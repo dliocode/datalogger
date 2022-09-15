@@ -133,6 +133,7 @@ type
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
     function SetInitialMessage(const AMessage: string): TDataLogger;
     function SetFinalMessage(const AMessage: string): TDataLogger;
+    function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
     function SetIsRequiredTagName(const AIsRequiredTagName: Boolean): TDataLogger;
 
@@ -628,6 +629,19 @@ begin
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TObject>(LProviders[I]).SetFinalMessage(AMessage);
+end;
+
+function TDataLogger.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string; const AIncludeKey: Boolean; const AIncludeKeySeparator: string): TDataLogger;
+var
+  LProviders: TArray<TThread>;
+  I: Integer;
+begin
+  Result := Self;
+
+  LProviders := GetProviders;
+
+  for I := Low(LProviders) to High(LProviders) do
+    TDataLoggerProvider<TObject>(LProviders[I]).SetIgnoreLogFormat(AIgnoreLogFormat, ASeparator, AIncludeKey, AIncludeKeySeparator);
 end;
 
 function TDataLogger.SetName(const AName: string): TDataLogger;

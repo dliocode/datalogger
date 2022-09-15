@@ -191,7 +191,7 @@ var
       if LItem.InternalItem.LevelSlineBreak then
         Continue;
 
-      LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+      LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
       LJO := TJSONObject.Create;
       try
@@ -228,7 +228,7 @@ var
           if LItem.InternalItem.LevelSlineBreak then
             Continue;
 
-          LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+          LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
           LAppend.Append(LLog);
           LAppend.AppendLine;

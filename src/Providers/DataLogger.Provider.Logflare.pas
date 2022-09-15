@@ -88,6 +88,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://api.logflare.app/api/logs');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderLogflare.Destroy;
@@ -178,7 +180,7 @@ begin
       else
         LJO.AddPair('message', LItem.Message);
 
-      LJO.AddPair('metadata', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+      LJO.AddPair('metadata', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

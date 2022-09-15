@@ -59,6 +59,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [Max Retries](#max-retries)
   * [InitialMessage](#initialmessage)
   * [FinalMessage](#finalmessage)
+  * [IgnoreLogFormat](#ignorelogformat)
   * [Name](#name)
   * [Transaction](#transaction)
 
@@ -686,6 +687,55 @@ begin
   
   // Output: 
   // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR DLIOCODE 
+
+  Readln;
+end.
+```
+
+## IgnoreLogFormat
+
+É possível ignorar o formato do LogFormat e salvar todos os dados gerados pelo DataLogger;
+
+```delphi  
+SetIgnoreLogFormat({1}, {2}, {3}, {4});
+```delphi  
+
+```delphi  
+  Parâmetros:
+    {1} = (Boolean) = Defini se deve ignorar o LogFormat.
+    {2} = (string) = Defini qual texto vai fazer a separação das informações, semelhante ao CSV.
+    {3} = (Boolean) = Defini se deve mostrar as palavras chaves de cada valor.
+    {4} = (string) = Defini qual texto deve separar a palavra chave do valor.
+
+  Logger.SetIgnoreLogFormat(True, '|', True, ' -> '); 
+
+  {palavra_chave}           = "timestamp"
+  {palavra_chave_separador} = " -> "
+  {valor}                   = "2022-09-15T14:39:38.896-03:00"
+  {separator}               = " | " 
+  
+  // output timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896                 
+```
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Provider.Console;
+
+begin
+  Logger.AddProvider(TProviderConsole.Create);
+
+  // Definindo o formato do log
+  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
+
+  // Ignorando o log format
+  Logger.SetIgnoreLogFormat(True, '|', True, ' -> ');
+
+  // Gerando o log
+  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  
+  // Output: 
+  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name ->  | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag ->  | message -> My trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
 
   Readln;
 end.

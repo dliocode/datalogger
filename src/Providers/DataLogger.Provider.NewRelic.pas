@@ -87,6 +87,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://log-api.newrelic.com/log/v1');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderNewRelic.Destroy;
@@ -160,7 +162,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True);
+    LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       if LItem.Message.Trim.IsEmpty then
         LJO.AddPair('message', LItem.MessageJSON)

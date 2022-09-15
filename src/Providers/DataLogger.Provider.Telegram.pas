@@ -263,7 +263,7 @@ begin
       Continue;
 
     LParseMode := '';
-    LMessage := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp).Trim;
+    LMessage := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     if FParseMode <> TTelegramParseMode.tpNone then
       SerializeMessageParseMode;

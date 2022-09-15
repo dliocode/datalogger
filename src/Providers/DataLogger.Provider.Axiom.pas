@@ -88,6 +88,8 @@ begin
   FHTTP.ContentType('application/json');
 
   Dataset('');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderAxiom.Destroy;
@@ -172,7 +174,7 @@ begin
 
     LJA := TJSONArray.Create;
     try
-      LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True);
+      LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
       LJO.AddPair('_time', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)));
 
       LJA.Add(LJO);

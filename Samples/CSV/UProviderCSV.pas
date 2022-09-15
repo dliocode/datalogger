@@ -1,4 +1,4 @@
-unit UProviderTextFile;
+unit UProviderCSV;
 
 interface
 
@@ -34,7 +34,7 @@ implementation
 
 uses
   System.IOUtils,
-  DataLogger, DataLogger.Provider.TextFile;
+  DataLogger, DataLogger.Provider.CSV;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -65,10 +65,11 @@ begin
   FLogDir := TPath.GetDirectoryName(ParamStr(0));
 
   Logger.AddProvider(
-    TProviderTextFile.Create
+    TProviderCSV.Create
     .LogDir(FLogDir)
 //    .PrefixFileName('my_log_')
-//    .Extension('.txt')
+//    .Separator(',')
+//    .Extension('.csv')
 //    .MaxFileSizeInKiloByte(10)
 //    .MaxBackupFileCount(5)
 //    .Compress(False) // Compress only with file name change or size change
@@ -80,8 +81,6 @@ begin
 
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
-
-  Logger.SetIgnoreLogFormat(True, '|', True, ' -> ');
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

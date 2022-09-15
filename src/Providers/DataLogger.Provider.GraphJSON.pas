@@ -90,6 +90,8 @@ begin
   FHTTP.ContentType('application/json');
 
   Collection('');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderGraphJSON.Destroy;
@@ -172,7 +174,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
+    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     LJO := TJSONObject.Create;
     try

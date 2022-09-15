@@ -113,6 +113,8 @@ begin
   FSocket.OnConnect := OnConnect;
   FSocket.OnDisconnect := OnDisconnect;
   TDataLoggerSocketServer(FSocket).OnExecute := OnExecute;
+
+  SetIgnoreLogFormat(True);
 end;
 
 procedure TProviderSocket.AfterConstruction;
@@ -328,7 +330,7 @@ begin
     if Assigned(FCustomMessage) then
       LLog := FCustomMessage(LItem)
     else
-      LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
+      LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     TParallel.For(Low(LContexts), High(LContexts),
       procedure(I: Integer)

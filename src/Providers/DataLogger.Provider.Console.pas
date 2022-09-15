@@ -57,6 +57,7 @@ type
       Background: TColor;
       Foreground: TColor;
     end;
+
   private
     FUseColorInConsole: Boolean;
     FUseColorOnlyInLevels: Boolean;
@@ -68,6 +69,7 @@ type
     FColorError: TColorConsole;
     FColorFatal: TColorConsole;
     FColorCustom: TColorConsole;
+
     procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -236,7 +238,7 @@ begin
       Continue;
     end;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     LRetriesCount := 0;
 

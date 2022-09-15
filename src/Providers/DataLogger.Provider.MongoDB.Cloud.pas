@@ -98,6 +98,8 @@ begin
   DataSource('AtlasCluster');
   DataBase('db_datalogger');
   Collection('logger');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderMongoDBCloud.Destroy;
@@ -208,7 +210,7 @@ begin
       LJO.AddPair('dataSource', FDataSource);
       LJO.AddPair('database', FDataBase);
       LJO.AddPair('collection', FCollection);
-      LJO.AddPair('document', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+      LJO.AddPair('document', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

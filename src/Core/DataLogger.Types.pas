@@ -90,11 +90,19 @@ type
   TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
 
   TLoggerLogFormat = class
-    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;
-    class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): string;
-    class function AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
-    class function AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
-    class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TStream;
+  private
+    class function AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
+  public
+    class function AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
+    class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TJSONObject;
+    class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): string;
+    class function AsString(
+      const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
+      const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): string;
+    class function AsStream(
+      const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
+      const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): TStream;
+    class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
   end;
 
   TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
@@ -140,7 +148,7 @@ end;
 
 { TLoggerLogFormat }
 
-class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TJSONObject;
+class function TLoggerLogFormat.AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
   procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
   begin
     if ALogFormat.Contains(ALogKey) or AIgnoreLogFormat then
@@ -150,27 +158,28 @@ class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AIt
   end;
 
 var
-  I: Integer;
   LJO: TJSONObject;
+  I: Integer;
   LKey: string;
   LValue: TJSONValue;
 begin
   Result := TJSONObject.Create;
 
-  _Add(TLoggerFormat.LOG_TIMESTAMP, 'log_timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
-  _Add(TLoggerFormat.LOG_NAME, 'log_name', TJSONString.Create(AItem.Name));
-  _Add(TLoggerFormat.LOG_SEQUENCE, 'log_sequence', TJSONNumber.Create(AItem.Sequence));
-  _Add(TLoggerFormat.LOG_THREADID, 'log_thread_id', TJSONNumber.Create(AItem.ThreadID));
-  _Add(TLoggerFormat.LOG_LEVEL, 'log_level', TJSONString.Create(AItem.LevelString));
-  _Add(TLoggerFormat.LOG_LEVEL_VALUE, 'log_level_value', TJSONNumber.Create(AItem.LevelValue));
-  _Add(TLoggerFormat.LOG_TAG, 'log_tag', TJSONString.Create(AItem.Tag));
+  _Add(TLoggerFormat.LOG_TIMESTAMP, APrefix + 'timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
+  _Add(TLoggerFormat.LOG_TIMESTAMP, APrefix + 'timestamp_format', TJSONString.Create(FormatDateTime(AFormatTimestamp, AItem.TimeStamp)));
+  _Add(TLoggerFormat.LOG_NAME, APrefix + 'name', TJSONString.Create(AItem.Name));
+  _Add(TLoggerFormat.LOG_SEQUENCE, APrefix + 'sequence', TJSONNumber.Create(AItem.Sequence));
+  _Add(TLoggerFormat.LOG_THREADID, APrefix + 'thread_id', TJSONNumber.Create(AItem.ThreadID));
+  _Add(TLoggerFormat.LOG_LEVEL, APrefix + 'level', TJSONString.Create(AItem.LevelString));
+  _Add(TLoggerFormat.LOG_LEVEL_VALUE, APrefix + 'level_value', TJSONNumber.Create(AItem.LevelValue));
+  _Add(TLoggerFormat.LOG_TAG, APrefix + 'tag', TJSONString.Create(AItem.Tag));
 
-  if not AItem.MessageJSON.Trim.IsEmpty then
+  if not AItem.MessageJSON.IsEmpty then
   begin
-    _Add(TLoggerFormat.LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.MessageJSON.Trim));
+    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.MessageJSON.Trim));
 
     try
-      LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJSONObject;
+      LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON) as TJSONObject;
 
       if Assigned(LJO) then
         try
@@ -191,26 +200,59 @@ begin
     end;
   end
   else
-    _Add(TLoggerFormat.LOG_MESSAGE, 'log_message', TJSONString.Create(AItem.Message.Trim));
+    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.Message.Trim));
 
-  _Add(TLoggerFormat.LOG_APPNAME, 'log_app_name', TJSONString.Create(AItem.AppName));
-  _Add(TLoggerFormat.LOG_APPVERSION, 'log_app_version', TJSONString.Create(AItem.AppVersion.FileVersion));
-  _Add(TLoggerFormat.LOG_APPPATH, 'log_app_path', TJSONString.Create(AItem.AppPath));
-  _Add(TLoggerFormat.LOG_APPSIZE, 'log_app_size', TJSONString.Create(FormatFloat('#,##0.00 MB', AItem.AppSize / 1024)));
+  _Add(TLoggerFormat.LOG_APPNAME, APrefix + 'app_name', TJSONString.Create(AItem.AppName));
+  _Add(TLoggerFormat.LOG_APPVERSION, APrefix + 'app_version', TJSONString.Create(AItem.AppVersion.FileVersion));
+  _Add(TLoggerFormat.LOG_APPPATH, APrefix + 'app_path', TJSONString.Create(AItem.AppPath));
+  _Add(TLoggerFormat.LOG_APPSIZE, APrefix + 'app_size', TJSONString.Create(FormatFloat('#,##0.00 MB', AItem.AppSize / 1024)));
 
-  _Add(TLoggerFormat.LOG_COMPUTERNAME, 'log_computer_name', TJSONString.Create(AItem.ComputerName));
-  _Add(TLoggerFormat.LOG_USERNAME, 'log_username', TJSONString.Create(AItem.Username));
-  _Add(TLoggerFormat.LOG_OSVERSION, 'log_os_version', TJSONString.Create(AItem.OSVersion));
-  _Add(TLoggerFormat.LOG_PROCESSID, 'log_process_id', TJSONString.Create(AItem.ProcessId));
+  _Add(TLoggerFormat.LOG_COMPUTERNAME, APrefix + 'computer_name', TJSONString.Create(AItem.ComputerName));
+  _Add(TLoggerFormat.LOG_USERNAME, APrefix + 'username', TJSONString.Create(AItem.Username));
+  _Add(TLoggerFormat.LOG_OSVERSION, APrefix + 'os_version', TJSONString.Create(AItem.OSVersion));
+  _Add(TLoggerFormat.LOG_PROCESSID, APrefix + 'process_id', TJSONString.Create(AItem.ProcessId));
 
-  _Add(TLoggerFormat.LOG_IP_LOCAL, 'log_ip_local', TJSONString.Create(AItem.IPLocal));
+  _Add(TLoggerFormat.LOG_IP_LOCAL, APrefix + 'ip_local', TJSONString.Create(AItem.IPLocal));
 end;
 
-class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): string;
+class function TLoggerLogFormat.AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
+var
+  LLog: string;
+  LJO: TJSONObject;
+  LKey: string;
+  I: Integer;
+begin
+  LLog := '';
+
+  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, '');
+  try
+    for I := 0 to Pred(LJO.Count) do
+    begin
+      if AOnlyHeader then
+      begin
+        LKey := LJO.Pairs[I].JsonString.Value;
+        LLog := LLog + LKey + ASeparator
+      end
+      else
+        LLog := LLog + LJO.Pairs[I].JsonValue.Value + ASeparator;
+    end;
+
+    Result := LLog.Trim([ASeparator]);
+  finally
+    LJO.Free;
+  end;
+end;
+
+class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TJSONObject;
+begin
+  Result := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, 'log_');
+end;
+
+class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): string;
 var
   LJO: TJSONObject;
 begin
-  LJO := AsJsonObject(ALogFormat, AItem, AIgnoreLogFormat);
+  LJO := AsJsonObject(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat);
   try
 {$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
     Result := LJO.ToString;
@@ -222,77 +264,67 @@ begin
   end;
 end;
 
-class function TLoggerLogFormat.AsString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): string;
+class function TLoggerLogFormat.AsString(
+  const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
+  const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): string;
 var
   LLog: string;
   LJO: TJSONObject;
   I: Integer;
-
-  function _Add(const AKey: string; const AValue: string): string;
-  begin
-    Result := LLog.Replace(AKey, AValue);
-  end;
-
+  LKey: string;
+  LValue: string;
 begin
-  LLog := ALogFormat;
-
-  LLog := _Add(TLoggerFormat.LOG_NAME, AItem.Name);
-  LLog := _Add(TLoggerFormat.LOG_SEQUENCE, IntToStr(AItem.Sequence));
-  LLog := _Add(TLoggerFormat.LOG_TIMESTAMP, FormatDateTime(AFormatTimestamp, AItem.TimeStamp));
-  LLog := _Add(TLoggerFormat.LOG_THREADID, IntToStr(AItem.ThreadID));
-  LLog := _Add(TLoggerFormat.LOG_LEVEL, AItem.LevelString);
-  LLog := _Add(TLoggerFormat.LOG_LEVEL_VALUE, IntToStr(AItem.LevelValue));
-  LLog := _Add(TLoggerFormat.LOG_TAG, AItem.Tag.Trim);
-
-  if not AItem.MessageJSON.Trim.IsEmpty then
-  begin
-    LLog := _Add(TLoggerFormat.LOG_MESSAGE, AItem.MessageJSON.Trim);
-
-    try
-      LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON.Trim) as TJSONObject;
-
-      if Assigned(LJO) then
-        try
-          for I := 0 to Pred(LJO.Count) do
-            LLog := _Add(Format('${%s}', [LJO.Pairs[I].JsonString.Value]), LJO.Pairs[I].JsonValue.Value);
-        finally
-          LJO.Free;
-        end;
-    except
-    end;
-  end
+  if not AIgnoreLogFormat then
+    LLog := ALogFormat
   else
-    LLog := _Add(TLoggerFormat.LOG_MESSAGE, AItem.Message.Trim);
+    LLog := '';
 
-  LLog := _Add(TLoggerFormat.LOG_APPNAME, AItem.AppName);
-  LLog := _Add(TLoggerFormat.LOG_APPPATH, AItem.AppPath);
-  LLog := _Add(TLoggerFormat.LOG_APPVERSION, AItem.AppVersion.FileVersion);
-  LLog := _Add(TLoggerFormat.LOG_APPSIZE, FormatFloat('#,##0.00 MB', AItem.AppSize / 1024));
+  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, '');
+  try
+    for I := 0 to Pred(LJO.Count) do
+    begin
+      LKey := LJO.Pairs[I].JsonString.Value;
+      LValue := LJO.Pairs[I].JsonValue.Value;
 
-  LLog := _Add(TLoggerFormat.LOG_COMPUTERNAME, AItem.ComputerName);
-  LLog := _Add(TLoggerFormat.LOG_USERNAME, AItem.Username);
-  LLog := _Add(TLoggerFormat.LOG_OSVERSION, AItem.OSVersion);
-  LLog := _Add(TLoggerFormat.LOG_PROCESSID, AItem.ProcessId);
-  LLog := _Add(TLoggerFormat.LOG_IP_LOCAL, AItem.IPLocal);
+      if not AIgnoreLogFormat then
+      begin
+        LLog := LLog.Replace(Format('${%s}', [LKey]), LValue);
+      end
+      else
+      begin
+        if AIgnoreLogFormatIncludeKey then
+          LLog := LLog + LKey + AIgnoreLogFormatIncludeKeySeparator + LValue + AIgnoreLogFormatSeparator
+        else
+          LLog := LLog + LValue + AIgnoreLogFormatSeparator;
+      end;
+    end;
+
+    if AIgnoreLogFormat then
+      LLog := Copy(LLog, 1, Length(LLog) - Length(AIgnoreLogFormatSeparator));
+  finally
+    LJO.Free;
+  end;
 
   Result := LLog;
 end;
 
-class function TLoggerLogFormat.AsStream(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string): TStream;
+class function TLoggerLogFormat.AsStream(
+  const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
+  const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): TStream;
 var
   LLog: string;
 begin
-  LLog := AsString(ALogFormat, AItem, AFormatTimestamp);
+  LLog := AsString(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, AIgnoreLogFormatSeparator, AIgnoreLogFormatIncludeKey, AIgnoreLogFormatIncludeKeySeparator);
 
   Result := TStringStream.Create(LLog, TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);
 end;
 
-class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AIgnoreLogFormat: Boolean = False): TStream;
+class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
 var
   LLog: string;
 begin
-  LLog := AsJsonObjectToString(ALogFormat, AItem, AIgnoreLogFormat);
+  LLog := AsJsonObjectToString(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat);
 
   Result := TStringStream.Create(LLog, TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);

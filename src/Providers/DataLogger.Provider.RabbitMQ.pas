@@ -178,7 +178,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp);
+    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     LRetriesCount := 0;
 

@@ -85,6 +85,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://a-prod-us-central-0.grafana.net/integrations/v1/webhook/xxxxxxxxxxxxxxxxxxx/');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderGrafanaOnCallWebHook.Destroy;
@@ -158,7 +160,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
+    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;

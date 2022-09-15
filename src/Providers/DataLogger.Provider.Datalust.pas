@@ -88,6 +88,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('http://localhost:5431');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderDatalust.Destroy;
@@ -176,7 +178,7 @@ begin
       LJOEvents
         .AddPair('Timestamp', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)))
         .AddPair('Level', LItem.LevelString)
-        .AddPair('Properties', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, True));
+        .AddPair('Properties', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       if not LItem.Message.Trim.IsEmpty then
         LJOEvents.AddPair('MessageTemplate', LItem.Message)

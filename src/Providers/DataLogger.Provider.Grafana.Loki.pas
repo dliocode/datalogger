@@ -93,6 +93,8 @@ begin
   FHTTP.URL('https://logs-prod3.grafana.net');
 
   ServiceName('Log');
+
+  SetIgnoreLogFormat(True);
 end;
 
 destructor TProviderGrafanaLoki.Destroy;
@@ -201,7 +203,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, True);
+    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     LDateUNIX := IntToStr(DateTimeToUnix(LItem.TimeStamp, False));
     LDateUNIX := SetZero(LDateUNIX, 19);
 
