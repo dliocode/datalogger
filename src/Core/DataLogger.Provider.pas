@@ -583,7 +583,7 @@ begin
   SetFormatTimestamp(LJOInternal.GetValue<string>('format_timestamp', FFormatTimestamp));
 
   LValue := FLogLevel.ToString;
-  FLogLevel.SetName(LJOInternal.GetValue<string>('log_level', LValue));
+  FLogLevel.SetLevelName(LJOInternal.GetValue<string>('log_level', LValue));
 
   // Disable Log Level
   LJSONValue := LJOInternal.GetValue('disable_log_level');
@@ -594,7 +594,7 @@ begin
     for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
     begin
       LValue := TJSONArray(LJSONValue).Items[I].Value;
-      LLoggerLevel.SetName(LValue);
+      LLoggerLevel.SetLevelName(LValue);
 
       FDisableLogLevel := FDisableLogLevel + [LLoggerLevel];
     end;
@@ -609,7 +609,7 @@ begin
     for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
     begin
       LValue := TJSONArray(LJSONValue).Items[I].Value;
-      LLoggerLevel.SetName(LValue);
+      LLoggerLevel.SetLevelName(LValue);
 
       FOnlyLogLevel := FOnlyLogLevel + [LLoggerLevel];
     end;
@@ -632,7 +632,7 @@ begin
       for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
       begin
         LValue := TJSONArray(LJSONValue).Items[I].Value;
-        LLoggerLevel.SetName(LValue);
+        LLoggerLevel.SetLevelName(LValue);
 
         FTransactionAutoCommitLogLevel := FTransactionAutoCommitLogLevel + [LLoggerLevel];
       end;

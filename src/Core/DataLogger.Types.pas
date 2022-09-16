@@ -51,7 +51,7 @@ type
 
   TLoggerLevelHelper = record helper for TLoggerLevel
   public
-    procedure SetName(const AName: string);
+    procedure SetLevelName(const AName: string);
     function ToString: string;
   end;
 
@@ -140,7 +140,7 @@ implementation
 
 { TLoggerLevelHelper }
 
-procedure TLoggerLevelHelper.SetName(const AName: string);
+procedure TLoggerLevelHelper.SetLevelName(const AName: string);
 begin
   Self := TLoggerLevel(GetEnumValue(TypeInfo(TLoggerLevel), AName));
 end;

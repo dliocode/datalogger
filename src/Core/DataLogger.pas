@@ -863,9 +863,8 @@ begin
       if not(TLoggerLevel.All in FOnlyLogLevel) and not(ALevel in FOnlyLogLevel) then
         Exit;
 
-      if not(ALevel in FOnlyLogLevel) then
-        if Ord(FLogLevel) > Ord(ALevel) then
-          Exit;
+      if Ord(FLogLevel) > Ord(ALevel) then
+        Exit;
 
       if not(ALevel = TLoggerLevel.All) then
       begin
