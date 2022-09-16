@@ -41,7 +41,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level','My Custom')    
+    .Custom('Custom Level','My Custom')
     ;
 end;
 
@@ -52,13 +52,18 @@ begin
   Logger.AddProvider(
     TProviderNotification.Create
     .Title('DataLogger - Notification', False)
+    .ExecuteOnClick(
+      procedure(const ANotification: TNotification)
+      begin
+        ShowMessage(ANotification.AlertBody);
+      end)
     );
 
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 
- // Show only custom
- Logger.SetOnlyLogLevel([TLoggerLevel.Custom]);
+  // Show only info and custom
+ Logger.SetOnlyLogLevel([TLoggerLevel.Info, TLoggerLevel.Custom]);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

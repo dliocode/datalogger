@@ -39,15 +39,23 @@ uses
   System.SysUtils, System.Notification, System.JSON, System.Classes;
 
 type
+  TNotification = System.Notification.TNotification;
+
+  TProviderNotificationExecute = reference to procedure(const ANotification: TNotification);
+
   TProviderNotification = class(TDataLoggerProvider<TProviderNotification>)
   private
     FNotificationCenter: TNotificationCenter;
     FTitle: string;
     FIncludeLogLevelInTitle: Boolean;
+    FOnReceiveExecute: TProviderNotificationExecute;
+
+    procedure OnReceiveLocalNotification(Sender: TObject; ANotification: TNotification);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
+    function ExecuteOnClick(const AOnReceiveExecute: TProviderNotificationExecute): TProviderNotification;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -65,8 +73,17 @@ begin
   inherited Create;
 
   FNotificationCenter := TNotificationCenter.Create(nil);
+  FNotificationCenter.OnReceiveLocalNotification := OnReceiveLocalNotification;
 
   Title('DataLogger - Notification');
+  ExecuteOnClick(nil);
+end;
+
+destructor TProviderNotification.Destroy;
+begin
+  FNotificationCenter.Free;
+
+  inherited;
 end;
 
 function TProviderNotification.Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
@@ -81,11 +98,10 @@ begin
   FIncludeLogLevelInTitle := AIncludeLogLevelInTitle;
 end;
 
-destructor TProviderNotification.Destroy;
+function TProviderNotification.ExecuteOnClick(const AOnReceiveExecute: TProviderNotificationExecute): TProviderNotification;
 begin
-  FNotificationCenter.Free;
-
-  inherited;
+  Result := Self;
+  FOnReceiveExecute := AOnReceiveExecute;
 end;
 
 procedure TProviderNotification.LoadFromJSON(const AJSON: string);
@@ -163,7 +179,7 @@ begin
           LNotification.Title := LName;
           LNotification.AlertBody := LLog;
 
-          TThread.Synchronize(nil,
+          TThread.Synchronize(Self,
             procedure
             begin
               FNotificationCenter.PresentNotification(LNotification);
@@ -194,6 +210,12 @@ begin
         end;
       end;
   end;
+end;
+
+procedure TProviderNotification.OnReceiveLocalNotification(Sender: TObject; ANotification: TNotification);
+begin
+  if Assigned(FOnReceiveExecute) then
+    FOnReceiveExecute(ANotification);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
