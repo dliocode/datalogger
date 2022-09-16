@@ -155,6 +155,7 @@
         <DCCReference Include="src\Core\DataLogger.Utils.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Axiom.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Console.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.CSV.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Datadog.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Datalust.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Discord.Hooks.pas"/>

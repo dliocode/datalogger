@@ -47,7 +47,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [DataLogger Simple](#datalogger-simple)
   * [Custom](#Custom)
   * [Formato do Log](#formato-do-log)
-    * [FormatLog Constant](#formatlog-constant)
+    * [LogFormat](#logformat)
     * [Como definir um formato](#como-definir-um-formato)
     * [Como definir um formato em providers específicos](#como-definir-um-formato-em-providers-especificos)
     * [Como mudar o formato do TimeStamp](#como-mudar-o-formato-do-timestamp)
@@ -252,7 +252,7 @@ Formato de log padrão:
 ${timestamp} [TID ${thread_id}] [PID ${process_id}] [SEQ ${sequence}] [${level}] [${tag}] ${message}
 ```
 
-### FormatLog Constant
+### LogFormat 
 
 Existe algumas constantes que podem ser utilizadas:
 
@@ -260,6 +260,8 @@ Existe algumas constantes que podem ser utilizadas:
 TLoggerFormat.LOG_NAME = '${name}';
 TLoggerFormat.LOG_SEQUENCE = '${sequence}';
 TLoggerFormat.LOG_TIMESTAMP = '${timestamp}';
+TLoggerFormat.LOG_TIMESTAMP_ISO8601 = '${timestamp_iso8601}';
+TLoggerFormat.LOG_TIMESTAMP_UNIX = '${timestamp_unix}';
 TLoggerFormat.LOG_THREADID = '${thread_id}';
 TLoggerFormat.LOG_PROCESSID = '${process_id}';
 TLoggerFormat.LOG_LEVEL = '${level}';
@@ -385,8 +387,14 @@ TLoggerFormat.LOG_NAME;
 // Exibe a sequencia que o log foi gerado.
 TLoggerFormat.LOG_SEQUENCE;
 
-// Exibe a data e hora que foi gerado.
+// Exibe a data e hora que foi gerado, usado o SetFormatTimestamp
 TLoggerFormat.LOG_TIMESTAMP;
+
+// Exibe a data e hora que foi gerado, no formato ISO8601.
+TLoggerFormat.LOG_TIMESTAMP_ISO8601;
+
+// Exibe a data e hora que foi gerado, no formato UNIX.
+TLoggerFormat.LOG_TIMESTAMP_UNIX;
 
 // Exibe o Id da thread que foi gerado o log.
 TLoggerFormat.LOG_THREADID;

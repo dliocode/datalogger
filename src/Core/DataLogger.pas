@@ -36,7 +36,8 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
-  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON;
+  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON,
+  System.DateUtils;
 
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
@@ -880,6 +881,8 @@ begin
     LLogItem.Name := FName;
     LLogItem.Sequence := FSequence;
     LLogItem.TimeStamp := Now;
+    LLogItem.TimeStampISO8601 := DateToISO8601(LLogItem.TimeStamp, False);
+    LLogItem.TimeStampUNIX := DateTimeToUnix(LLogItem.TimeStamp, False);
     LLogItem.ThreadID := TThread.Current.ThreadID;
     LLogItem.Level := ALevel;
 

@@ -64,6 +64,8 @@ type
     Name: string;
     Sequence: Int64;
     TimeStamp: TDateTime;
+    TimeStampISO8601: string;
+    TimeStampUNIX: Int64;
     ThreadID: Int64;
     Level: TLoggerLevel;
     LevelString: string;
@@ -112,6 +114,8 @@ type
     LOG_NAME = '${name}';
     LOG_SEQUENCE = '${sequence}';
     LOG_TIMESTAMP = '${timestamp}';
+    LOG_TIMESTAMP_ISO8601 = '${timestamp_iso8601}';
+    LOG_TIMESTAMP_UNIX = '${timestamp_unix}';
     LOG_THREADID = '${thread_id}';
     LOG_PROCESSID = '${process_id}';
     LOG_LEVEL = '${level}';
@@ -165,8 +169,9 @@ var
 begin
   Result := TJSONObject.Create;
 
-  _Add(TLoggerFormat.LOG_TIMESTAMP, APrefix + 'timestamp', TJSONString.Create(DateToISO8601(AItem.TimeStamp, False)));
-  _Add(TLoggerFormat.LOG_TIMESTAMP, APrefix + 'timestamp_format', TJSONString.Create(FormatDateTime(AFormatTimestamp, AItem.TimeStamp)));
+  _Add(TLoggerFormat.LOG_TIMESTAMP, APrefix + 'timestamp', TJSONString.Create(FormatDateTime(AFormatTimestamp, AItem.TimeStamp)));
+  _Add(TLoggerFormat.LOG_TIMESTAMP_ISO8601, APrefix + 'timestamp_iso8601', TJSONString.Create(AItem.TimeStampISO8601));
+  _Add(TLoggerFormat.LOG_TIMESTAMP_UNIX, APrefix + 'timestamp_unix', TJSONNumber.Create(AItem.TimeStampUNIX));
   _Add(TLoggerFormat.LOG_NAME, APrefix + 'name', TJSONString.Create(AItem.Name));
   _Add(TLoggerFormat.LOG_SEQUENCE, APrefix + 'sequence', TJSONNumber.Create(AItem.Sequence));
   _Add(TLoggerFormat.LOG_THREADID, APrefix + 'thread_id', TJSONNumber.Create(AItem.ThreadID));
