@@ -36,8 +36,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
-  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON,
-  System.DateUtils;
+  System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON, System.DateUtils;
 
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
