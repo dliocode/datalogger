@@ -43,9 +43,7 @@ type
 
   TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
 
-  TProviderEvents = class;
-
-  TEventsConfig = class
+  TProviderEvents = class(TDataLoggerProvider<TProviderEvents>)
   private
     FOnAny: TExecuteEvents;
     FOnTrace: TExecuteEvents;
@@ -56,35 +54,23 @@ type
     FOnError: TExecuteEvents;
     FOnFatal: TExecuteEvents;
     FOnCustom: TExecuteEvents;
-    procedure Init;
-  public
-    function OnAny(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnTrace(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnDebug(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnInfo(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnSuccess(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnWarn(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnError(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnFatal(const AEvent: TExecuteEvents): TEventsConfig;
-    function OnCustom(const AEvent: TExecuteEvents): TEventsConfig;
-
-    constructor Create;
-    destructor Destroy; override;
-  end;
-
-  TProviderEvents = class(TDataLoggerProvider<TProviderEvents>)
-  private
-    FConfig: TEventsConfig;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function Config(const AValue: TEventsConfig): TProviderEvents;
+    function OnAny(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnTrace(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnDebug(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnInfo(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnSuccess(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnWarn(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnError(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnFatal(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnCustom(const AEvent: TExecuteEvents): TProviderEvents;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
-    constructor Create; overload;
-    destructor Destroy; override;
+    constructor Create;
   end;
 
 implementation
@@ -95,21 +81,68 @@ constructor TProviderEvents.Create;
 begin
   inherited Create;
 
-  Config(nil);
+  FOnAny := nil;
+  FOnTrace := nil;
+  FOnDebug := nil;
+  FOnInfo := nil;
+  FOnWarn := nil;
+  FOnError := nil;
+  FOnSuccess := nil;
+  FOnFatal := nil;
 end;
 
-destructor TProviderEvents.Destroy;
-begin
-  if Assigned(FConfig) then
-    FConfig.Free;
-
-  inherited;
-end;
-
-function TProviderEvents.Config(const AValue: TEventsConfig): TProviderEvents;
+function TProviderEvents.OnAny(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
-  FConfig := AValue;
+  FOnAny := AEvent;
+end;
+
+function TProviderEvents.OnTrace(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnTrace := AEvent;
+end;
+
+function TProviderEvents.OnDebug(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnDebug := AEvent;
+end;
+
+function TProviderEvents.OnInfo(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnInfo := AEvent;
+end;
+
+function TProviderEvents.OnWarn(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnWarn := AEvent;
+end;
+
+function TProviderEvents.OnError(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnError := AEvent;
+end;
+
+function TProviderEvents.OnSuccess(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnSuccess := AEvent;
+end;
+
+function TProviderEvents.OnFatal(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnFatal := AEvent;
+end;
+
+function TProviderEvents.OnCustom(const AEvent: TExecuteEvents): TProviderEvents;
+begin
+  Result := Self;
+  FOnFatal := AEvent;
 end;
 
 procedure TProviderEvents.LoadFromJSON(const AJSON: string);
@@ -152,50 +185,15 @@ end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
   procedure _Execute(const AEvent: TExecuteEvents; const AItem: TLoggerItem);
+  var
+    LRetriesCount: Integer;
   begin
-    if Assigned(AEvent) then
-      AEvent(FLogFormat, AItem, FFormatTimestamp);
-  end;
-
-var
-  LRetriesCount: Integer;
-  LItem: TLoggerItem;
-begin
-  if not Assigned(FConfig) then
-    raise EDataLoggerException.Create('Config not defined!');
-
-  if Length(ACache) = 0 then
-    Exit;
-
-  for LItem in ACache do
-  begin
-    if LItem.InternalItem.LevelSlineBreak then
-      Continue;
-
     LRetriesCount := 0;
 
     while True do
       try
-        case LItem.Level of
-          TLoggerLevel.Trace:
-            _Execute(FConfig.FOnTrace, LItem);
-          TLoggerLevel.Debug:
-            _Execute(FConfig.FOnDebug, LItem);
-          TLoggerLevel.Info:
-            _Execute(FConfig.FOnInfo, LItem);
-          TLoggerLevel.Warn:
-            _Execute(FConfig.FOnWarn, LItem);
-          TLoggerLevel.Error:
-            _Execute(FConfig.FOnError, LItem);
-          TLoggerLevel.Success:
-            _Execute(FConfig.FOnSuccess, LItem);
-          TLoggerLevel.Fatal:
-            _Execute(FConfig.FOnFatal, LItem);
-          TLoggerLevel.Custom:
-            _Execute(FConfig.FOnCustom, LItem);
-        end;
-
-        _Execute(FConfig.FOnAny, LItem);
+        if Assigned(AEvent) then
+          AEvent(FLogFormat, AItem, FFormatTimestamp);
 
         Break;
       except
@@ -206,7 +204,7 @@ begin
           Sleep(50);
 
           if Assigned(FLogException) then
-            FLogException(Self, LItem, E, LRetriesCount);
+            FLogException(Self, AItem, E, LRetriesCount);
 
           if Self.Terminated then
             Exit;
@@ -217,87 +215,48 @@ begin
           if LRetriesCount >= FMaxRetries then
             Break;
         end;
-      end
+      end;
   end;
-end;
 
-{ TEventsConfig }
-
-constructor TEventsConfig.Create;
+var
+  LItem: TLoggerItem;
 begin
-  Init;
-end;
+  if Length(ACache) = 0 then
+    Exit;
 
-destructor TEventsConfig.Destroy;
-begin
-  Init;
-  inherited;
-end;
+  for LItem in ACache do
+  begin
+    if LItem.InternalItem.LevelSlineBreak then
+      Continue;
 
-procedure TEventsConfig.Init;
-begin
-  FOnAny := nil;
-  FOnTrace := nil;
-  FOnDebug := nil;
-  FOnInfo := nil;
-  FOnWarn := nil;
-  FOnError := nil;
-  FOnSuccess := nil;
-  FOnFatal := nil;
-end;
+    case LItem.Level of
+      TLoggerLevel.Trace:
+        _Execute(FOnTrace, LItem);
 
-function TEventsConfig.OnAny(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnAny := AEvent;
-end;
+      TLoggerLevel.Debug:
+        _Execute(FOnDebug, LItem);
 
-function TEventsConfig.OnTrace(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnTrace := AEvent;
-end;
+      TLoggerLevel.Info:
+        _Execute(FOnInfo, LItem);
 
-function TEventsConfig.OnDebug(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnDebug := AEvent;
-end;
+      TLoggerLevel.Warn:
+        _Execute(FOnWarn, LItem);
 
-function TEventsConfig.OnInfo(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnInfo := AEvent;
-end;
+      TLoggerLevel.Error:
+        _Execute(FOnError, LItem);
 
-function TEventsConfig.OnWarn(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnWarn := AEvent;
-end;
+      TLoggerLevel.Success:
+        _Execute(FOnSuccess, LItem);
 
-function TEventsConfig.OnError(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnError := AEvent;
-end;
+      TLoggerLevel.Fatal:
+        _Execute(FOnFatal, LItem);
 
-function TEventsConfig.OnSuccess(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnSuccess := AEvent;
-end;
+      TLoggerLevel.Custom:
+        _Execute(FOnCustom, LItem);
+    end;
 
-function TEventsConfig.OnFatal(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnFatal := AEvent;
-end;
-
-function TEventsConfig.OnCustom(const AEvent: TExecuteEvents): TEventsConfig;
-begin
-  Result := Self;
-  FOnFatal := AEvent;
+    _Execute(FOnAny, LItem);
+  end;
 end;
 
 procedure ForceReferenceToClass(C: TClass);

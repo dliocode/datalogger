@@ -86,28 +86,25 @@ begin
 
   Logger.AddProvider(
     TProviderEvents.Create
-    .Config(
-      TEventsConfig.Create
-        .OnAny(
-        procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
-        var
-          LItem: TLoggerItem;
+      .OnAny(
+      procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+      var
+        LItem: TLoggerItem;
+      begin
+        LItem := AItem;
+
+        TThread.Synchronize(nil,
+        procedure
         begin
-          LItem := AItem;
-          
-          TThread.Synchronize(nil,
-          procedure
-          begin
-            FDQueryOnAny.Append;
-  //          FDQueryOnAnyId.AsInteger := 0;
-            FDQueryOnAnySeq.AsLargeInt := LItem.Sequence;
-            FDQueryOnAnyTimestamp.AsDateTime := LItem.TimeStamp;
-            FDQueryOnAnyMessage.AsString := LItem.Message;
-            FDQueryOnAnyType.AsInteger := LItem.LevelValue;
-            FDQueryOnAny.Post;
-          end)
+          FDQueryOnAny.Append;
+//          FDQueryOnAnyId.AsInteger := 0;
+          FDQueryOnAnySeq.AsLargeInt := LItem.Sequence;
+          FDQueryOnAnyTimestamp.AsDateTime := LItem.TimeStamp;
+          FDQueryOnAnyMessage.AsString := LItem.Message;
+          FDQueryOnAnyType.AsInteger := LItem.LevelValue;
+          FDQueryOnAny.Post;
         end)
-        )
+      end)
     );
 
   // Log Format

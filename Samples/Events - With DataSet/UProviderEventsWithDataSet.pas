@@ -92,53 +92,50 @@ begin
 
   Logger.AddProvider(
     TProviderEvents.Create
-    .Config(
-      TEventsConfig.Create
-        .OnAny(
-        procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
-        var
-          LItem: TLoggerItem;
-        begin
-          LItem := AItem;
+      .OnAny(
+      procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+      var
+        LItem: TLoggerItem;
+      begin
+        LItem := AItem;
           
-          TThread.Synchronize(nil,
-          procedure
-          begin
-            FDMemTableOnAny.Append;
-            FDMemTableOnAnySeq.AsLargeInt := LItem.Sequence;
-            FDMemTableOnAnyTimeStamp.AsDateTime := LItem.TimeStamp;
-            FDMemTableOnAnyMessage.AsString := LItem.Message;
-            FDMemTableOnAny.Post;
-          end);
-        end)
-
-        .OnTrace(nil)
-        .OnDebug(nil)
-        .OnInfo(nil)
-        .OnSuccess(nil)
-        .OnWarn(nil)
-
-        .OnError(
-        procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
-        var
-          LItem: TLoggerItem;
+        TThread.Synchronize(nil,
+        procedure
         begin
-          LItem := AItem;
-          
-          TThread.Synchronize(nil,
-          procedure
-          begin
-            FDMemTableOnError.Append;
-            FDMemTableOnErrorSeq.AsLargeInt := LItem.Sequence;
-            FDMemTableOnErrorTimeStamp.AsDateTime := LItem.TimeStamp;
-            FDMemTableOnErrorMessage.AsString := LItem.Message;
-            FDMemTableOnError.Post;
-          end)
-        end)
+          FDMemTableOnAny.Append;
+          FDMemTableOnAnySeq.AsLargeInt := LItem.Sequence;
+          FDMemTableOnAnyTimeStamp.AsDateTime := LItem.TimeStamp;
+          FDMemTableOnAnyMessage.AsString := LItem.Message;
+          FDMemTableOnAny.Post;
+        end);
+      end)
 
-        .OnFatal(nil)
-        .OnCustom(nil)        
-        )
+      .OnTrace(nil)
+      .OnDebug(nil)
+      .OnInfo(nil)
+      .OnSuccess(nil)
+      .OnWarn(nil)
+
+      .OnError(
+      procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+      var
+        LItem: TLoggerItem;
+      begin
+        LItem := AItem;
+          
+        TThread.Synchronize(nil,
+        procedure
+        begin
+          FDMemTableOnError.Append;
+          FDMemTableOnErrorSeq.AsLargeInt := LItem.Sequence;
+          FDMemTableOnErrorTimeStamp.AsDateTime := LItem.TimeStamp;
+          FDMemTableOnErrorMessage.AsString := LItem.Message;
+          FDMemTableOnError.Post;
+        end)
+      end)
+
+      .OnFatal(nil)
+      .OnCustom(nil)
     );
 
   // Log Format

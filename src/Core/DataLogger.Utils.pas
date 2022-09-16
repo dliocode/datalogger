@@ -401,7 +401,7 @@ end;
 {$ELSE}
 
 begin
-  Result := EmptyStr;
+  Result := '';
 end;
 
 {$ENDIF}

@@ -48,7 +48,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level','My Custom')    
+    .Custom('Custom Level', 'My Custom')
     ;
 end;
 
@@ -58,29 +58,26 @@ begin
 
   Logger.AddProvider(
     TProviderEvents.Create
-    .Config(
-      TEventsConfig.Create
-        .OnAny(
-        procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
-        begin
-          MemoOnAny.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
-        end)
+      .OnAny(
+      procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+      begin
+        MemoOnAny.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
+      end)
 
-        .OnTrace(nil)
-        .OnDebug(nil)
-        .OnInfo(nil)
-        .OnSuccess(nil)
-        .OnWarn(nil)
+      .OnTrace(nil)
+      .OnDebug(nil)
+      .OnInfo(nil)
+      .OnSuccess(nil)
+      .OnWarn(nil)
 
-        .OnError(
-        procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
-        begin
-          MemoOnError.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
-        end)
+      .OnError(
+      procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
+      begin
+        MemoOnError.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
+      end)
 
-        .OnFatal(nil)
-        .OnCustom(nil)        
-        )
+      .OnFatal(nil)
+      .OnCustom(nil)
     );
 
   // Log Format
