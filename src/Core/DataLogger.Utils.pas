@@ -395,7 +395,7 @@ begin
   if GetComputerName(LBuffer, LSize) then
     Result := string(LBuffer)
   else
-    Result := EmptyStr;
+    Result := '';
 end;
 
 {$ELSE}
@@ -409,14 +409,15 @@ end;
 class function TLoggerUtils.Username: string;
 {$IF DEFINED(MSWINDOWS)}
 var
-  Buf: array [0 .. 2 * MAX_COMPUTERNAME_LENGTH + 1] of Char;
-  Len: cardinal;
+  LBuffer: array [0 .. 2 * MAX_COMPUTERNAME_LENGTH + 1] of Char;
+  LSize: cardinal;
 begin
-  Len := high(Buf);
-  if GetUserName(Buf, Len) then
-    Result := string(Buf)
+  LSize := High(LBuffer);
+
+  if GetUserName(LBuffer, LSize) then
+    Result := string(LBuffer)
   else
-    Result := EmptyStr;
+    Result := '';
 end;
 
 {$ELSE}
