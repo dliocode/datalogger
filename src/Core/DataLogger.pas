@@ -164,11 +164,6 @@ begin
   Result := FLoggerDefault;
 end;
 
-function TLogger: TDataLogger;
-begin
-  Result := Logger;
-end;
-
 { TDataLogger }
 
 class function TDataLogger.Builder: TDataLogger;
