@@ -179,7 +179,7 @@ begin
           LNotification.Title := LName;
           LNotification.AlertBody := LLog;
 
-          TThread.Synchronize(Self,
+          TThread.Synchronize(nil,
             procedure
             begin
               FNotificationCenter.PresentNotification(LNotification);
