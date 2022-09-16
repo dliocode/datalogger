@@ -59,7 +59,7 @@ type
     FOnlyLogLevel: TLoggerLevels;
     FSequence: UInt64;
     FName: string;
-    FIsRequiredTagName: Boolean;
+    FTagNameIsRequired: Boolean;
 
     constructor Create;
     procedure Start;
@@ -135,7 +135,7 @@ type
     function SetFinalMessage(const AMessage: string): TDataLogger;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
-    function SetIsRequiredTagName(const AIsRequiredTagName: Boolean): TDataLogger;
+    function SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
@@ -196,7 +196,7 @@ begin
   SetDisableLogLevel([]);
   SetOnlyLogLevel([TLoggerLevel.All]);
   SetName('');
-  SetIsRequiredTagName(False);
+  SetTagNameIsRequired(False);
 
   FSequence := 0;
 
@@ -656,13 +656,13 @@ begin
   end;
 end;
 
-function TDataLogger.SetIsRequiredTagName(const AIsRequiredTagName: Boolean): TDataLogger;
+function TDataLogger.SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FIsRequiredTagName := AIsRequiredTagName;
+    FTagNameIsRequired := ATagNameIsRequired;
   finally
     UnLock;
   end;
@@ -854,9 +854,9 @@ begin
   if Terminated then
     Exit;
 
-  if FIsRequiredTagName and not(ALevel = TLoggerLevel.All) then
+  if FTagNameIsRequired and not(ALevel = TLoggerLevel.All) then
     if ATagName.Trim.IsEmpty then
-      raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is empty!', [ALevel.ToString]);
+      raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is required!', [ALevel.ToString]);
 
   Lock;
   try
