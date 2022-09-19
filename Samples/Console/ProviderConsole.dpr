@@ -14,14 +14,14 @@ begin
 //    .UseColorInConsole(True)
 //    .UseColorOnlyInLevels(True)
 
-//    .ChangeColor(TLoggerType.Trace, TColor.Black, TColor.Magenta)
-//    .ChangeColor(TLoggerType.Debug, TColor.Black, TColor.Cyan)
-//    .ChangeColor(TLoggerType.Info, TColor.Black, TColor.White)
-//    .ChangeColor(TLoggerType.Success, TColor.Black, TColor.Green)
-//    .ChangeColor(TLoggerType.Warn, TColor.Black, TColor.Yellow)
-//    .ChangeColor(TLoggerType.Error, TColor.Black, TColor.Red)
-//    .ChangeColor(TLoggerType.Fatal, TColor.Black, TColor.DarkRed)
-//    .ChangeColor(TLoggerType.Custom, TColor.Black, TColor.White)
+//    .ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta)
+//    .ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan)
+//    .ChangeColor(TLoggerLevel.Info, TColor.Black, TColor.White)
+//    .ChangeColor(TLoggerLevel.Success, TColor.Black, TColor.Green)
+//    .ChangeColor(TLoggerLevel.Warn, TColor.Black, TColor.Yellow)
+//    .ChangeColor(TLoggerLevel.Error, TColor.Black, TColor.Red)
+//    .ChangeColor(TLoggerLevel.Fatal, TColor.Black, TColor.DarkRed)
+//    .ChangeColor(TLoggerLevel.Custom, TColor.Black, TColor.White)
     );
 
   // Log Format
