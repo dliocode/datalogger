@@ -1,10 +1,11 @@
-program ProviderConsole;
+program ProviderConsoleSimple;
 
 {$APPTYPE CONSOLE}
 
 
 uses
   DataLogger,
+  DataLogger.Simple,
   DataLogger.Provider.Console;
 
 {$R *.res}
@@ -29,32 +30,29 @@ begin
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
 
-  Logger
-    .Trace('My Trace')
-    .Debug('My Debug')
-    .Info('My Info')
-    .Warn('My Warn')
-    .Error('My Error')
-    .Success('My Success')
-    .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')
-    ;
+  TDataLoggerSimple.SetDataLogger(Logger);
 
-  Logger.SlineBreak;
+  Trace('My Trace');
+  Debug('My Debug');
+  Info('My Info');
+  Warn('My Warn');
+  Error('My Error');
+  Success('My Success');
+  Fatal('My Fatal');
+  Custom('Custom Level', 'My Custom');
+
+  SlineBreak;
 
   // or
 
-  Logger
-    .T('My Trace')
-    .D('My Debug')
-    .I('My Info')
-    .W('My Warn')
-    .E('My Error')
-    .S('My Success')
-    .F('My Fatal')
-    .C('Custom Level', 'My Custom')
-    ;
+  T('My Trace');
+  D('My Debug');
+  I('My Info');
+  W('My Warn');
+  E('My Error');
+  S('My Success');
+  F('My Fatal');
+  C('Custom Level', 'My Custom');
 
   Readln;
-
 end.

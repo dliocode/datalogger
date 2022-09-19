@@ -56,7 +56,7 @@ begin
     begin
       for I := 0 to 100 do
         Logger
-          .Trace('My trace')
+          .Trace('My Trace')
           .Debug('My Debug')
           .Info('My Info')
           .Warn('My Warn')

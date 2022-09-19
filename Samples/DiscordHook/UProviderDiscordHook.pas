@@ -34,13 +34,15 @@ uses
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
   Logger
-    .Trace('My trace')
+    .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
-    .Fatal('My Fatal');
+    .Fatal('My Fatal')
+    .Custom('Custom Level','My Custom')
+    ;
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
