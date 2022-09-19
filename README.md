@@ -87,7 +87,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | Nome | Uses | Samples | 
  | ------ | ------ | --------- | 
  | [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) | 
- | Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) | 
+ | Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console)<br /> [Console Simple](https://github.com/dliocode/datalogger/tree/main/Samples/Console%20-%20Simple)| 
  | CSV | DataLogger.Provider.CSV | [CSV](https://github.com/dliocode/datalogger/tree/main/Samples/CSV) |  
  | [Datadog](https://www.datadoghq.com/) | DataLogger.Provider.Datadog | [Datadog](https://github.com/dliocode/datalogger/tree/main/Samples/Datadog) |  
  | [Datalust](https://datalust.co/) | DataLogger.Provider.Datalust | [Datalust](https://github.com/dliocode/datalogger/tree/main/Samples/Datalust) |  
@@ -157,15 +157,31 @@ begin
   Logger.AddProvider(TProviderConsole.Create);
 
   Logger
-    .Trace('My trace')
+    .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level', 'My message with custom level');
+    .Custom('Custom Level', 'My Custom')
+    ;
+
+  // or
+
+  Logger
+    .T('My Trace')
+    .D('My Debug')
+    .I('My Info')
+    .W('My Warn')
+    .E('My Error')
+    .S('My Success')
+    .F('My Fatal')
+    .C('Custom Level', 'My Custom')
+    ;
+
   Readln;
+
 end.
 ```
 ### Criar uma nova instância do DataLogger
@@ -182,7 +198,7 @@ begin
   LCustomLogger.AddProvider(TProviderConsole.Create);
 
   LCustomLogger
-    .Trace('My trace')
+    .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
     .Warn('My Warn')
@@ -210,7 +226,7 @@ begin
   TDataLoggerSimple.SetDataLogger(Logger);
 
   // Só usar o modo simples;
-  Trace('My message trace');
+  Trace('My message Trace');
   Debug('My message debug');
   Info('My message info');
   Success('My message success');
@@ -744,7 +760,7 @@ begin
   Logger.Error('Minha mensagem no Log do tipo ERROR');
   
   // Output: 
-  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name ->  | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag ->  | message -> My trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
+  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name ->  | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag ->  | message -> My Trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
 
   Readln;
 end.
