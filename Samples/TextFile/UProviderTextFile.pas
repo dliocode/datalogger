@@ -80,8 +80,6 @@ begin
 
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
-
-  Logger.SetIgnoreLogFormat(True, '|', True, ' -> ');
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);
