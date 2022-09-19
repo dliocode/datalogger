@@ -23,7 +23,7 @@
         <div class="d-flex justify-content-center">
           <div class="input-group input-group-sm" style="width: 320px;">
             <label class="input-group-text">Host</label>
-            <input type="text" class="form-control" id="host" value="ws://localhost:55666">
+            <input type="text" class="form-control" id="host" value="ws://localhost:8080">
             <button class="btn btn-success" type="button" id="btnConnect" onclick=WS()>Connect</button>
           </div>
         </div>
@@ -337,7 +337,6 @@
     Init();
 
     var socket;
-    var myTimeout;
 
     function WS() {
       if (btnConnect.textContent === 'Connect') {
@@ -371,15 +370,11 @@
         socket = new WebSocket(host);
 
         socket.onopen = (message) => {
-          socket.send('OK');
+          socket.send('Hello Server');
 
           styleDisconnect();
 
           localStorage.setItem('datalogger_host', host);
-
-          myTimeout = setInterval(() => {
-            if (socket.readyState == WebSocket.OPEN) socket.send('OK');
-          }, 5000)
         }
 
         socket.onmessage = (message) => {
@@ -405,10 +400,7 @@
         if (socket.readyState == WebSocket.OPEN) {
           if (socket.bufferedAmount === 0) {
             socket.close();
-
             styleConnect();
-
-            clearTimeout(myTimeout);
           }
         }
       }

@@ -71,6 +71,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -87,6 +88,11 @@ begin
   FHTTP.URL('http://localhost:5044');
 
   Index('logger');
+end;
+
+procedure TProviderLogstach.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

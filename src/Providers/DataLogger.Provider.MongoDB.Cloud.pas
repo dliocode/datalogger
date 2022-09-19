@@ -80,6 +80,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -98,6 +99,11 @@ begin
   DataSource('AtlasCluster');
   DataBase('db_datalogger');
   Collection('logger');
+end;
+
+procedure TProviderMongoDBCloud.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

@@ -36,31 +36,37 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdCustomTCPServer, IdTCPConnection, IdContext, IdIOHandler, IdGlobal, IdCoderMIME, IdHashSHA, IdSSL, IdSSLOpenSSL,
-  System.SysUtils, System.Classes, System.Generics.Collections, System.JSON, System.DateUtils, System.Threading;
+  IdTCPServer, IdCustomTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME,
+  System.SysUtils, System.Generics.Collections, System.JSON, System.Threading, System.SyncObjs;
 
 type
   TProviderSocketCustomMessage = reference to function(const AItem: TLoggerItem): string;
+  TProviderSocketOnExecute = reference to procedure(const AConnectionID: string);
 
   TProviderSocket = class(TDataLoggerProvider<TProviderSocket>)
   private
-    FListClients: TDictionary<string, TIdContext>;
-    FSocket: TIdCustomTCPServer;
-    FCheckHeartBeat: TThread;
+    FIdTCPServer: TIdTCPServer;
+    FListConnection: TObject;
+    FOnConnection: TProviderSocketOnExecute;
+    FOnDisconnection: TProviderSocketOnExecute;
+
     FAutoStart: Boolean;
     FCustomMessage: TProviderSocketCustomMessage;
 
-    procedure OnConnect(AContext: TIdContext);
-    procedure OnDisconnect(AContext: TIdContext);
-    procedure OnExecute(AContext: TIdContext);
-    procedure SendMessage(const AContext: TIdContext; const AMessage: string);
-    procedure CheckHeartBeat;
+    procedure DoOnConnect(AContext: TIdContext);
+    procedure DoOnExecute(AContext: TIdContext);
+    procedure DoOnDisconnect(AContext: TIdContext);
+    procedure CheckConnection(const AContext: TIdContext);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    function OnConnection(const AValue: TProviderSocketOnExecute): TProviderSocket;
+    function OnDisconnect(const AValue: TProviderSocketOnExecute): TProviderSocket;
+
+    function InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
     function Port(const AValue: Integer): TProviderSocket;
     function MaxConnection(const AValue: Integer): TProviderSocket;
-    function InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
+
     function AutoStart(const AValue: Boolean): TProviderSocket;
     function CustomMessage(const AMessage: TProviderSocketCustomMessage): TProviderSocket;
 
@@ -68,7 +74,9 @@ type
     function Stop: TProviderSocket;
 
     function IsActive: Boolean;
-    function ClientCount: Integer;
+    function DisconnectID(const AConnectionID: string): TProviderSocket;
+    function DisconnectAll: TProviderSocket;
+    function CountConnections: Integer;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -81,22 +89,62 @@ type
 implementation
 
 type
-  TMyData = class
-    LastRecvTime: TDateTime;
+  TDataLoggerSocketConnection = class
+  strict private
+    FIdContext: TIdContext;
+    FID: string;
+    FDateTimeConnected: TDateTime;
+  public
+    function ID: string;
+    function IPAddress: string;
+    function DateTimeConnected: TDateTime;
+
+    function Connected: Boolean;
+    procedure Disconnect;
+
+    function CheckForDataOnSource(const ATimeout: Integer): Boolean;
+    function IsEquals(const AIdContext: TIdContext): Boolean;
+    function HandShaked: Boolean;
+
+    procedure SendMessage(const AMessage: string);
+    procedure SendFile(const AFilename: string);
+
+    function ReadMessage: string; overload;
+    function ReadMessage(const ATimeout: Integer): string; overload;
+
+    function Context: TIdContext;
+
+    constructor Create(const AIdContext: TIdContext);
   end;
 
-  TDataLoggerSocketServer = class(TIdCustomTCPServer)
-  protected
-    procedure DoConnect(AContext: TIdContext); override;
-    function DoExecute(AContext: TIdContext): Boolean; override;
+  TDataLoggerSocketListConnection = class
+  strict private
+    FCriticalSection: TCriticalSection;
+    FList: TObjectList<TDataLoggerSocketConnection>;
+
+    procedure Lock;
+    procedure UnLock;
   public
-    function InitSSL(const AIdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL): TDataLoggerSocketServer;
+    function Add(const AValue: TDataLoggerSocketConnection): TDataLoggerSocketListConnection;
+    function Remove(const AValue: TDataLoggerSocketConnection): TDataLoggerSocketListConnection;
+    function RemoveAll: TDataLoggerSocketListConnection;
+    function Last: TDataLoggerSocketConnection;
+    function ToArray: TArray<TDataLoggerSocketConnection>;
+    function IsEquals(const AContext: TIdContext): TDataLoggerSocketConnection;
+    function Count: Integer;
+
+    function GetFromID(const AID: string): TDataLoggerSocketConnection;
+
+    constructor Create;
+    destructor Destroy; override;
   end;
 
-  TDataLoggerSocketIOHandler = class(TIdIOHandler)
+  TDataLoggerSocketConnectionHandler = class(TIdIOHandler)
   public
-    function ReadMessage: string;
-    function ReadMessageBytes: TBytes;
+    function HandShaked: Boolean;
+
+    function ReadString: string;
+    function ReadStringBytes: TBytes;
 
     procedure WriteMessage(const AMessage: string);
     procedure WriteMessageBytes(const AMessage: TBytes);
@@ -108,77 +156,80 @@ constructor TProviderSocket.Create;
 begin
   inherited Create;
 
-  FListClients := TDictionary<string, TIdContext>.Create;
-  FSocket := TDataLoggerSocketServer.Create;
-  FSocket.OnConnect := OnConnect;
-  FSocket.OnDisconnect := OnDisconnect;
-  TDataLoggerSocketServer(FSocket).OnExecute := OnExecute;
+  FIdTCPServer := TIdTCPServer.Create;
+  FIdTCPServer.OnConnect := DoOnConnect;
+  FIdTCPServer.OnDisconnect := DoOnDisconnect;
+  FIdTCPServer.OnExecute := DoOnExecute;
+  FIdTCPServer.Active := False;
 
-  SetIgnoreLogFormat(True);
+  FListConnection := TDataLoggerSocketListConnection.Create;
+
+  OnConnection(nil);
+  OnDisconnect(nil);
+  Port(8080);
+  AutoStart(True);
+  MaxConnection(0);
+  CustomMessage(nil);
 end;
 
 procedure TProviderSocket.AfterConstruction;
 begin
   inherited;
 
-  Port(55666);
-  AutoStart(True);
-  MaxConnection(0);
-  CustomMessage(nil);
-
-  CheckHeartBeat;
+  SetIgnoreLogFormat(True);
 end;
 
 procedure TProviderSocket.BeforeDestruction;
 begin
   Terminate;
-  FCheckHeartBeat.Terminate;
 
-  Lock;
-  try
-    FListClients.Free;
-    FSocket.Free;
-  finally
-    UnLock;
-  end;
+  DisconnectAll;
+
+  FIdTCPServer.Active := False;
+
+  FListConnection.Free;
+  FIdTCPServer.Free;
 
   inherited;
+end;
+
+function TProviderSocket.OnConnection(const AValue: TProviderSocketOnExecute): TProviderSocket;
+begin
+  Result := Self;
+  FOnConnection := AValue;
+end;
+
+function TProviderSocket.OnDisconnect(const AValue: TProviderSocketOnExecute): TProviderSocket;
+begin
+  Result := Self;
+  FOnDisconnection := AValue;
+end;
+
+function TProviderSocket.InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
+var
+  LCurrentActive: Boolean;
+begin
+  Result := Self;
+
+  LCurrentActive := FIdTCPServer.Active;
+  try
+    FIdTCPServer.Active := False;
+    FIdTCPServer.IOHandler := AValue;
+  finally
+    FIdTCPServer.Active := LCurrentActive;
+  end;
 end;
 
 function TProviderSocket.Port(const AValue: Integer): TProviderSocket;
 begin
   Result := Self;
-
-  Lock;
-  try
-    FSocket.DefaultPort := AValue;
-  finally
-    UnLock;
-  end;
+  FIdTCPServer.DefaultPort := AValue;
 end;
 
 function TProviderSocket.MaxConnection(const AValue: Integer): TProviderSocket;
 begin
   Result := Self;
-
-  Lock;
-  try
-    FSocket.MaxConnections := AValue;
-  finally
-    UnLock;
-  end;
-end;
-
-function TProviderSocket.InitSSL(const AValue: TIdServerIOHandlerSSLOpenSSL): TProviderSocket;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    TDataLoggerSocketServer(FSocket).InitSSL(AValue);
-  finally
-    UnLock;
-  end;
+  FIdTCPServer.MaxConnections := AValue
 end;
 
 function TProviderSocket.AutoStart(const AValue: Boolean): TProviderSocket;
@@ -197,19 +248,11 @@ function TProviderSocket.Start: TProviderSocket;
 begin
   Result := Self;
 
-  Lock;
   try
-    if FSocket.Active then
-      Exit;
-
-    try
-      FSocket.Active := True;
-    except
-      on E: Exception do
-        raise EDataLoggerException.CreateFmt('ProviderSocker -> Start -> Port: %d | Message: %s', [FSocket.DefaultPort, E.Message]);
-    end;
-  finally
-    UnLock;
+    FIdTCPServer.Active := True;
+  except
+    on E: Exception do
+      raise EDataLoggerException.CreateFmt('ProviderSocket -> Start -> Port: %d | Message: %s', [FIdTCPServer.DefaultPort, E.Message]);
   end;
 end;
 
@@ -217,39 +260,52 @@ function TProviderSocket.Stop: TProviderSocket;
 begin
   Result := Self;
 
-  Lock;
-  try
-    if not FSocket.Active then
-      Exit;
+  DisconnectAll;
 
-    FSocket.Active := False;
-    AutoStart(False);
-
-    FListClients.Clear;
-    FListClients.TrimExcess;
-  finally
-    UnLock;
-  end;
+  FIdTCPServer.Active := False;
 end;
 
 function TProviderSocket.IsActive: Boolean;
 begin
-  Lock;
+  Result := FIdTCPServer.Active;
+end;
+
+function TProviderSocket.DisconnectID(const AConnectionID: string): TProviderSocket;
+var
+  LConnection: TDataLoggerSocketConnection;
+begin
+  Result := Self;
+
+  LConnection := TDataLoggerSocketListConnection(FListConnection).GetFromID(AConnectionID);
+
+  if Assigned(LConnection) then
+    LConnection.Disconnect;
+end;
+
+
+function TProviderSocket.DisconnectAll: TProviderSocket;
+var
+  LConnections: TArray<TDataLoggerSocketConnection>;
+  LConnection: TDataLoggerSocketConnection;
+begin
+  Result := Self;
+
+  LConnections := TDataLoggerSocketListConnection(FListConnection).ToArray;
+
   try
-    Result := FSocket.Active;
+    for LConnection in LConnections do
+      try
+        LConnection.Disconnect;
+      except
+      end;
   finally
-    UnLock;
+    TDataLoggerSocketListConnection(FListConnection).RemoveAll;
   end;
 end;
 
-function TProviderSocket.ClientCount: Integer;
+function TProviderSocket.CountConnections: Integer;
 begin
-  Lock;
-  try
-    Result := FListClients.Count;
-  finally
-    UnLock;
-  end;
+  Result := TDataLoggerSocketListConnection(FListConnection).Count;
 end;
 
 procedure TProviderSocket.LoadFromJSON(const AJSON: string);
@@ -270,9 +326,9 @@ begin
     Exit;
 
   try
-    Port(LJO.GetValue<Integer>('port', FSocket.DefaultPort));
+    Port(LJO.GetValue<Integer>('port', FIdTCPServer.DefaultPort));
     AutoStart(LJO.GetValue<Boolean>('auto_start', FAutoStart));
-    MaxConnection(LJO.GetValue<Integer>('max_connections', FSocket.MaxConnections));
+    MaxConnection(LJO.GetValue<Integer>('max_connections', FIdTCPServer.MaxConnections));
 
     SetJSONInternal(LJO);
   finally
@@ -286,9 +342,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('port', TJSONNumber.Create(FSocket.DefaultPort));
+    LJO.AddPair('port', TJSONNumber.Create(FIdTCPServer.DefaultPort));
     LJO.AddPair('auto_start', TJSONBool.Create(FAutoStart));
-    LJO.AddPair('max_connections', TJSONNumber.Create(FSocket.MaxConnections));
+    LJO.AddPair('max_connections', TJSONNumber.Create(FIdTCPServer.MaxConnections));
 
     ToJSONInternal(LJO);
 
@@ -300,7 +356,7 @@ end;
 
 procedure TProviderSocket.Save(const ACache: TArray<TLoggerItem>);
 var
-  LContexts: TArray<TIdContext>;
+  LContexts: TArray<TDataLoggerSocketConnection>;
   LItem: TLoggerItem;
   LLog: string;
 begin
@@ -313,14 +369,10 @@ begin
     if not IsActive then
       Exit;
 
-  Lock;
-  try
-    LContexts := FListClients.Values.ToArray;
-    if Length(LContexts) = 0 then
-      Exit;
-  finally
-    UnLock;
-  end;
+  if TDataLoggerSocketListConnection(FListConnection).Count = 0 then
+    Exit;
+
+  LContexts := TDataLoggerSocketListConnection(FListConnection).ToArray;
 
   for LItem in ACache do
   begin
@@ -335,7 +387,7 @@ begin
     TParallel.For(Low(LContexts), High(LContexts),
       procedure(I: Integer)
       var
-        LContext: TIdContext;
+        LContext: TDataLoggerSocketConnection;
         LRetriesCount: Integer;
       begin
         LContext := LContexts[I];
@@ -344,7 +396,7 @@ begin
 
         while True do
           try
-            SendMessage(LContext, LLog);
+            LContext.SendMessage(LLog);
             Break;
           except
             on E: Exception do
@@ -370,150 +422,47 @@ begin
   end;
 end;
 
-procedure TProviderSocket.OnConnect(AContext: TIdContext);
+procedure TProviderSocket.DoOnConnect(AContext: TIdContext);
 var
-  LMyData: TMyData;
-  LID: Int64;
-begin
-  if Terminated then
-    Exit;
-
-  Lock;
-  try
-    LMyData := TMyData.Create;
-    LMyData.LastRecvTime := Now;
-
-    AContext.Data := LMyData;
-
-    LID := Integer(@AContext);
-
-    FListClients.AddOrSetValue(LID.ToString, AContext);
-  finally
-    UnLock;
-  end;
-end;
-
-procedure TProviderSocket.OnDisconnect(AContext: TIdContext);
-begin
-
-end;
-
-procedure TProviderSocket.OnExecute(AContext: TIdContext);
-var
-  LMessage: string;
-begin
-  if (not Assigned(AContext)) or (not Assigned(AContext.Connection)) or (not Assigned(AContext.Connection.IOHandler)) then
-    Exit;
-
-  AContext.Connection.IOHandler.CheckForDataOnSource(10);
-  LMessage := TDataLoggerSocketIOHandler(AContext.Connection.IOHandler).ReadMessage;
-
-  if LMessage.Trim.IsEmpty then
-    Exit;
-
-  if Assigned(AContext.Data) then
-    TMyData(AContext.Data).LastRecvTime := Now;
-end;
-
-procedure TProviderSocket.SendMessage(const AContext: TIdContext; const AMessage: string);
-begin
-  if Assigned(AContext.Connection) then
-    TDataLoggerSocketIOHandler(AContext.Connection.IOHandler).WriteMessage(AMessage);
-end;
-
-procedure TProviderSocket.CheckHeartBeat;
-begin
-  FCheckHeartBeat :=
-    TThread.CreateAnonymousThread(
-    procedure
-    var
-      LIDs: TArray<string>;
-      LContexts: TArray<TIdContext>;
-      I: Integer;
-      LContext: TIdContext;
-    begin
-      while True do
-      begin
-        Sleep(500);
-
-        if Terminated then
-          Exit;
-
-        try
-          Lock;
-          try
-            if Terminated then
-              Exit;
-
-            if FListClients.Count = 0 then
-              Continue;
-
-            LIDs := [];
-            if FListClients.Keys.Count > 0 then;
-            LIDs := FListClients.Keys.ToArray;
-
-            LContexts := [];
-            if FListClients.Values.Count > 0 then;
-            LContexts := FListClients.Values.ToArray;
-
-            for I := Low(LIDs) to High(LIDs) do
-            begin
-              LContext := LContexts[I];
-
-              if not Assigned(LContext.Connection) or not Assigned(LContext.Data) then
-              begin
-                FListClients.Remove(LIDs[I]);
-                Continue;
-              end;
-
-              if SecondsBetween(Now, TMyData(LContext.Data).LastRecvTime) >= 30 then
-              begin
-                FListClients.Remove(LIDs[I]);
-                Continue;
-              end;
-            end;
-
-            if Terminated then
-              Exit;
-          finally
-            UnLock;
-          end;
-        except
-        end;
-      end;
-    end);
-
-  FCheckHeartBeat.Start;
-end;
-
-{ TDataLoggerSocketServer }
-
-function TDataLoggerSocketServer.InitSSL(const AIdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL): TDataLoggerSocketServer;
-var
-  LCurrentActive: Boolean;
-begin
-  Result := Self;
-
-  LCurrentActive := Active;
-  try
-    Active := False;
-    IOHandler := AIdServerIOHandlerSSLOpenSSL;
-  finally
-    Active := LCurrentActive;
-  end;
-end;
-
-procedure TDataLoggerSocketServer.DoConnect(AContext: TIdContext);
+  LConnection: TDataLoggerSocketConnection;
 begin
   if AContext.Connection.IOHandler is TIdSSLIOHandlerSocketBase then
     TIdSSLIOHandlerSocketBase(AContext.Connection.IOHandler).PassThrough := False;
 
   AContext.Connection.IOHandler.Tag := -1;
 
-  inherited;
+  LConnection := TDataLoggerSocketConnection.Create(AContext);
+  TDataLoggerSocketListConnection(FListConnection).Add(LConnection);
+
+  CheckConnection(AContext);
+
+  if Assigned(FOnConnection) then
+    FOnConnection(LConnection.ID);
 end;
 
-function TDataLoggerSocketServer.DoExecute(AContext: TIdContext): Boolean;
+procedure TProviderSocket.DoOnExecute(AContext: TIdContext);
+var
+  LConnection: TDataLoggerSocketConnection;
+  LMessage: string;
+begin
+  LConnection := TDataLoggerSocketListConnection(FListConnection).IsEquals(AContext);
+  LMessage := LConnection.ReadMessage;
+end;
+
+procedure TProviderSocket.DoOnDisconnect(AContext: TIdContext);
+var
+  LConnection: TDataLoggerSocketConnection;
+begin
+  LConnection := TDataLoggerSocketListConnection(FListConnection).IsEquals(AContext);
+  try
+    if Assigned(FOnDisconnection) then
+      FOnDisconnection(LConnection.ID);
+  finally
+    TDataLoggerSocketListConnection(FListConnection).Remove(LConnection);
+  end;
+end;
+
+procedure TProviderSocket.CheckConnection(const AContext: TIdContext);
   function HeadersParse(const AMessage: string): TDictionary<string, string>;
   var
     LLines: TArray<string>;
@@ -558,7 +507,7 @@ begin
       LParsedHeaders := HeadersParse(LMessage);
       try
         if LParsedHeaders.ContainsKey('upgrade') and LParsedHeaders.ContainsKey('sec-websocket-key') then
-          if (LParsedHeaders['upgrade'] = 'websocket') then
+          if (LParsedHeaders['upgrade'].Trim.ToLower.Equals('websocket')) then
           begin
             LSecretKey := LParsedHeaders['sec-websocket-key'];
 
@@ -574,8 +523,8 @@ begin
                 'HTTP/1.1 101 Switching Protocols'#13#10 +
                 'Upgrade: websocket'#13#10 +
                 'Connection: Upgrade'#13#10 +
-                'Sec-WebSocket-Accept: ' + LHash +
-                #13#10#13#10, IndyTextEncoding_UTF8);
+                'Sec-WebSocket-Accept: ' + LHash + #13#10#13#10,
+                IndyTextEncoding_UTF8);
             except
             end;
 
@@ -586,18 +535,285 @@ begin
       end;
     end;
   end;
-
-  Result := inherited;
 end;
 
-{ TDataLoggerSocketIOHandler }
+{ TDataLoggerSocketConnection }
 
-function TDataLoggerSocketIOHandler.ReadMessage: string;
+constructor TDataLoggerSocketConnection.Create(const AIdContext: TIdContext);
 begin
-  Result := IndyTextEncoding_UTF8.GetString(TIdBytes(ReadMessageBytes));
+  FIdContext := AIdContext;
+  FID := '';
+  FDateTimeConnected := Now;
 end;
 
-function TDataLoggerSocketIOHandler.ReadMessageBytes: TBytes;
+function TDataLoggerSocketConnection.ID: string;
+begin
+  if FID = '' then
+    FID := IntToStr(Int64(@FIdContext));
+
+  Result := FID
+end;
+
+function TDataLoggerSocketConnection.IPAddress: string;
+begin
+  Result := '';
+
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.Socket) or not Assigned(FIdContext.Connection.Socket.Binding) then
+    Exit;
+  Result := FIdContext.Connection.Socket.Binding.PeerIP;
+end;
+
+function TDataLoggerSocketConnection.DateTimeConnected: TDateTime;
+begin
+  Result := FDateTimeConnected;
+end;
+
+function TDataLoggerSocketConnection.Connected: Boolean;
+begin
+  Result := False;
+
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) then
+    Exit;
+
+  Result := FIdContext.Connection.Connected;
+end;
+
+procedure TDataLoggerSocketConnection.Disconnect;
+begin
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Binding) then
+    Exit;
+
+  FIdContext.Binding.CloseSocket;
+end;
+
+function TDataLoggerSocketConnection.Context: TIdContext;
+begin
+  Result := FIdContext;
+end;
+
+function TDataLoggerSocketConnection.CheckForDataOnSource(const ATimeout: Integer): Boolean;
+begin
+  Result := False;
+
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.IOHandler) then
+    Exit;
+
+  Result := FIdContext.Connection.IOHandler.CheckForDataOnSource(ATimeout);
+end;
+
+function TDataLoggerSocketConnection.IsEquals(const AIdContext: TIdContext): Boolean;
+begin
+  Result := False;
+
+  if not Assigned(FIdContext) then
+    Exit;
+
+  Result := FIdContext = AIdContext;
+end;
+
+function TDataLoggerSocketConnection.HandShaked: Boolean;
+begin
+  Result := False;
+
+  if Assigned(FIdContext) and Assigned(FIdContext.Connection) and Assigned(FIdContext.Connection.IOHandler) then
+    Result := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).HandShaked;
+end;
+
+procedure TDataLoggerSocketConnection.SendMessage(const AMessage: string);
+begin
+  if Assigned(FIdContext) and Assigned(FIdContext.Connection) and Assigned(FIdContext.Connection.IOHandler) then
+    TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).WriteMessage(AMessage);
+end;
+
+procedure TDataLoggerSocketConnection.SendFile(const AFilename: string);
+begin
+  if Assigned(FIdContext) and Assigned(FIdContext.Connection) and Assigned(FIdContext.Connection.IOHandler) then
+    TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).WriteFile(AFilename, True);
+end;
+
+function TDataLoggerSocketConnection.ReadMessage: string;
+begin
+  Result := '';
+
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.IOHandler) then
+    Exit;
+
+  FIdContext.Connection.IOHandler.CheckForDataOnSource(50);
+
+  Result := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadString;
+end;
+
+function TDataLoggerSocketConnection.ReadMessage(const ATimeout: Integer): string;
+var
+  LOldReadTimeout: Integer;
+  LMessage: string;
+begin
+  Result := '';
+
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.IOHandler) then
+    Exit;
+
+  FIdContext.Connection.IOHandler.CheckForDataOnSource(50);
+
+  LOldReadTimeout := FIdContext.Connection.IOHandler.ReadTimeout;
+  try
+    FIdContext.Connection.IOHandler.ReadTimeout := ATimeout;
+
+    LMessage := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadString;
+    if not FIdContext.Connection.IOHandler.ReadLnTimedout then
+      Exit;
+
+    Result := LMessage;
+  finally
+    FIdContext.Connection.IOHandler.ReadTimeout := LOldReadTimeout;
+  end;
+end;
+
+{ TDataLoggerSocketListConnection }
+
+constructor TDataLoggerSocketListConnection.Create;
+begin
+  FCriticalSection := TCriticalSection.Create;;
+  FList := TObjectList<TDataLoggerSocketConnection>.Create(True);
+end;
+
+destructor TDataLoggerSocketListConnection.Destroy;
+begin
+  FList.Free;
+  FCriticalSection.Free;
+
+  inherited;
+end;
+
+function TDataLoggerSocketListConnection.Add(const AValue: TDataLoggerSocketConnection): TDataLoggerSocketListConnection;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FList.Add(AValue);
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.Remove(const AValue: TDataLoggerSocketConnection): TDataLoggerSocketListConnection;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FList.Remove(AValue);
+    FList.TrimExcess;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.RemoveAll: TDataLoggerSocketListConnection;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FList.Clear;
+    FList.TrimExcess;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.Last: TDataLoggerSocketConnection;
+begin
+  Lock;
+  try
+    Result := FList.Last;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.ToArray: TArray<TDataLoggerSocketConnection>;
+begin
+  Lock;
+  try
+    Result := FList.ToArray;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.IsEquals(const AContext: TIdContext): TDataLoggerSocketConnection;
+var
+  LConnection: TDataLoggerSocketConnection;
+begin
+  Lock;
+  try
+    for LConnection in FList do
+      if LConnection.IsEquals(AContext) then
+      begin
+        Result := LConnection;
+        Exit
+      end;
+
+    Result := TDataLoggerSocketConnection.Create(AContext);
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.Count: Integer;
+begin
+  Lock;
+  try
+    Result := FList.Count;
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerSocketListConnection.GetFromID(const AID: string): TDataLoggerSocketConnection;
+var
+  LConnection: TDataLoggerSocketConnection;
+begin
+  Result := nil;
+
+  Lock;
+  try
+    for LConnection in FList do
+      if LConnection.ID.Equals(AID) then
+      begin
+        Result := LConnection;
+        Break;
+      end;
+  finally
+    UnLock;
+  end;
+end;
+
+procedure TDataLoggerSocketListConnection.Lock;
+begin
+  FCriticalSection.Acquire;
+end;
+
+procedure TDataLoggerSocketListConnection.UnLock;
+begin
+  FCriticalSection.Release;
+end;
+
+{ TDataLoggerSocketConnectionHandler }
+
+function TDataLoggerSocketConnectionHandler.HandShaked: Boolean;
+begin
+  Result := Tag = 1;
+end;
+
+function TDataLoggerSocketConnectionHandler.ReadString: string;
+begin
+  Result := IndyTextEncoding_UTF8.GetString(TIdBytes(ReadStringBytes));
+end;
+
+function TDataLoggerSocketConnectionHandler.ReadStringBytes: TBytes;
 var
   LReadByte: Byte;
   LByte: array [0 .. 7] of Byte;
@@ -662,12 +878,12 @@ begin
   end;
 end;
 
-procedure TDataLoggerSocketIOHandler.WriteMessage(const AMessage: string);
+procedure TDataLoggerSocketConnectionHandler.WriteMessage(const AMessage: string);
 begin
   WriteMessageBytes(TBytes(IndyTextEncoding_UTF8.GetBytes(AMessage)));
 end;
 
-procedure TDataLoggerSocketIOHandler.WriteMessageBytes(const AMessage: TBytes);
+procedure TDataLoggerSocketConnectionHandler.WriteMessageBytes(const AMessage: TBytes);
 var
   LBytes: TBytes;
 begin

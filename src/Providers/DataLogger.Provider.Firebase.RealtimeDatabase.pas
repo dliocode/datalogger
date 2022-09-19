@@ -73,6 +73,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -88,6 +89,11 @@ begin
   FHTTP.ContentType('application/json');
 
   DataBase('datalogger');
+end;
+
+procedure TProviderRealtimeDatabase.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

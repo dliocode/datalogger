@@ -74,6 +74,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -88,6 +89,11 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('http://localhost:5431');
+end;
+
+procedure TProviderDatalust.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

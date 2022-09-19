@@ -77,6 +77,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -93,6 +94,11 @@ begin
   FHTTP.URL('https://logs-prod3.grafana.net');
 
   ServiceName('Log');
+end;
+
+procedure TProviderGrafanaLoki.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

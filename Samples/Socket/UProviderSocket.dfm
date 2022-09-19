@@ -4,7 +4,7 @@ object Form2: TForm2
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'DataLogger - Socket'
-  ClientHeight = 60
+  ClientHeight = 251
   ClientWidth = 624
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -39,7 +39,7 @@ object Form2: TForm2
     Left = 0
     Top = 21
     Width = 624
-    Height = 41
+    Height = 68
     Align = alTop
     TabOrder = 1
     object btnMakeLog: TButton
@@ -90,10 +90,27 @@ object Form2: TForm2
       TabOrder = 4
       OnClick = btnOpenPreviewClick
     end
+    object btnDisconnectAll: TButton
+      Left = 105
+      Top = 37
+      Width = 156
+      Height = 25
+      Caption = 'DisconnectAll'
+      TabOrder = 5
+      OnClick = btnDisconnectAllClick
+    end
+  end
+  object Memo1: TMemo
+    Left = 0
+    Top = 89
+    Width = 624
+    Height = 162
+    Align = alClient
+    TabOrder = 2
   end
   object TimerCountClients: TTimer
     OnTimer = TimerCountClientsTimer
-    Left = 392
-    Top = 24
+    Left = 320
+    Top = 144
   end
 end

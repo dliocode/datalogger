@@ -72,6 +72,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -86,6 +87,11 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://in.logtail.com');
+end;
+
+procedure TProviderLogtail.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

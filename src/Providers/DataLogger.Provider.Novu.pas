@@ -81,6 +81,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -99,6 +100,11 @@ begin
   SubscriberID('');
   EmailTo([]);
   Subject('DataLogger');
+end;
+
+procedure TProviderNovu.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;

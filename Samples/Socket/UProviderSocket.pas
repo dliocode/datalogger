@@ -17,13 +17,17 @@ type
     EditCountClient: TLabeledEdit;
     TimerCountClients: TTimer;
     btnOpenPreview: TButton;
+    Memo1: TMemo;
+    btnDisconnectAll: TButton;
     procedure btnMakeLogClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure pnlInfoClick(Sender: TObject);
     procedure btnOpenPreviewClick(Sender: TObject);
-    procedure TimerCountClientsTimer(Sender: TObject);  private
+    procedure TimerCountClientsTimer(Sender: TObject);
+    procedure btnDisconnectAllClick(Sender: TObject);
+  private
     { Private declarations }
   public
     { Public declarations }
@@ -36,6 +40,7 @@ implementation
 
 {$R *.dfm}
 
+
 uses
   DataLogger, DataLogger.Provider.Socket;
 
@@ -45,22 +50,22 @@ var
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
   TThread.CreateAnonymousThread(
-  procedure
-  var
-    I: Integer;
-  begin
-    for I := 0 to 100 do
-      Logger
-        .Trace('My trace')
-        .Debug('My Debug')
-        .Info('My Info')
-        .Warn('My Warn')
-        .Error('My Error')
-        .Success('My Success')
-        .Fatal('My Fatal')
-        .Custom('Custom Level','My Custom')    
-        ;
-  end).Start;
+    procedure
+    var
+      I: Integer;
+    begin
+      for I := 0 to 100 do
+        Logger
+          .Trace('My trace')
+          .Debug('My Debug')
+          .Info('My Info')
+          .Warn('My Warn')
+          .Error('My Error')
+          .Success('My Success')
+          .Fatal('My Fatal')
+          .Custom('Custom Level', 'My Custom')
+          ;
+    end).Start;
 end;
 
 procedure TForm2.btnOpenPreviewClick(Sender: TObject);
@@ -92,9 +97,23 @@ begin
 
   Logger.AddProvider(
     FSocket
-      .Port(55666)
-      .AutoStart(True)
-      .MaxConnection(0) // 0 - unlimited
+
+    .OnConnection(
+    procedure(const AConnectionID: string)
+    begin
+      Memo1.Lines.Add('Connect: ' + AConnectionID);
+    end)
+
+    .OnDisconnect(
+    procedure(const AConnectionID: string)
+    begin
+      Memo1.Lines.Add('Disconnect: ' + AConnectionID);
+    end)
+
+    .InitSSL(nil)
+    .Port(8080)
+    .AutoStart(True)
+    .MaxConnection(0) // 0 - unlimited
     );
 
   btnStop.Enabled := FSocket.IsActive;
@@ -112,7 +131,12 @@ end;
 
 procedure TForm2.TimerCountClientsTimer(Sender: TObject);
 begin
- EditCountClient.Text := FSocket.ClientCount.ToString;
+  EditCountClient.Text := FSocket.CountConnections.ToString;
+end;
+
+procedure TForm2.btnDisconnectAllClick(Sender: TObject);
+begin
+  FSocket.DisconnectAll;
 end;
 
 end.

@@ -73,6 +73,7 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
@@ -87,6 +88,11 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://log-api.newrelic.com/log/v1');
+end;
+
+procedure TProviderNewRelic.AfterConstruction;
+begin
+  inherited;
 
   SetIgnoreLogFormat(True);
 end;
