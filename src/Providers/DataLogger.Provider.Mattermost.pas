@@ -180,14 +180,16 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     LJO := TJSONObject.Create;
     try
       LJO.AddPair('channel_id', FChannelId);
       LJO.AddPair('message', LLog);
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
+      LLog := LJO.ToString.Replace(#$D#$A,'\n');
+
+      LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
       LLogItemREST.URL := Format('%s/api/v4/posts', [FHTTP.URL.Trim(['/'])]);
     finally
@@ -196,6 +198,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

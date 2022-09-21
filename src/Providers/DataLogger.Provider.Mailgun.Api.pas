@@ -205,7 +205,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     LLogItemREST.Stream := nil;
     LLogItemREST.LogItem := LItem;
@@ -221,6 +221,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

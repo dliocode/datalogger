@@ -186,7 +186,7 @@ begin
       else
         LJO.AddPair('message', LItem.Message);
 
-      LJO.AddPair('metadata', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+      LJO.AddPair('metadata', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
@@ -197,6 +197,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

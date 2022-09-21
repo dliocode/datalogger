@@ -191,7 +191,7 @@ var
       if LItem.InternalItem.LevelSlineBreak then
         Continue;
 
-      LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
       LJO := TJSONObject.Create;
       try
@@ -199,7 +199,9 @@ var
         LJO.AddPair('username', FUsername);
         LJO.AddPair('text', LLog);
 
-        LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
+        LLog := LJO.ToString.Replace(#$D#$A,'\n');
+
+        LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
         LLogItemREST.LogItem := LItem;
         LLogItemREST.URL := '';
       finally
@@ -228,7 +230,7 @@ var
           if LItem.InternalItem.LevelSlineBreak then
             Continue;
 
-          LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+          LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
           LAppend.Append(LLog);
           LAppend.AppendLine;
@@ -241,7 +243,9 @@ var
 
       LJO.AddPair('text', LLog);
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString.Replace('\r\n', '\r\n\r\n'), TEncoding.UTF8);
+      LLog := LJO.ToString.Replace(#$D#$A,'\n');
+
+      LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
       LLogItemREST.URL := '';
     finally
@@ -261,6 +265,10 @@ begin
     PropsCard
   else
     Default;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

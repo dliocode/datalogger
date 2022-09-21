@@ -238,7 +238,7 @@ begin
       Continue;
     end;
 
-    LLog := TLoggerLogFormat.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     LRetriesCount := 0;
 
@@ -252,7 +252,7 @@ begin
 
             for I := Low(LLogFormat) to High(LLogFormat) do
             begin
-              LLog := TLoggerLogFormat.AsString(LLogFormat[I], LItem, FFormatTimestamp);
+              LLog := TLoggerSerializeItem.AsString(LLogFormat[I], LItem, FFormatTimestamp);
 
               Write(LLog);
 

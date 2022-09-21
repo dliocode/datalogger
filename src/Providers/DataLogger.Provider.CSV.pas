@@ -307,20 +307,20 @@ begin
   CreateWriter;
   try
     if not LFileExist then
-      InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+      InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
 
     for LItem in ACache do
     begin
       if LItem.InternalItem.LevelSlineBreak then
         Continue;
 
-      InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, False));
+      InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, False));
 
       if FMaxFileSizeInKiloByte > 0 then
         if FWriter.BaseStream.Size > FMaxFileSizeInKiloByte * 1024 then
         begin
           RotateLog;
-          InternalWriteLog(TLoggerLogFormat.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+          InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
         end;
     end;
   finally

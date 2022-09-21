@@ -180,7 +180,7 @@ begin
 
     LJA := TJSONArray.Create;
     try
-      LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+      LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
       LJO.AddPair('_time', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)));
 
       LJA.Add(LJO);
@@ -194,6 +194,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;

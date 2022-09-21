@@ -184,7 +184,7 @@ begin
       LJOEvents
         .AddPair('Timestamp', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)))
         .AddPair('Level', LItem.LevelString)
-        .AddPair('Properties', TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+        .AddPair('Properties', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       if not LItem.Message.Trim.IsEmpty then
         LJOEvents.AddPair('MessageTemplate', LItem.Message)
@@ -202,6 +202,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;

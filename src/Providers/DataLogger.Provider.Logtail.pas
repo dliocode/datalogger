@@ -167,7 +167,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LJO := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       if LItem.Message.Trim.IsEmpty then
         LJO.AddPair('message', LItem.MessageJSON)
@@ -183,6 +183,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

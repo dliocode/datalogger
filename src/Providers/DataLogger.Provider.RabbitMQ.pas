@@ -162,7 +162,6 @@ end;
 procedure TProviderRabbitMQ.Save(const ACache: TArray<TLoggerItem>);
 var
   LStompPub: IStompClient;
-  LConnected: Boolean;
   LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
@@ -171,24 +170,20 @@ begin
     Exit;
 
   LStompPub := StompUtils.StompClientAndConnect(FHost, FPort, FVirtualHost, FClientID);
-  LConnected := False;
 
   for LItem in ACache do
   begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     LRetriesCount := 0;
 
     while True do
       try
-        if not LConnected then
-        begin
+        if not LStompPub.Connected then
           LStompPub.Connect;
-          LConnected := True;
-        end;
 
         LStompPub.Send('/queue/' + FTopicName, LLog);
 
@@ -196,17 +191,11 @@ begin
       except
         on E: Exception do
         begin
-          if LConnected then
-          begin
+          if LStompPub.Connected then
             try
-              try
-                LStompPub.Disconnect;
-              except
-              end;
-            finally
-              LConnected := False;
+              LStompPub.Disconnect;
+            except
             end;
-          end;
 
           Inc(LRetriesCount);
 

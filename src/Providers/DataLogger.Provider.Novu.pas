@@ -217,7 +217,7 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LJOLog := TLoggerLogFormat.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LJOLog := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       for I := Low(FEmailTo) to High(FEmailTo) do
       begin
@@ -247,6 +247,10 @@ begin
       LJOLog.Free;
     end;
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST);
 end;

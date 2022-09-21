@@ -46,7 +46,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.Classes, System.JSON, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderGrafanaLoki = class(TDataLoggerProvider<TProviderGrafanaLoki>)
@@ -209,8 +209,8 @@ begin
     if LItem.InternalItem.LevelSlineBreak then
       Continue;
 
-    LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-    LDateUNIX := IntToStr(DateTimeToUnix(LItem.TimeStamp, False));
+    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LDateUNIX := IntToStr(LItem.TimeStampUNIX);
     LDateUNIX := SetZero(LDateUNIX, 19);
 
     LJO := TJSONObject.Create;
@@ -234,6 +234,10 @@ begin
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;

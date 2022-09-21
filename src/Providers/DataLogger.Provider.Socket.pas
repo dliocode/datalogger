@@ -382,7 +382,7 @@ begin
     if Assigned(FCustomMessage) then
       LLog := FCustomMessage(LItem)
     else
-      LLog := TLoggerLogFormat.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+      LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
     TParallel.For(Low(LContexts), High(LContexts),
       procedure(I: Integer)

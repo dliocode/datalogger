@@ -58,6 +58,7 @@ type
   TLoggerInternalItem = record
     LevelSlineBreak: Boolean;
     TransactionID: string;
+    TargetProviderIndex: Integer;
   end;
 
   TLoggerItem = record
@@ -91,7 +92,7 @@ type
   TDataLoggerListItem = TList<TLoggerItem>;
   TDataLoggerListItemTransaction = TObjectDictionary<Integer, TDataLoggerListItem>;
 
-  TLoggerLogFormat = class
+  TLoggerSerializeItem = class
   private
     class function AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
   public
@@ -107,7 +108,7 @@ type
     class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
   end;
 
-  TOnLogException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
+  TLoggerOnException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
 
   TLoggerFormat = record
   const
@@ -150,9 +151,9 @@ begin
   Result := GetEnumName(TypeInfo(TLoggerLevel), Integer(Self));
 end;
 
-{ TLoggerLogFormat }
+{ TLoggerSerializeItem }
 
-class function TLoggerLogFormat.AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
+class function TLoggerSerializeItem.AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
   procedure _Add(const ALogKey: string; const AJSONKey: string; const AJSONValue: TJSONValue);
   begin
     if ALogFormat.Contains(ALogKey) or AIgnoreLogFormat then
@@ -220,7 +221,7 @@ begin
   _Add(TLoggerFormat.LOG_IP_LOCAL, APrefix + 'ip_local', TJSONString.Create(AItem.IPLocal));
 end;
 
-class function TLoggerLogFormat.AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
+class function TLoggerSerializeItem.AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
 var
   LLog: string;
   LJO: TJSONObject;
@@ -248,12 +249,12 @@ begin
   end;
 end;
 
-class function TLoggerLogFormat.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TJSONObject;
+class function TLoggerSerializeItem.AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TJSONObject;
 begin
   Result := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, 'log_');
 end;
 
-class function TLoggerLogFormat.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): string;
+class function TLoggerSerializeItem.AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): string;
 var
   LJO: TJSONObject;
 begin
@@ -269,7 +270,7 @@ begin
   end;
 end;
 
-class function TLoggerLogFormat.AsString(
+class function TLoggerSerializeItem.AsString(
   const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
   const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): string;
 var
@@ -313,7 +314,7 @@ begin
   Result := LLog;
 end;
 
-class function TLoggerLogFormat.AsStream(
+class function TLoggerSerializeItem.AsStream(
   const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
   const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): TStream;
 var
@@ -325,7 +326,7 @@ begin
   Result.Seek(0, soFromBeginning);
 end;
 
-class function TLoggerLogFormat.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
+class function TLoggerSerializeItem.AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
 var
   LLog: string;
 begin
