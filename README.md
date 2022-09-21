@@ -45,6 +45,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [Uso Padrão](#uso-padrao)
   * [Criar uma nova instância do DataLogger](#criar-uma-nova-instancia-do-datalogger)
   * [DataLogger Simple](#datalogger-simple)
+  * [Gerar log para um Provider Específico](#gerar-log-para-um-provider-específico)
   * [Custom](#Custom)
   * [Formato do Log](#formato-do-log)
     * [LogFormat](#logformat)
@@ -234,6 +235,63 @@ begin
   Error('My message error');
   Fatal('My message fatal');
   Custom('My Type', 'My message custom');
+
+  Readln;
+end.
+
+```
+
+### Gerar log para um Provider Específico
+
+Deve ser informado o _INDEX_ do _Provider_ conforme foi adicionado no AddProvider ou SetProvider.
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Provider.Console,
+  DataLogger.Provider.TextFile;
+
+{$R *.res}
+
+begin
+  // Add First Provider - Index 0
+  Logger.AddProvider(TProviderConsole.Create);
+
+  // Add Second Provider - Index 1
+  Logger.AddProvider(TProviderTextFile.Create);
+
+  // Log Format
+  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+
+  // Logger for the seconds index providers - TProviderTextFile.Create
+  Logger
+    .Trace('My Trace - Second Provider', '', 1)
+    .Debug('My Debug - Second Provider', '', 1)
+    .Info('My Info - Second Provider', '', 1)
+    .Warn('My Warn - Second Provider', '', 1)
+    .Error('My Error - Second Provider', '', 1)
+    .Success('My Success - Second Provider', '', 1)
+    .Fatal('My Fatal - Second Provider', '', 1)
+    .Custom('Custom Level', 'My Custom - Second Provider', '', 1)
+    ;
+
+  Logger.SlineBreak(1);
+
+  // Logger for the first index providers - TProviderConsole.Create
+  Logger
+    .T('My Trace - First Provider', '', 0)
+    .D('My Debug - First Provider', '', 0)
+    .I('My Info - First Provider', '', 0)
+    .W('My Warn - First Provider', '', 0)
+    .E('My Error - First Provider', '', 0)
+    .S('My Success - First Provider', '', 0)
+    .Fl('My Fatal - First Provider', '', 0)
+    .C('Custom Level', 'My Custom - First Provider', '', 0)
+    ;
+
+  Logger.SlineBreak(0);
+
+  Writeln('END');
 
   Readln;
 end.

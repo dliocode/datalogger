@@ -154,7 +154,7 @@ type
     function L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
     function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
 
-    function SlineBreak: TDataLogger;
+    function SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
 
     function StartTransaction: TDataLogger;
     function CommitTransaction: TDataLogger;
@@ -606,9 +606,9 @@ begin
   Result := Log(ALevel, AMessage, ATagName, ATargetProviderIndex);
 end;
 
-function TDataLogger.SlineBreak: TDataLogger;
+function TDataLogger.SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.All, '', '', '', '', True, -1);
+  Result := AddCache(TLoggerLevel.All, '', '', '', '', True, ATargetProviderIndex);
 end;
 
 function TDataLogger.StartTransaction: TDataLogger;
