@@ -65,7 +65,7 @@ type
   protected
     FLogFormat: string;
     FFormatTimestamp: string;
-    FLogException: TOnLogException;
+    FLogException: TLoggerOnException;
     FMaxRetries: Integer;
     FIgnoreLogFormat: Boolean;
     FIgnoreLogFormatSeparator: string;
@@ -85,7 +85,7 @@ type
     function SetLogLevel(const ALogLevel: TLoggerLevel): T;
     function SetDisableLogLevel(const ALogLevels: TLoggerLevels): T;
     function SetOnlyLogLevel(const ALogLevels: TLoggerLevels): T;
-    function SetLogException(const AException: TOnLogException): T;
+    function SetLogException(const AException: TLoggerOnException): T;
     function SetMaxRetries(const AMaxRetries: Integer): T;
     function SetInitialMessage(const AMessage: string): T;
     function SetFinalMessage(const AMessage: string): T;
@@ -106,7 +106,7 @@ type
     procedure LoadFromJSON(const AJSON: string); virtual; abstract;
     function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
 
-    function AddCache(const AValues: TArray<TLoggerItem>): T;
+    function AddCache(const AProviderIndex: Integer; const AValues: TArray<TLoggerItem>): T;
     function NotifyEvent: T;
 
     constructor Create;
@@ -219,7 +219,7 @@ begin
   FOnlyLogLevel := ALogLevels;
 end;
 
-function TDataLoggerProvider<T>.SetLogException(const AException: TOnLogException): T;
+function TDataLoggerProvider<T>.SetLogException(const AException: TLoggerOnException): T;
 begin
   Result := FOwner;
   FLogException := AException;
@@ -466,7 +466,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
+function TDataLoggerProvider<T>.AddCache(const AProviderIndex: Integer; const AValues: TArray<TLoggerItem>): T;
 var
   I: Integer;
   LItem: TLoggerItem;
@@ -482,6 +482,10 @@ begin
       for I := Low(AValues) to High(AValues) do
       begin
         LItem := AValues[I];
+
+        if LItem.InternalItem.TargetProviderIndex > -1 then
+          if not (LItem.InternalItem.TargetProviderIndex = AProviderIndex) then
+            Continue;
 
         if not LItem.InternalItem.LevelSlineBreak then
         begin
