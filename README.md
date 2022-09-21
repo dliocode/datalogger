@@ -285,7 +285,7 @@ begin
     .W('My Warn - First Provider', '', 0)
     .E('My Error - First Provider', '', 0)
     .S('My Success - First Provider', '', 0)
-    .Fl('My Fatal - First Provider', '', 0)
+    .F('My Fatal - First Provider', '', 0)
     .C('Custom Level', 'My Custom - First Provider', '', 0)
     ;
 
