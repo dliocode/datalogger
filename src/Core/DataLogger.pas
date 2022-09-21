@@ -81,6 +81,7 @@ type
     function AddProvider(const AProvider: TThread): TDataLogger; overload;
     function RemoveProvider(const AProvider: TThread): TDataLogger;
     function SetProvider(const AProviders: TArray<TThread>): TDataLogger;
+    function ProviderCount: Integer;
 
     function Trace(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
     function Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
@@ -313,6 +314,7 @@ begin
   Lock;
   try
     FListProviders.Remove(AProvider);
+    FListProviders.TrimExcess;
   finally
     UnLock;
   end;
@@ -334,6 +336,16 @@ begin
 
   for LItem in AProviders do
     AddProvider(LItem);
+end;
+
+function TDataLogger.ProviderCount: Integer;
+begin
+  Lock;
+  try
+    Result := FListProviders.Count;
+  finally
+    UnLock;
+  end;
 end;
 
 function TDataLogger.Trace(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
@@ -1022,7 +1034,7 @@ begin
   if Terminated then
     Exit;
 
-  if FTagNameIsRequired and not(ALevel = TLoggerLevel.All) then
+  if FTagNameIsRequired and not ALevelSlineBreak then
     if ATagName.Trim.IsEmpty then
       raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is required!', [ALevel.ToString]);
 
