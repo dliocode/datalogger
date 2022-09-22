@@ -61,6 +61,12 @@ begin
       .OnAny(
       procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
       begin
+        if not Assigned(MemoOnAny) then
+          Exit;
+
+        if (csDestroying in MemoOnAny.ComponentState) then
+          Exit;
+
         MemoOnAny.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
       end)
 
@@ -73,6 +79,12 @@ begin
       .OnError(
       procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
       begin
+        if not Assigned(MemoOnError) then
+          Exit;
+
+        if (csDestroying in MemoOnError.ComponentState) then
+          Exit;
+
         MemoOnError.Lines.Add(DateTimeToStr(AItem.TimeStamp) + ' - ' + AItem.Message);
       end)
 

@@ -27,6 +27,7 @@ type
     procedure btnOpenPreviewClick(Sender: TObject);
     procedure TimerCountClientsTimer(Sender: TObject);
     procedure btnDisconnectAllClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -93,20 +94,29 @@ procedure TForm2.FormCreate(Sender: TObject);
 begin
   ReportMemoryLeaksOnShutdown := True;
 
-  FSocket := TProviderSocket.Create;
-
-  Logger.AddProvider(
-    FSocket
-
+  FSocket :=
+    TProviderSocket.Create
     .OnConnection(
     procedure(const AConnectionID: string)
     begin
+      if not Assigned(Memo1) then
+        Exit;
+
+      if (csDestroying in Memo1.ComponentState) then
+        Exit;
+
       Memo1.Lines.Add('Connect: ' + AConnectionID);
     end)
 
     .OnDisconnect(
     procedure(const AConnectionID: string)
     begin
+      if not Assigned(Memo1) then
+        Exit;
+
+      if (csDestroying in Memo1.ComponentState) then
+        Exit;
+
       Memo1.Lines.Add('Disconnect: ' + AConnectionID);
     end)
 
@@ -114,9 +124,16 @@ begin
     .Port(8080)
     .AutoStart(True)
     .MaxConnection(0) // 0 - unlimited
-    );
+    ;
+
+  Logger.AddProvider(FSocket);
 
   btnStop.Enabled := FSocket.IsActive;
+end;
+
+procedure TForm2.FormDestroy(Sender: TObject);
+begin
+//  FSocket.Free;
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

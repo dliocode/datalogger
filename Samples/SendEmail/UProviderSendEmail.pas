@@ -57,7 +57,13 @@ begin
       TSendEmail.New 
       .OnLog(
         procedure(ALog: string)
-        begin 
+        begin
+          if not Assigned(Memo1) then
+            Exit;
+
+          if (csDestroying in Memo1.ComponentState) then
+            Exit;
+
           Memo1.Lines.Add(ALog)
         end
       , lmAll)

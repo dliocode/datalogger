@@ -78,6 +78,12 @@ begin
     .SetLogException(
       procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer)
       begin
+        if not Assigned(Memo1) then
+          Exit;
+
+        if (csDestroying in Memo1.ComponentState) then
+          Exit;
+
         Memo1.Lines.Add(E.Message);
       end)
     );
