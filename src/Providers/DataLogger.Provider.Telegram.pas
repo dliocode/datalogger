@@ -183,7 +183,7 @@ var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LLogItemREST: TLogItemREST;
-  LMessage: string;
+  LLog: string;
   LParseMode: string;
 
   procedure SerializeMessageParseMode;
@@ -209,10 +209,10 @@ var
             TLoggerLevel.Success:
               ;
             TLoggerLevel.Warn:
-              LMessage := '<u>' + LMessage + '</u>';
+              LLog := '<u>' + LLog + '</u>';
 
             TLoggerLevel.Error, TLoggerLevel.Fatal:
-              LMessage := '<b>' + LMessage + '</b>';
+              LLog := '<b>' + LLog + '</b>';
 
             TLoggerLevel.Custom:
               ;
@@ -225,7 +225,7 @@ var
 
           // https://core.telegram.org/bots/api#formatting-options
           for I := Low(FormattingMarkdown) to High(FormattingMarkdown) do
-            LMessage := LMessage.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
+            LLog := LLog.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
 
           case LItem.Level of
             TLoggerLevel.All:
@@ -239,10 +239,10 @@ var
             TLoggerLevel.Success:
               ;
             TLoggerLevel.Warn:
-              LMessage := '__' + LMessage + '__';
+              LLog := '__' + LLog + '__';
 
             TLoggerLevel.Error, TLoggerLevel.Fatal:
-              LMessage := '*' + LMessage + '*';
+              LLog := '*' + LLog + '*';
 
             TLoggerLevel.Custom:
               ;
@@ -263,16 +263,16 @@ begin
       Continue;
 
     LParseMode := '';
-    LMessage := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
     if FParseMode <> TTelegramParseMode.tpNone then
       SerializeMessageParseMode;
 
+    LLog := TNetEncoding.URL.Encode(LLog);
+
     LLogItemREST.Stream := nil;
     LLogItemREST.LogItem := LItem;
-
-    LMessage := TNetEncoding.URL.Encode(LMessage);
-    LLogItemREST.URL := Format(TELEGRAM_API_SENDMSG + LParseMode, [FBotToken, FChatId, LMessage]);
+    LLogItemREST.URL := Format(TELEGRAM_API_SENDMSG + LParseMode, [FBotToken, FChatId, LLog]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
