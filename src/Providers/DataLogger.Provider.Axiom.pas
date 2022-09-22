@@ -46,7 +46,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.Classes, System.JSON, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderAxiom = class(TDataLoggerProvider<TProviderAxiom>)
