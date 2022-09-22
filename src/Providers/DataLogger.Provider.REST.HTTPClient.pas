@@ -79,22 +79,26 @@ type
     FMethod: TRESTMethod;
     FHeader: TArray<TLogHeader>;
     FExecuteFinally: TExecuteFinally;
+    FModeAsync: Boolean;
+    FWaitTimeoutToSend: Integer;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
-    procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
+    function URL: string; overload;
+    function Token: string; overload;
+    procedure InternalSaveSync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderRESTHTTPClient; overload;
-    function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTHTTPClient;
     function Token(const AValue: string): TProviderRESTHTTPClient; overload;
-    function Token: string; overload;
     function BearerToken(const AValue: string): TProviderRESTHTTPClient;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTHTTPClient;
     function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTHTTPClient;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+    function ModeAsync(const AValue: Boolean): TProviderRESTHTTPClient;
+    function WaitTimeoutToSend(const AValue: Integer): TProviderRESTHTTPClient;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -105,6 +109,7 @@ type
 implementation
 
 { TProviderRESTHTTPClient }
+
 constructor TProviderRESTHTTPClient.Create;
 begin
   inherited Create;
@@ -114,6 +119,8 @@ begin
   Token('');
   Method(tlmPost);
   ExecuteFinally(nil);
+  ModeAsync(True);
+  WaitTimeoutToSend(0);
 end;
 
 function TProviderRESTHTTPClient.URL(const AValue: string): TProviderRESTHTTPClient;
@@ -121,9 +128,10 @@ var
   LProtocol: string;
 begin
   Result := Self;
-  LProtocol := 'http://';
-  FURL := AValue;
 
+  LProtocol := 'http://';
+
+  FURL := AValue;
   if not AValue.ToLower.StartsWith('http://') and not AValue.ToLower.StartsWith('https://') then
     FURL := LProtocol + AValue;
 end;
@@ -196,6 +204,7 @@ begin
     begin
       FHeader[I].Value := AValue;
       LIsFound := True;
+
       Break;
     end;
 
@@ -207,6 +216,18 @@ function TProviderRESTHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteF
 begin
   Result := Self;
   FExecuteFinally := AExecuteFinally;
+end;
+
+function TProviderRESTHTTPClient.ModeAsync(const AValue: Boolean): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FModeAsync := AValue;
+end;
+
+function TProviderRESTHTTPClient.WaitTimeoutToSend(const AValue: Integer): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FWaitTimeoutToSend := AValue;
 end;
 
 procedure TProviderRESTHTTPClient.LoadFromJSON(const AJSON: string);
@@ -235,6 +256,9 @@ begin
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 
+    ModeAsync(LJO.GetValue<Boolean>('mode_async', FModeAsync));
+    WaitTimeoutToSend(LJO.GetValue<Integer>('wait_timeout_to_send', FWaitTimeoutToSend));
+
     SetJSONInternal(LJO);
   finally
     LJO.Free;
@@ -251,6 +275,8 @@ begin
     LJO.AddPair('content_type', FContentType);
     LJO.AddPair('token', FToken);
     LJO.AddPair('method', GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod)));
+    LJO.AddPair('mode_async', TJSONBool.Create(FModeAsync));
+    LJO.AddPair('wait_timeout_to_send', TJSONNumber.Create(FWaitTimeoutToSend));
 
     ToJSONInternal(LJO);
 
@@ -285,10 +311,13 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(FMethod, LItemREST);
+  if FModeAsync then
+    InternalSaveAsync(FMethod, LItemREST)
+  else
+    InternalSaveSync(FMethod, LItemREST);
 end;
 
-procedure TProviderRESTHTTPClient.InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
+procedure TProviderRESTHTTPClient.InternalSaveSync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 var
   I: Integer;
 begin
@@ -298,7 +327,9 @@ begin
   for I := Low(ALogItemREST) to High(ALogItemREST) do
   begin
     HTTP(AMethod, ALogItemREST[I]);
-    Sleep(ASleep);
+
+    if FWaitTimeoutToSend > 0 then
+      Sleep(FWaitTimeoutToSend);
   end;
 end;
 
@@ -324,27 +355,20 @@ var
   I: Integer;
   LFormData: TMultipartFormData;
 begin
-  if Self.Terminated then
-  begin
-    if Assigned(AItemREST.Stream) then
-      AItemREST.Stream.Free;
-
-    Exit;
-  end;
-
-  LURL := AItemREST.URL;
-
-  if LURL.Trim.IsEmpty then
-    LURL := FURL;
-
-  if LURL.Trim.IsEmpty then
-    raise EDataLoggerException.Create('URL is empty');
-
   try
+    LURL := AItemREST.URL;
+
+    if LURL.Trim.IsEmpty then
+      LURL := FURL;
+
+    if LURL.Trim.IsEmpty then
+      raise EDataLoggerException.Create('URL is empty');
+
     LHTTP := THTTPClient.Create;
   except
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
+
     Exit
   end;
 
@@ -374,9 +398,6 @@ begin
 
     while True do
       try
-        if Self.Terminated then
-          Exit;
-
         case AMethod of
           tlmGet:
             LResponse := LHTTP.Get(LURL);
@@ -391,6 +412,7 @@ begin
                 try
                   for I := Low(AItemREST.FormData) to High(AItemREST.FormData) do
                     LFormData.AddField(AItemREST.FormData[I].Field, AItemREST.FormData[I].Value {$IF RTLVersion > 32}, AItemREST.FormData[I].ContentType{$ENDIF});
+
                   LResponse := LHTTP.Post(LURL, LFormData);
                 finally
                   LFormData.Free;
@@ -440,16 +462,17 @@ begin
   end;
 end;
 
-procedure ForceReferenceToClass(C: TClass);
-begin
-end;
-
 { TLogFormData }
+
 class function TLogFormData.Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData;
 begin
   Result.Field := AField;
   Result.Value := AValue;
   Result.ContentType := AContentType;
+end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
 end;
 
 initialization

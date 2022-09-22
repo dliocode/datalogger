@@ -190,6 +190,9 @@ begin
 
     while True do
       try
+        if (csDestroying in FIdSMTP.ComponentState) then
+          Exit;
+
         if not FIdSMTP.Connected then
           FIdSMTP.Connect;
 

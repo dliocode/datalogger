@@ -281,7 +281,7 @@ begin
     .SetLogException(FLogException)
     .SetMaxRetries(FMaxRetries);
 
-  FHTTP.InternalSave(TRESTMethod.tlmGet, LItemREST);
+  FHTTP.InternalSaveSync(TRESTMethod.tlmGet, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

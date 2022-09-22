@@ -89,6 +89,8 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>');
+  FHTTP.ModeAsync(False);
+  FHTTP.WaitTimeoutToSend(250);
 
   Username('DataLogger');
   AvatarURL('');
@@ -206,7 +208,7 @@ begin
     .SetLogException(FLogException)
     .SetMaxRetries(FMaxRetries);
 
-  FHTTP.InternalSave(TRESTMethod.tlmPost, LItemREST, 250);
+  FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

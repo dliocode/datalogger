@@ -186,7 +186,7 @@ begin
     try
       LJO.AddPair('api_key', FApiKey);
       LJO.AddPair('collection', FCollection);
-      LJO.AddPair('timestamp', TJSONNumber.Create(DateTimeToUnix(LItem.TimeStamp, False)));
+      LJO.AddPair('timestamp', TJSONNumber.Create(LItem.TimeStampUNIX));
       LJO.AddPair('json', LLog);
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);

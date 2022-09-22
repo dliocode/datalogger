@@ -181,7 +181,7 @@ begin
     LJA := TJSONArray.Create;
     try
       LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-      LJO.AddPair('_time', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)));
+      LJO.AddPair('_time', LItem.TimeStampISO8601);
 
       LJA.Add(LJO);
 

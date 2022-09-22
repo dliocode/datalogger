@@ -75,22 +75,26 @@ type
     FMethod: TRESTMethod;
     FHeader: TArray<TLogHeader>;
     FExecuteFinally: TExecuteFinally;
+    FModeAsync: Boolean;
+    FWaitTimeoutToSend: Integer;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
-    procedure InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
+    function URL: string; overload;
+    function Token: string; overload;
+    procedure InternalSaveSync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderRESTIndy; overload;
-    function URL: string; overload;
     function ContentType(const AValue: string): TProviderRESTIndy;
     function Token(const AValue: string): TProviderRESTIndy; overload;
-    function Token: string; overload;
     function BearerToken(const AValue: string): TProviderRESTIndy;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTIndy;
     function Method(const AValue: TRESTMethod): TProviderRESTIndy;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTIndy;
     function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTIndy;
+    function ModeAsync(const AValue: Boolean): TProviderRESTIndy;
+    function WaitTimeoutToSend(const AValue: Integer): TProviderRESTIndy;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -110,6 +114,8 @@ begin
   ContentType('text/plain');
   Token('');
   ExecuteFinally(nil);
+  ModeAsync(True);
+  WaitTimeoutToSend(0);
 end;
 
 function TProviderRESTIndy.URL(const AValue: string): TProviderRESTIndy;
@@ -188,6 +194,7 @@ begin
     begin
       FHeader[I].Value := AValue;
       LIsFound := True;
+
       Break;
     end;
 
@@ -199,6 +206,18 @@ function TProviderRESTIndy.ExecuteFinally(const AExecuteFinally: TExecuteFinally
 begin
   Result := Self;
   FExecuteFinally := AExecuteFinally;
+end;
+
+function TProviderRESTIndy.ModeAsync(const AValue: Boolean): TProviderRESTIndy;
+begin
+  Result := Self;
+  FModeAsync := AValue;
+end;
+
+function TProviderRESTIndy.WaitTimeoutToSend(const AValue: Integer): TProviderRESTIndy;
+begin
+  Result := Self;
+  FWaitTimeoutToSend := AValue;
 end;
 
 procedure TProviderRESTIndy.LoadFromJSON(const AJSON: string);
@@ -227,6 +246,9 @@ begin
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
 
+    ModeAsync(LJO.GetValue<Boolean>('mode_async', FModeAsync));
+    WaitTimeoutToSend(LJO.GetValue<Integer>('wait_timeout_to_send', FWaitTimeoutToSend));
+
     SetJSONInternal(LJO);
   finally
     LJO.Free;
@@ -243,6 +265,8 @@ begin
     LJO.AddPair('content_type', FContentType);
     LJO.AddPair('token', FToken);
     LJO.AddPair('method', GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod)));
+    LJO.AddPair('mode_async', TJSONBool.Create(FModeAsync));
+    LJO.AddPair('wait_timeout_to_send', TJSONNumber.Create(FWaitTimeoutToSend));
 
     ToJSONInternal(LJO);
 
@@ -278,10 +302,13 @@ begin
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
-  InternalSaveAsync(FMethod, LItemREST);
+  if FModeAsync then
+    InternalSaveAsync(FMethod, LItemREST)
+  else
+    InternalSaveSync(FMethod, LItemREST);
 end;
 
-procedure TProviderRESTIndy.InternalSave(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>; const ASleep: Integer = 0);
+procedure TProviderRESTIndy.InternalSaveSync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 var
   I: Integer;
 begin
@@ -291,7 +318,9 @@ begin
   for I := Low(ALogItemREST) to High(ALogItemREST) do
   begin
     HTTP(AMethod, ALogItemREST[I]);
-    Sleep(ASleep);
+
+    if FWaitTimeoutToSend > 0 then
+      Sleep(FWaitTimeoutToSend);
   end;
 end;
 
@@ -317,22 +346,14 @@ var
   I: Integer;
   LFormData: TIdMultiPartFormDataStream;
 begin
-  if Self.Terminated then
-  begin
-    if Assigned(AItemREST.Stream) then
-      AItemREST.Stream.Free;
-
-    Exit;
-  end;
-
-  LURL := AItemREST.URL;
-  if LURL.Trim.IsEmpty then
-    LURL := FURL;
-
-  if LURL.Trim.IsEmpty then
-    raise EDataLoggerException.Create('URL is empty');
-
   try
+    LURL := AItemREST.URL;
+    if LURL.Trim.IsEmpty then
+      LURL := FURL;
+
+    if LURL.Trim.IsEmpty then
+      raise EDataLoggerException.Create('URL is empty');
+
     LHTTP := TIdHTTP.Create(nil);
     LSSL := nil;
   except
@@ -367,9 +388,6 @@ begin
 
     while True do
       try
-        if Self.Terminated then
-          Exit;
-
         if LURL.ToLower.Contains('https://') then
         begin
           if not LoadOpenSSLLibrary then
@@ -441,10 +459,6 @@ begin
   end;
 end;
 
-procedure ForceReferenceToClass(C: TClass);
-begin
-end;
-
 { TLogFormData }
 
 class function TLogFormData.Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData;
@@ -452,6 +466,10 @@ begin
   Result.Field := AField;
   Result.Value := AValue;
   Result.ContentType := AContentType;
+end;
+
+procedure ForceReferenceToClass(C: TClass);
+begin
 end;
 
 initialization

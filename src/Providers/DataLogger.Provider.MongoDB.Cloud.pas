@@ -64,6 +64,7 @@ type
   private
     FHTTP: TProviderHTTP;
     FAppServiceID: string;
+    FApiKey: string;
     FDataSource: string;
     FDataBase: string;
     FCollection: string;
@@ -123,6 +124,8 @@ end;
 function TProviderMongoDBCloud.ApiKey(const AValue: string): TProviderMongoDBCloud;
 begin
   Result := Self;
+
+  FApiKey := AValue;
   FHTTP.AddHeader('api-key', AValue);
 end;
 
@@ -163,7 +166,7 @@ begin
 
   try
     AppServiceID(LJO.GetValue<string>('app_service_id', FAppServiceID));
-    ApiKey(LJO.GetValue<string>('api_key', ''));
+    ApiKey(LJO.GetValue<string>('api_key', FApiKey));
     DataSource(LJO.GetValue<string>('data_source', FDataSource));
     DataBase(LJO.GetValue<string>('data_base', FDataBase));
     Collection(LJO.GetValue<string>('collection', FCollection));
@@ -181,7 +184,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('app_service_id', FAppServiceID);
-    LJO.AddPair('api_key', '');
+    LJO.AddPair('api_key', FApiKey);
     LJO.AddPair('data_source', FDataSource);
     LJO.AddPair('data_base', FDataBase);
     LJO.AddPair('collection', FCollection);
