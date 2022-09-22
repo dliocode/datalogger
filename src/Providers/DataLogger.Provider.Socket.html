@@ -23,7 +23,7 @@
         <div class="d-flex justify-content-center">
           <div class="input-group input-group-sm" style="width: 320px;">
             <label class="input-group-text">Host</label>
-            <input type="text" class="form-control" id="host" value="ws://localhost:8080">
+            <input type="text" class="form-control" id="host" value="ws://127.0.0.1:8080">
             <button class="btn btn-success" type="button" id="btnConnect" onclick=WS()>Connect</button>
           </div>
         </div>
@@ -147,8 +147,8 @@
             </div>
             <div class="col">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsType" checked>
-                <label class="form-check-label" for="showHideColumnsType">Type</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="showHideColumnsLevel" checked>
+                <label class="form-check-label" for="showHideColumnsLevel">Level</label>
               </div>
             </div>
             <div class="col">
@@ -263,7 +263,7 @@
               <th scope="col" style="position: sticky; top: 0; z-index: 1;" class="text-center">Name</th>
               <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Sequence</th>
               <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Thread ID</th>
-              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Type</th>
+              <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 100px" class="text-center">Level</th>
               <th scope="col" style="position: sticky; top: 0; z-index: 1; width: 200px" class="text-center">Tag</th>
               <th scope="col" style="position: sticky; top: 0; z-index: 1;" class="text-center">Message</th>
 
@@ -315,7 +315,7 @@
     const showHideColumnsName = document.getElementById('showHideColumnsName');
     const showHideColumnsSequence = document.getElementById('showHideColumnsSequence');
     const showHideColumnsThreadID = document.getElementById('showHideColumnsThreadID');
-    const showHideColumnsType = document.getElementById('showHideColumnsType');
+    const showHideColumnsLevel = document.getElementById('showHideColumnsLevel');
     const showHideColumnsTag = document.getElementById('showHideColumnsTag');
     const showHideColumnsMessage = document.getElementById('showHideColumnsMessage');
     const showHideColumnsAppName = document.getElementById('showHideColumnsAppName');
@@ -469,8 +469,8 @@
       cell.className = 'text-center';
 
       cell = newRow.insertCell(4);
-      cell.innerHTML = data.log_type;
-      cell.style.display = showHideColumnsType.checked ? '' : 'none';
+      cell.innerHTML = data.log_level;
+      cell.style.display = showHideColumnsLevel.checked ? '' : 'none';
       cell.className = 'text-center';
 
       cell = newRow.insertCell(5);
@@ -586,7 +586,7 @@
       showHideColumnsName.checked = data.showHideColumnsName;
       showHideColumnsSequence.checked = data.showHideColumnsSequence;
       showHideColumnsThreadID.checked = data.showHideColumnsThreadID;
-      showHideColumnsType.checked = data.showHideColumnsType;
+      showHideColumnsLevel.checked = data.showHideColumnsLevel;
       showHideColumnsTag.checked = data.showHideColumnsTag;
       showHideColumnsMessage.checked = data.showHideColumnsMessage;
       showHideColumnsAppName.checked = data.showHideColumnsAppName;
@@ -620,7 +620,7 @@
               cell.style.display = showHideColumnsThreadID.checked ? '' : 'none';
               break;
             case 4:
-              cell.style.display = showHideColumnsType.checked ? '' : 'none';
+              cell.style.display = showHideColumnsLevel.checked ? '' : 'none';
               break;
             case 5:
               cell.style.display = showHideColumnsTag.checked ? '' : 'none';
@@ -674,7 +674,7 @@
       data.showHideColumnsName = showHideColumnsName.checked;
       data.showHideColumnsSequence = showHideColumnsSequence.checked;
       data.showHideColumnsThreadID = showHideColumnsThreadID.checked;
-      data.showHideColumnsType = showHideColumnsType.checked;
+      data.showHideColumnsLevel = showHideColumnsLevel.checked;
       data.showHideColumnsTag = showHideColumnsTag.checked;
       data.showHideColumnsMessage = showHideColumnsMessage.checked;
       data.showHideColumnsAppName = showHideColumnsAppName.checked;

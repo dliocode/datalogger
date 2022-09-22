@@ -36,15 +36,15 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdTCPServer, IdCustomTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME,
-  System.SysUtils, System.Generics.Collections, System.JSON, System.Threading, System.SyncObjs;
+  IdTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME,
+  System.SysUtils, System.Generics.Collections, System.JSON, System.Threading, System.SyncObjs, System.Classes, System.Types;
 
 type
   TProviderSocketCustomMessage = reference to function(const AItem: TLoggerItem): string;
   TProviderSocketOnExecute = reference to procedure(const AConnectionID: string);
 
   TProviderSocket = class(TDataLoggerProvider<TProviderSocket>)
-  private
+  strict private
     FIdTCPServer: TIdTCPServer;
     FListConnection: TObject;
     FOnConnection: TProviderSocketOnExecute;
@@ -83,7 +83,7 @@ type
 
     constructor Create;
     procedure AfterConstruction; override;
-    procedure BeforeDestruction; override;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -91,6 +91,7 @@ implementation
 type
   TDataLoggerSocketConnection = class
   strict private
+    FIdTCPServer: TIdTCPServer;
     FIdContext: TIdContext;
     FID: string;
     FDateTimeConnected: TDateTime;
@@ -114,13 +115,14 @@ type
 
     function Context: TIdContext;
 
-    constructor Create(const AIdContext: TIdContext);
+    constructor Create(const AIdTCPServer: TIdTCPServer; const AIdContext: TIdContext);
   end;
 
   TDataLoggerSocketListConnection = class
   strict private
     FCriticalSection: TCriticalSection;
     FList: TObjectList<TDataLoggerSocketConnection>;
+    FIdTCPServer: TIdTCPServer;
 
     procedure Lock;
     procedure UnLock;
@@ -132,10 +134,11 @@ type
     function ToArray: TArray<TDataLoggerSocketConnection>;
     function IsEquals(const AContext: TIdContext): TDataLoggerSocketConnection;
     function Count: Integer;
+    function List: TObjectList<TDataLoggerSocketConnection>;
 
     function GetFromID(const AID: string): TDataLoggerSocketConnection;
 
-    constructor Create;
+    constructor Create(const AIdTCPServer: TIdTCPServer);
     destructor Destroy; override;
   end;
 
@@ -162,7 +165,7 @@ begin
   FIdTCPServer.OnExecute := DoOnExecute;
   FIdTCPServer.Active := False;
 
-  FListConnection := TDataLoggerSocketListConnection.Create;
+  FListConnection := TDataLoggerSocketListConnection.Create(FIdTCPServer);
 
   OnConnection(nil);
   OnDisconnect(nil);
@@ -179,13 +182,9 @@ begin
   SetIgnoreLogFormat(True);
 end;
 
-procedure TProviderSocket.BeforeDestruction;
+destructor TProviderSocket.Destroy;
 begin
-  Terminate;
-
-  DisconnectAll;
-
-  FIdTCPServer.Active := False;
+  Stop;
 
   FListConnection.Free;
   FIdTCPServer.Free;
@@ -281,7 +280,6 @@ begin
   if Assigned(LConnection) then
     LConnection.Disconnect;
 end;
-
 
 function TProviderSocket.DisconnectAll: TProviderSocket;
 var
@@ -431,7 +429,7 @@ begin
 
   AContext.Connection.IOHandler.Tag := -1;
 
-  LConnection := TDataLoggerSocketConnection.Create(AContext);
+  LConnection := TDataLoggerSocketConnection.Create(FIdTCPServer, AContext);
   TDataLoggerSocketListConnection(FListConnection).Add(LConnection);
 
   CheckConnection(AContext);
@@ -539,9 +537,11 @@ end;
 
 { TDataLoggerSocketConnection }
 
-constructor TDataLoggerSocketConnection.Create(const AIdContext: TIdContext);
+constructor TDataLoggerSocketConnection.Create(const AIdTCPServer: TIdTCPServer; const AIdContext: TIdContext);
 begin
+  FIdTCPServer := AIdTCPServer;
   FIdContext := AIdContext;
+
   FID := '';
   FDateTimeConnected := Now;
 end;
@@ -560,6 +560,7 @@ begin
 
   if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.Socket) or not Assigned(FIdContext.Connection.Socket.Binding) then
     Exit;
+
   Result := FIdContext.Connection.Socket.Binding.PeerIP;
 end;
 
@@ -580,10 +581,11 @@ end;
 
 procedure TDataLoggerSocketConnection.Disconnect;
 begin
-  if not Assigned(FIdContext) or not Assigned(FIdContext.Binding) then
+  if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) then
     Exit;
 
-  FIdContext.Binding.CloseSocket;
+  FIdContext.Connection.Disconnect;
+  FIdTCPServer.Contexts.Remove(FIdContext);
 end;
 
 function TDataLoggerSocketConnection.Context: TIdContext;
@@ -671,9 +673,11 @@ end;
 
 { TDataLoggerSocketListConnection }
 
-constructor TDataLoggerSocketListConnection.Create;
+constructor TDataLoggerSocketListConnection.Create(const AIdTCPServer: TIdTCPServer);
 begin
-  FCriticalSection := TCriticalSection.Create;;
+  FIdTCPServer := AIdTCPServer;
+
+  FCriticalSection := TCriticalSection.Create;
   FList := TObjectList<TDataLoggerSocketConnection>.Create(True);
 end;
 
@@ -733,6 +737,11 @@ begin
   end;
 end;
 
+function TDataLoggerSocketListConnection.List: TObjectList<TDataLoggerSocketConnection>;
+begin
+  Result := FList;
+end;
+
 function TDataLoggerSocketListConnection.ToArray: TArray<TDataLoggerSocketConnection>;
 begin
   Lock;
@@ -756,7 +765,8 @@ begin
         Exit
       end;
 
-    Result := TDataLoggerSocketConnection.Create(AContext);
+    Result := TDataLoggerSocketConnection.Create(FIdTCPServer, AContext);
+    FList.Add(Result);
   finally
     UnLock;
   end;
