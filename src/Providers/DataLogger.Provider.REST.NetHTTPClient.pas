@@ -293,7 +293,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.LevelSlineBreak then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
 
     if Trim(LowerCase(FContentType)) = 'application/json' then

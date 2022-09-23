@@ -56,7 +56,7 @@ type
   end;
 
   TLoggerInternalItem = record
-    LevelSlineBreak: Boolean;
+    IsSlinebreak: Boolean;
     TransactionID: string;
     TargetProviderIndex: Integer;
   end;

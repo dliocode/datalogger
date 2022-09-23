@@ -144,7 +144,7 @@ begin
 
   for LItem in LCache do
   begin
-    if LItem.InternalItem.LevelSlineBreak then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);

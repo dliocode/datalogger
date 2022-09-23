@@ -65,7 +65,7 @@ type
     constructor Create;
     procedure Start;
 
-    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const ALevelSlineBreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
@@ -1025,7 +1025,7 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const ALevelSlineBreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger;
 var
   LLogItem: TLoggerItem;
 begin
@@ -1034,13 +1034,13 @@ begin
   if Terminated then
     Exit;
 
-  if FTagNameIsRequired and not ALevelSlineBreak then
+  if FTagNameIsRequired and not AIsSlinebreak then
     if ATagName.Trim.IsEmpty then
       raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is required!', [ALevel.ToString]);
 
   Lock;
   try
-    if not ALevelSlineBreak then
+    if not AIsSlinebreak then
     begin
       if (TLoggerLevel.All in FDisableLogLevel) or (ALevel in FDisableLogLevel) then
         Exit;
@@ -1090,7 +1090,7 @@ begin
     LLogItem.ProcessID := TLoggerUtils.ProcessID;
     LLogItem.IPLocal := TLoggerUtils.IPLocal;
 
-    LLogItem.InternalItem.LevelSlineBreak := ALevelSlineBreak;
+    LLogItem.InternalItem.IsSlinebreak := AIsSlinebreak;
     LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
     LLogItem.InternalItem.TargetProviderIndex := ATargetProviderIndex;
 

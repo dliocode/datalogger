@@ -487,7 +487,7 @@ begin
           if not (LItem.InternalItem.TargetProviderIndex = AProviderIndex) then
             Continue;
 
-        if not LItem.InternalItem.LevelSlineBreak then
+        if not LItem.InternalItem.IsSlinebreak then
         begin
           if (TLoggerLevel.All in FDisableLogLevel) or (LItem.Level in FDisableLogLevel) then
             Continue;
@@ -521,7 +521,7 @@ begin
 
           LListLoggerItem.Add(LItem);
 
-          if not LItem.InternalItem.LevelSlineBreak then
+          if not LItem.InternalItem.IsSlinebreak then
             if FUseTransaction and LTransaction.InTransaction then
               if LItem.Level in FTransactionAutoCommitLogLevel then
               begin

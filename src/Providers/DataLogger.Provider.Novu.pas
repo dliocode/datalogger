@@ -214,7 +214,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.LevelSlineBreak then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
 
     LJOLog := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);

@@ -177,7 +177,7 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.LevelSlineBreak then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
 
     LJO := TJSONObject.Create;
