@@ -36,7 +36,7 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  IdTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME,
+  IdTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME, IdComponent,
   System.SysUtils, System.Generics.Collections, System.JSON, System.Threading, System.SyncObjs, System.Classes, System.Types;
 
 type
@@ -89,6 +89,15 @@ type
 implementation
 
 type
+{$SCOPEDENUMS ON}
+  TDataLoggerSocketMessageOperationCode = (CONTINUE, TEXT_FRAME, BINARY_FRAME, CONNECTION_CLOSE, PING, PONG, TIMEOUT, ERROR);
+{$SCOPEDENUMS OFF}
+
+  TDataLoggerSocketMessage = record
+    OperationCode: TDataLoggerSocketMessageOperationCode;
+    Message: string;
+  end;
+
   TDataLoggerSocketConnection = class
   strict private
     FIdTCPServer: TIdTCPServer;
@@ -109,9 +118,10 @@ type
 
     procedure SendMessage(const AMessage: string);
     procedure SendFile(const AFilename: string);
+    procedure PING;
 
-    function ReadMessage: string; overload;
-    function ReadMessage(const ATimeout: Integer): string; overload;
+    function ReadMessage: TDataLoggerSocketMessage; overload;
+    function ReadMessage(const ATimeout: Integer): TDataLoggerSocketMessage; overload;
 
     function Context: TIdContext;
 
@@ -143,14 +153,16 @@ type
   end;
 
   TDataLoggerSocketConnectionHandler = class(TIdIOHandler)
+  private
+    procedure Send(const ABytes: TBytes; const AMessage: TBytes);
   public
     function HandShaked: Boolean;
 
-    function ReadString: string;
-    function ReadStringBytes: TBytes;
-
+    function ReadMessage: TDataLoggerSocketMessage;
     procedure WriteMessage(const AMessage: string);
     procedure WriteMessageBytes(const AMessage: TBytes);
+
+    procedure PING;
   end;
 
   { TProviderSocket }
@@ -259,8 +271,6 @@ function TProviderSocket.Stop: TProviderSocket;
 begin
   Result := Self;
 
-  DisconnectAll;
-
   FIdTCPServer.Active := False;
 end;
 
@@ -292,13 +302,13 @@ begin
 
   try
     for LConnection in LConnections do
-      try
-        LConnection.Disconnect;
-      except
-      end;
+      LConnection.Disconnect;
   finally
     TDataLoggerSocketListConnection(FListConnection).RemoveAll;
   end;
+
+  Stop;
+  Start
 end;
 
 function TProviderSocket.CountConnections: Integer;
@@ -441,10 +451,16 @@ end;
 procedure TProviderSocket.DoOnExecute(AContext: TIdContext);
 var
   LConnection: TDataLoggerSocketConnection;
-  LMessage: string;
+  LReadMessage: TDataLoggerSocketMessage;
 begin
   LConnection := TDataLoggerSocketListConnection(FListConnection).IsEquals(AContext);
-  LMessage := LConnection.ReadMessage;
+
+  LReadMessage := LConnection.ReadMessage;
+  if LReadMessage.OperationCode = TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE then
+  begin
+    LConnection.Disconnect;
+    Exit;
+  end;
 end;
 
 procedure TProviderSocket.DoOnDisconnect(AContext: TIdContext);
@@ -633,24 +649,31 @@ begin
     TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).WriteFile(AFilename, True);
 end;
 
-function TDataLoggerSocketConnection.ReadMessage: string;
+procedure TDataLoggerSocketConnection.PING;
 begin
-  Result := '';
+  if Assigned(FIdContext) and Assigned(FIdContext.Connection) and Assigned(FIdContext.Connection.IOHandler) then
+    TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).PING;
+end;
+
+function TDataLoggerSocketConnection.ReadMessage: TDataLoggerSocketMessage;
+begin
+  Result.OperationCode := TDataLoggerSocketMessageOperationCode.ERROR;
+  Result.Message := '';
 
   if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.IOHandler) then
     Exit;
 
   FIdContext.Connection.IOHandler.CheckForDataOnSource(50);
 
-  Result := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadString;
+  Result := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadMessage;
 end;
 
-function TDataLoggerSocketConnection.ReadMessage(const ATimeout: Integer): string;
+function TDataLoggerSocketConnection.ReadMessage(const ATimeout: Integer): TDataLoggerSocketMessage;
 var
   LOldReadTimeout: Integer;
-  LMessage: string;
 begin
-  Result := '';
+  Result.OperationCode := TDataLoggerSocketMessageOperationCode.ERROR;
+  Result.Message := '';
 
   if not Assigned(FIdContext) or not Assigned(FIdContext.Connection) or not Assigned(FIdContext.Connection.IOHandler) then
     Exit;
@@ -661,11 +684,10 @@ begin
   try
     FIdContext.Connection.IOHandler.ReadTimeout := ATimeout;
 
-    LMessage := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadString;
-    if not FIdContext.Connection.IOHandler.ReadLnTimedout then
-      Exit;
+    Result := TDataLoggerSocketConnectionHandler(FIdContext.Connection.IOHandler).ReadMessage;
 
-    Result := LMessage;
+    if FIdContext.Connection.IOHandler.ReadLnTimedout then
+      Result.OperationCode := TDataLoggerSocketMessageOperationCode.TIMEOUT;
   finally
     FIdContext.Connection.IOHandler.ReadTimeout := LOldReadTimeout;
   end;
@@ -818,21 +840,32 @@ begin
   Result := Tag = 1;
 end;
 
-function TDataLoggerSocketConnectionHandler.ReadString: string;
-begin
-  Result := IndyTextEncoding_UTF8.GetString(TIdBytes(ReadStringBytes));
-end;
-
-function TDataLoggerSocketConnectionHandler.ReadStringBytes: TBytes;
+function TDataLoggerSocketConnectionHandler.ReadMessage: TDataLoggerSocketMessage;
 var
   LReadByte: Byte;
   LByte: array [0 .. 7] of Byte;
   I: Int64;
   LDecodedSize: Int64;
   LMask: array [0 .. 3] of Byte;
+  LMessage: TBytes;
 begin
+  Result.OperationCode := TDataLoggerSocketMessageOperationCode.TIMEOUT;
+  Result.Message := '';
+
   try
-    if ReadByte = $81 then
+    LReadByte := ReadByte;
+
+    case LReadByte of
+      129: Result.OperationCode := TDataLoggerSocketMessageOperationCode.TEXT_FRAME;
+      130: Result.OperationCode := TDataLoggerSocketMessageOperationCode.BINARY_FRAME;
+      136: Result.OperationCode := TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE;
+      137: Result.OperationCode := TDataLoggerSocketMessageOperationCode.PING;
+      138: Result.OperationCode := TDataLoggerSocketMessageOperationCode.PONG;
+    else
+      Result.OperationCode := TDataLoggerSocketMessageOperationCode.CONTINUE;
+    end;
+
+    if LReadByte in [129, 137, 138] then
     begin
       LReadByte := ReadByte;
 
@@ -872,17 +905,17 @@ begin
       LMask[3] := ReadByte;
 
       if LDecodedSize < 1 then
-      begin
-        Result := [];
         Exit;
-      end;
 
-      SetLength(Result, LDecodedSize);
+      LMessage := [];
+      SetLength(LMessage, LDecodedSize);
 
-      inherited ReadBytes(TIdBytes(Result), LDecodedSize, False);
+      inherited ReadBytes(TIdBytes(LMessage), LDecodedSize, False);
 
       for I := 0 to Pred(LDecodedSize) do
-        Result[I] := Result[I] xor LMask[I mod 4];
+        LMessage[I] := LMessage[I] xor LMask[I mod 4];
+
+      Result.Message := IndyTextEncoding_UTF8.GetString(TIdBytes(LMessage));
     end;
   except
   end;
@@ -894,10 +927,20 @@ begin
 end;
 
 procedure TDataLoggerSocketConnectionHandler.WriteMessageBytes(const AMessage: TBytes);
+begin
+  Send([$81], AMessage);
+end;
+
+procedure TDataLoggerSocketConnectionHandler.PING;
+begin
+  Send([$89], TBytes(IndyTextEncoding_UTF8.GetBytes('PING')));
+end;
+
+procedure TDataLoggerSocketConnectionHandler.Send(const ABytes: TBytes; const AMessage: TBytes);
 var
   LBytes: TBytes;
 begin
-  LBytes := [$81];
+  LBytes := ABytes;
 
   if Length(AMessage) <= 125 then
     LBytes := LBytes + [Length(AMessage)]
