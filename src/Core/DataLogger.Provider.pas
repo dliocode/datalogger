@@ -41,11 +41,13 @@ uses
 type
   TLoggerJSON = DataLogger.Utils.TLoggerJSON;
 
-  TDataLoggerProvider<T: class> = class(TThread)
+  TDataLoggerProvider<T: class> = class
   private
     FOwner: T;
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
+    FExecute: TThread;
+    FTerminated: Boolean;
 
     FListLoggerBase: TDataLoggerListItem;
     FListTransaction: TDataLoggerListTransaction;
@@ -62,6 +64,7 @@ type
     FFinalMessage: string;
 
     function ExtractCache: TArray<TLoggerItem>;
+    procedure Execute;
   protected
     FLogFormat: string;
     FFormatTimestamp: string;
@@ -72,13 +75,13 @@ type
     FIgnoreLogFormatIncludeKey: Boolean;
     FIgnoreLogFormatIncludeKeySeparator: string;
 
-    procedure Execute; override;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
 
     procedure SetJSONInternal(const AJO: TJSONObject);
     procedure ToJSONInternal(const AJO: TJSONObject);
     procedure Lock;
     procedure UnLock;
+    function Terminated: Boolean;
   public
     function SetLogFormat(const ALogFormat: string): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
@@ -120,8 +123,7 @@ implementation
 
 constructor TDataLoggerProvider<T>.Create;
 begin
-  inherited Create(True);
-  FreeOnTerminate := False;
+
 end;
 
 procedure TDataLoggerProvider<T>.AfterConstruction;
@@ -149,14 +151,17 @@ begin
   UseTransaction(False);
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
 
-  Start;
+  FTerminated := False;
+  Execute;
 end;
 
 procedure TDataLoggerProvider<T>.BeforeDestruction;
 begin
-  Terminate;
+  FExecute.Terminate;
+  FTerminated := True;
   FEvent.SetEvent;
-  WaitFor;
+  FExecute.WaitFor;
+  FExecute.Free;
 
   Lock;
   try
@@ -170,23 +175,6 @@ begin
   FCriticalSection.Free;
 
   inherited;
-end;
-
-procedure TDataLoggerProvider<T>.Execute;
-var
-  LCache: TArray<TLoggerItem>;
-begin
-  while not Terminated do
-  begin
-    FEvent.WaitFor(INFINITE);
-    FEvent.ResetEvent;
-
-    LCache := ExtractCache;
-    if Length(LCache) = 0 then
-      Continue;
-
-    Save(LCache);
-  end;
 end;
 
 function TDataLoggerProvider<T>.SetLogFormat(const ALogFormat: string): T;
@@ -484,7 +472,7 @@ begin
         LItem := AValues[I];
 
         if LItem.InternalItem.TargetProviderIndex > -1 then
-          if not (LItem.InternalItem.TargetProviderIndex = AProviderIndex) then
+          if not(LItem.InternalItem.TargetProviderIndex = AProviderIndex) then
             Continue;
 
         if not LItem.InternalItem.IsSlinebreak then
@@ -548,19 +536,6 @@ begin
   Lock;
   try
     FEvent.SetEvent;
-  finally
-    UnLock;
-  end;
-end;
-
-function TDataLoggerProvider<T>.ExtractCache: TArray<TLoggerItem>;
-begin
-  Lock;
-  try
-    Result := FListLoggerBase.ToArray;
-
-    FListLoggerBase.Clear;
-    FListLoggerBase.TrimExcess;
   finally
     UnLock;
   end;
@@ -712,6 +687,49 @@ end;
 procedure TDataLoggerProvider<T>.UnLock;
 begin
   FCriticalSection.Release;
+end;
+
+function TDataLoggerProvider<T>.Terminated: Boolean;
+begin
+  Result := FTerminated;
+end;
+
+function TDataLoggerProvider<T>.ExtractCache: TArray<TLoggerItem>;
+begin
+  Lock;
+  try
+    Result := FListLoggerBase.ToArray;
+
+    FListLoggerBase.Clear;
+    FListLoggerBase.TrimExcess;
+  finally
+    UnLock;
+  end;
+end;
+
+procedure TDataLoggerProvider<T>.Execute;
+begin
+  FExecute :=
+    TThread.CreateAnonymousThread(
+    procedure
+    var
+      LCache: TArray<TLoggerItem>;
+    begin
+      while not FTerminated do
+      begin
+        FEvent.WaitFor(INFINITE);
+        FEvent.ResetEvent;
+
+        LCache := ExtractCache;
+        if Length(LCache) = 0 then
+          Continue;
+
+        Save(LCache);
+      end;
+    end);
+
+  FExecute.FreeOnTerminate := False;
+  FExecute.Start;
 end;
 
 end.
