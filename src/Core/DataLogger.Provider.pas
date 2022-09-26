@@ -85,7 +85,6 @@ type
   public
     function SetLogFormat(const ALogFormat: string): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
-
     function SetLevel(const ALevel: TLoggerLevel): T;
     function SetDisableLevel(const ALevels: TLoggerLevels): T;
     function SetOnlyLevel(const ALevels: TLoggerLevels): T;
