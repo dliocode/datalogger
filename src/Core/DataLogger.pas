@@ -77,7 +77,7 @@ type
     function GetProviders: TArray<TObject>;
     procedure Lock;
     procedure UnLock;
-    procedure Execute;
+    procedure Start;
   public
     function AddProvider(const AProviders: TArray<TObject>): TDataLogger; overload;
     function AddProvider(const AProvider: TObject): TDataLogger; overload;
@@ -238,7 +238,7 @@ begin
   FSequence := 0;
 
   FTerminated := False;
-  Execute;
+  Start;
 end;
 
 procedure TDataLogger.BeforeDestruction;
@@ -1160,7 +1160,7 @@ begin
   FCriticalSection.Release;
 end;
 
-procedure TDataLogger.Execute;
+procedure TDataLogger.Start;
 begin
   FExecute :=
     TThreadExecute.CreateAnonymousThread(
