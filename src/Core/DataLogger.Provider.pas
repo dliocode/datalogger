@@ -64,7 +64,7 @@ type
     FFinalMessage: string;
 
     function ExtractCache: TArray<TLoggerItem>;
-    procedure Execute;
+    procedure Start;
   protected
     FLogFormat: string;
     FFormatTimestamp: string;
@@ -152,7 +152,7 @@ begin
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
 
   FTerminated := False;
-  Execute;
+  Start;
 end;
 
 procedure TDataLoggerProvider<T>.BeforeDestruction;
@@ -707,7 +707,7 @@ begin
   end;
 end;
 
-procedure TDataLoggerProvider<T>.Execute;
+procedure TDataLoggerProvider<T>.Start;
 begin
   FExecute :=
     TThread.CreateAnonymousThread(
