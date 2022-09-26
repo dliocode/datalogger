@@ -59,9 +59,9 @@ type
     FListLoggerItem: TList<TLoggerItem>;
     FListProviders: TObjectList<TObject>;
 
-    FLogLevel: TLoggerLevel;
-    FDisableLogLevel: TLoggerLevels;
-    FOnlyLogLevel: TLoggerLevels;
+    FLevel: TLoggerLevel;
+    FDisableLevel: TLoggerLevels;
+    FOnlyLevel: TLoggerLevels;
     FSequence: UInt64;
     FName: string;
     FTagNameIsRequired: Boolean;
@@ -166,9 +166,12 @@ type
 
     function SetLogFormat(const ALogFormat: string): TDataLogger;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
-    function SetLogLevel(const ALogLevel: TLoggerLevel): TDataLogger;
-    function SetDisableLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
-    function SetOnlyLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
+    function SetLevel(const ALevel: TLoggerLevel): TDataLogger;
+    function SetDisableLevel(const ALevels: TLoggerLevels): TDataLogger;
+    function SetOnlyLevel(const ALevels: TLoggerLevels): TDataLogger;
+    function SetLogLevel(const ALevel: TLoggerLevel): TDataLogger; deprecated 'Use SetLevel instead - This function will be removed in future versions';
+    function SetDisableLogLevel(const ALevels: TLoggerLevels): TDataLogger; deprecated 'Use SetDisableLevel instead - This function will be removed in future versions';
+    function SetOnlyLogLevel(const ALevels: TLoggerLevels): TDataLogger; deprecated 'Use SetOnlyLevel instead - This function will be removed in future versions';
     function SetLogException(const AException: TLoggerOnException): TDataLogger;
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
     function SetInitialMessage(const AMessage: string): TDataLogger;
@@ -229,9 +232,9 @@ begin
   FListLoggerItem := TList<TLoggerItem>.Create;
   FListProviders := TObjectList<TObject>.Create(True);
 
-  SetLogLevel(TLoggerLevel.All);
-  SetDisableLogLevel([]);
-  SetOnlyLogLevel([TLoggerLevel.All]);
+  SetLevel(TLoggerLevel.All);
+  SetDisableLevel([]);
+  SetOnlyLevel([TLoggerLevel.All]);
   SetName('');
   SetTagNameIsRequired(False);
 
@@ -243,7 +246,7 @@ end;
 
 procedure TDataLogger.BeforeDestruction;
 begin
-  SetDisableLogLevel([TLoggerLevel.All]);
+  SetDisableLevel([TLoggerLevel.All]);
 
   FExecute.Terminate;
   FTerminated := True;
@@ -700,40 +703,55 @@ begin
     TDataLoggerProvider<TObject>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
 end;
 
-function TDataLogger.SetLogLevel(const ALogLevel: TLoggerLevel): TDataLogger;
+function TDataLogger.SetLevel(const ALevel: TLoggerLevel): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FLogLevel := ALogLevel;
+    FLevel := ALevel;
   finally
     UnLock;
   end;
 end;
 
-function TDataLogger.SetDisableLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
+function TDataLogger.SetDisableLevel(const ALevels: TLoggerLevels): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FDisableLogLevel := ALogLevels;
+    FDisableLevel := ALevels;
   finally
     UnLock;
   end;
 end;
 
-function TDataLogger.SetOnlyLogLevel(const ALogLevels: TLoggerLevels): TDataLogger;
+function TDataLogger.SetOnlyLevel(const ALevels: TLoggerLevels): TDataLogger;
 begin
   Result := Self;
 
   Lock;
   try
-    FOnlyLogLevel := ALogLevels;
+    FOnlyLevel := ALevels;
   finally
     UnLock;
   end;
+end;
+
+function TDataLogger.SetLogLevel(const ALevel: TLoggerLevel): TDataLogger;
+begin
+  Result := SetLevel(ALevel);
+end;
+
+function TDataLogger.SetDisableLogLevel(const ALevels: TLoggerLevels): TDataLogger;
+begin
+  Result := SetDisableLevel(ALevels);
+end;
+
+function TDataLogger.SetOnlyLogLevel(const ALevels: TLoggerLevels): TDataLogger;
+begin
+  Result := SetOnlyLevel(ALevels);
 end;
 
 function TDataLogger.SetLogException(const AException: TLoggerOnException): TDataLogger;
@@ -1019,13 +1037,13 @@ begin
   try
     if not AIsSlinebreak then
     begin
-      if (TLoggerLevel.All in FDisableLogLevel) or (ALevel in FDisableLogLevel) then
+      if (TLoggerLevel.All in FDisableLevel) or (ALevel in FDisableLevel) then
         Exit;
 
-      if not(TLoggerLevel.All in FOnlyLogLevel) and not(ALevel in FOnlyLogLevel) then
+      if not(TLoggerLevel.All in FOnlyLevel) and not(ALevel in FOnlyLevel) then
         Exit;
 
-      if Ord(FLogLevel) > Ord(ALevel) then
+      if Ord(FLevel) > Ord(ALevel) then
         Exit;
 
       if not(ALevel = TLoggerLevel.All) then

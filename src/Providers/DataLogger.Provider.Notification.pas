@@ -47,14 +47,14 @@ type
   private
     FNotificationCenter: TNotificationCenter;
     FTitle: string;
-    FIncludeLogLevelInTitle: Boolean;
+    FIncludeLevelInTitle: Boolean;
     FOnReceiveExecute: TProviderNotificationExecute;
 
     procedure OnReceiveLocalNotification(Sender: TObject; ANotification: TNotification);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
+    function Title(const AValue: string; const AIncludeLevelInTitle: Boolean = True): TProviderNotification;
     function ExecuteOnClick(const AOnReceiveExecute: TProviderNotificationExecute): TProviderNotification;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -86,7 +86,7 @@ begin
   inherited;
 end;
 
-function TProviderNotification.Title(const AValue: string; const AIncludeLogLevelInTitle: Boolean = True): TProviderNotification;
+function TProviderNotification.Title(const AValue: string; const AIncludeLevelInTitle: Boolean = True): TProviderNotification;
 begin
   Result := Self;
 
@@ -95,7 +95,7 @@ begin
   else
     FTitle := AValue;
 
-  FIncludeLogLevelInTitle := AIncludeLogLevelInTitle;
+  FIncludeLevelInTitle := AIncludeLevelInTitle;
 end;
 
 function TProviderNotification.ExecuteOnClick(const AOnReceiveExecute: TProviderNotificationExecute): TProviderNotification;
@@ -122,7 +122,7 @@ begin
     Exit;
 
   try
-    Title(LJO.GetValue<string>('title', FTitle), LJO.GetValue<Boolean>('include_log_level_in_title', FIncludeLogLevelInTitle));
+    Title(LJO.GetValue<string>('title', FTitle), LJO.GetValue<Boolean>('include_level_in_title', FIncludeLevelInTitle));
 
     SetJSONInternal(LJO);
   finally
@@ -137,7 +137,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('title', FTitle);
-    LJO.AddPair('include_log_level_in_title', TJSONBool.Create(FIncludeLogLevelInTitle));
+    LJO.AddPair('include_level_in_title', TJSONBool.Create(FIncludeLevelInTitle));
 
     ToJSONInternal(LJO);
 
@@ -164,7 +164,7 @@ begin
       Continue;
 
     LName := FTitle;
-    if FIncludeLogLevelInTitle then
+    if FIncludeLevelInTitle then
       LName := LName + ' - ' + LItem.LevelString;
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);

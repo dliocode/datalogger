@@ -48,7 +48,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')    
+    .Custom('Custom Level', 'My Custom')
     ;
 end;
 
@@ -62,7 +62,7 @@ begin
     TProviderMemo.Create.Memo(MemoOnlyError)
 
     // Show only error
-    .SetOnlyLogLevel([TLoggerLevel.Error])
+    .SetOnlyLevel([TLoggerLevel.Error])
   );
 
   // Log Format

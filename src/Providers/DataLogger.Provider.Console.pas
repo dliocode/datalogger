@@ -76,7 +76,7 @@ type
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
     function UseColorOnlyInLevels(const AValue: Boolean): TProviderConsole;
-    function ChangeColor(const ALogLevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
+    function ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -117,11 +117,11 @@ begin
   FUseColorOnlyInLevels := AValue;
 end;
 
-function TProviderConsole.ChangeColor(const ALogLevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
+function TProviderConsole.ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 begin
   Result := Self;
 
-  case ALogLevel of
+  case ALevel of
     TLoggerLevel.Trace:
       begin
         FColorTrace.Background := AColorBackground;

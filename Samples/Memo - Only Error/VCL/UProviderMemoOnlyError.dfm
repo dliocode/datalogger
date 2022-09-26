@@ -32,10 +32,11 @@ object Form2: TForm2
         AlignWithMargins = True
         Left = 4
         Top = 4
-        Width = 97
+        Width = 296
         Height = 15
         Align = alTop
         Caption = 'Logger Type -> All'
+        ExplicitWidth = 97
       end
       object MemoAll: TMemo
         Left = 1
@@ -58,10 +59,11 @@ object Form2: TForm2
         AlignWithMargins = True
         Left = 4
         Top = 4
-        Width = 133
+        Width = 310
         Height = 15
         Align = alTop
         Caption = 'Logger Type -> OnlyError'
+        ExplicitWidth = 133
       end
       object MemoOnlyError: TMemo
         Left = 1

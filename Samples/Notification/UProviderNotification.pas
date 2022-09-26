@@ -63,7 +63,7 @@ begin
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
 
   // Show only info and custom
- Logger.SetOnlyLogLevel([TLoggerLevel.Info, TLoggerLevel.Custom]);
+ Logger.SetOnlyLevel([TLoggerLevel.Info, TLoggerLevel.Custom]);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

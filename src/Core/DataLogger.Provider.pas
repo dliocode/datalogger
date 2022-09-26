@@ -52,12 +52,12 @@ type
     FListLoggerBase: TDataLoggerListItem;
     FListTransaction: TDataLoggerListTransaction;
 
-    FLogLevel: TLoggerLevel;
-    FDisableLogLevel: TLoggerLevels;
-    FOnlyLogLevel: TLoggerLevels;
+    FLevel: TLoggerLevel;
+    FDisableLevel: TLoggerLevels;
+    FOnlyLevel: TLoggerLevels;
 
     FUseTransaction: Boolean;
-    FTransactionAutoCommitLogLevel: TLoggerLevels;
+    FTransactionAutoCommitLevel: TLoggerLevels;
     FTransactionAutoCommitType: TLoggerTransactionTypeCommit;
 
     FInitialMessage: string;
@@ -85,9 +85,13 @@ type
   public
     function SetLogFormat(const ALogFormat: string): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
-    function SetLogLevel(const ALogLevel: TLoggerLevel): T;
-    function SetDisableLogLevel(const ALogLevels: TLoggerLevels): T;
-    function SetOnlyLogLevel(const ALogLevels: TLoggerLevels): T;
+
+    function SetLevel(const ALevel: TLoggerLevel): T;
+    function SetDisableLevel(const ALevels: TLoggerLevels): T;
+    function SetOnlyLevel(const ALevels: TLoggerLevels): T;
+    function SetLogLevel(const ALevel: TLoggerLevel): T; deprecated 'Use SetLevel instead - This function will be removed in future versions';
+    function SetDisableLogLevel(const ALevels: TLoggerLevels): T; deprecated 'Use SetDisableLevel instead - This function will be removed in future versions';
+    function SetOnlyLogLevel(const ALevels: TLoggerLevels): T; deprecated 'Use SetOnlyLevel instead - This function will be removed in future versions';
     function SetLogException(const AException: TLoggerOnException): T;
     function SetMaxRetries(const AMaxRetries: Integer): T;
     function SetInitialMessage(const AMessage: string): T;
@@ -95,7 +99,7 @@ type
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
 
     function UseTransaction(const AUseTransaction: Boolean): T;
-    function TransactionAutoCommit(const ALogLevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
+    function TransactionAutoCommit(const ALevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
 
     function StartTransaction(const AID: string; const AUseLock: Boolean = True): T;
     function CommitTransaction(const AID: string; const ALevelCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock; const AUseLock: Boolean = True): T;
@@ -139,9 +143,9 @@ begin
 
   SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
   SetFormatTimestamp('yyyy-mm-dd hh:nn:ss.zzz');
-  SetLogLevel(TLoggerLevel.All);
-  SetDisableLogLevel([]);
-  SetOnlyLogLevel([TLoggerLevel.All]);
+  SetLevel(TLoggerLevel.All);
+  SetDisableLevel([]);
+  SetOnlyLevel([TLoggerLevel.All]);
   SetLogException(nil);
   SetMaxRetries(5);
   SetInitialMessage('');
@@ -189,22 +193,37 @@ begin
   FFormatTimestamp := AFormatTimestamp;
 end;
 
-function TDataLoggerProvider<T>.SetLogLevel(const ALogLevel: TLoggerLevel): T;
+function TDataLoggerProvider<T>.SetLevel(const ALevel: TLoggerLevel): T;
 begin
   Result := FOwner;
-  FLogLevel := ALogLevel;
+  FLevel := ALevel;
 end;
 
-function TDataLoggerProvider<T>.SetDisableLogLevel(const ALogLevels: TLoggerLevels): T;
+function TDataLoggerProvider<T>.SetDisableLevel(const ALevels: TLoggerLevels): T;
 begin
   Result := FOwner;
-  FDisableLogLevel := ALogLevels;
+  FDisableLevel := ALevels;
 end;
 
-function TDataLoggerProvider<T>.SetOnlyLogLevel(const ALogLevels: TLoggerLevels): T;
+function TDataLoggerProvider<T>.SetOnlyLevel(const ALevels: TLoggerLevels): T;
 begin
   Result := FOwner;
-  FOnlyLogLevel := ALogLevels;
+  FOnlyLevel := ALevels;
+end;
+
+function TDataLoggerProvider<T>.SetLogLevel(const ALevel: TLoggerLevel): T;
+begin
+  Result := SetLevel(ALevel);
+end;
+
+function TDataLoggerProvider<T>.SetDisableLogLevel(const ALevels: TLoggerLevels): T;
+begin
+  Result := SetDisableLevel(ALevels);
+end;
+
+function TDataLoggerProvider<T>.SetOnlyLogLevel(const ALevels: TLoggerLevels): T;
+begin
+  Result := SetOnlyLevel(ALevels);
 end;
 
 function TDataLoggerProvider<T>.SetLogException(const AException: TLoggerOnException): T;
@@ -247,11 +266,11 @@ begin
   FUseTransaction := AUseTransaction;
 end;
 
-function TDataLoggerProvider<T>.TransactionAutoCommit(const ALogLevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit): T;
+function TDataLoggerProvider<T>.TransactionAutoCommit(const ALevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit): T;
 begin
   Result := FOwner;
 
-  FTransactionAutoCommitLogLevel := ALogLevels;
+  FTransactionAutoCommitLevel := ALevels;
   FTransactionAutoCommitType := ATypeAutoCommit;
 end;
 
@@ -477,14 +496,14 @@ begin
 
         if not LItem.InternalItem.IsSlinebreak then
         begin
-          if (TLoggerLevel.All in FDisableLogLevel) or (LItem.Level in FDisableLogLevel) then
+          if (TLoggerLevel.All in FDisableLevel) or (LItem.Level in FDisableLevel) then
             Continue;
 
-          if not(TLoggerLevel.All in FOnlyLogLevel) and not(LItem.Level in FOnlyLogLevel) then
+          if not(TLoggerLevel.All in FOnlyLevel) and not(LItem.Level in FOnlyLevel) then
             Continue;
 
-          if not(LItem.Level in FOnlyLogLevel) then
-            if Ord(FLogLevel) > Ord(LItem.Level) then
+          if not(LItem.Level in FOnlyLevel) then
+            if Ord(FLevel) > Ord(LItem.Level) then
               Continue;
         end;
 
@@ -511,7 +530,7 @@ begin
 
           if not LItem.InternalItem.IsSlinebreak then
             if FUseTransaction and LTransaction.InTransaction then
-              if LItem.Level in FTransactionAutoCommitLogLevel then
+              if LItem.Level in FTransactionAutoCommitLevel then
               begin
                 CommitTransaction(LItem.InternalItem.TransactionID, FTransactionAutoCommitType, False);
                 StartTransaction(LItem.InternalItem.TransactionID, False);
@@ -561,36 +580,36 @@ begin
   SetLogFormat(LJOInternal.GetValue<string>('log_format', FLogFormat));
   SetFormatTimestamp(LJOInternal.GetValue<string>('format_timestamp', FFormatTimestamp));
 
-  LValue := FLogLevel.ToString;
-  FLogLevel.SetLevelName(LJOInternal.GetValue<string>('log_level', LValue));
+  LValue := FLevel.ToString;
+  FLevel.SetLevelName(LJOInternal.GetValue<string>('log_level', LValue));
 
   // Disable Log Level
-  LJSONValue := LJOInternal.GetValue('disable_log_level');
+  LJSONValue := LJOInternal.GetValue('disable_level');
   if Assigned(LJSONValue) then
   begin
-    SetDisableLogLevel([]);
+    SetDisableLevel([]);
 
     for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
     begin
       LValue := TJSONArray(LJSONValue).Items[I].Value;
       LLoggerLevel.SetLevelName(LValue);
 
-      FDisableLogLevel := FDisableLogLevel + [LLoggerLevel];
+      FDisableLevel := FDisableLevel + [LLoggerLevel];
     end;
   end;
 
   // Only Log Level
-  LJSONValue := LJOInternal.GetValue('only_log_level');
+  LJSONValue := LJOInternal.GetValue('only_level');
   if Assigned(LJSONValue) then
   begin
-    SetOnlyLogLevel([]);
+    SetOnlyLevel([]);
 
     for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
     begin
       LValue := TJSONArray(LJSONValue).Items[I].Value;
       LLoggerLevel.SetLevelName(LValue);
 
-      FOnlyLogLevel := FOnlyLogLevel + [LLoggerLevel];
+      FOnlyLevel := FOnlyLevel + [LLoggerLevel];
     end;
   end;
 
@@ -603,22 +622,22 @@ begin
   LJSONObjectValue := LJOInternal.GetValue<TJSONObject>('transaction_auto_commit');
   if Assigned(LJSONObjectValue) then
   begin
-    LJSONValue := TJSONObject(LJSONObjectValue).GetValue('log_level');
+    LJSONValue := TJSONObject(LJSONObjectValue).GetValue('level');
     if Assigned(LJSONValue) then
     begin
-      FTransactionAutoCommitLogLevel := [];
+      FTransactionAutoCommitLevel := [];
 
       for I := 0 to Pred(TJSONArray(LJSONValue).Count) do
       begin
         LValue := TJSONArray(LJSONValue).Items[I].Value;
         LLoggerLevel.SetLevelName(LValue);
 
-        FTransactionAutoCommitLogLevel := FTransactionAutoCommitLogLevel + [LLoggerLevel];
+        FTransactionAutoCommitLevel := FTransactionAutoCommitLevel + [LLoggerLevel];
       end;
     end;
 
     LValue := GetEnumName(TypeInfo(TLoggerLevel), Integer(FTransactionAutoCommitType));
-    SetLogLevel(TLoggerLevel(GetEnumValue(TypeInfo(TLoggerLevel), TJSONObject(LJSONObjectValue).GetValue<string>('type', LValue))));
+    SetLevel(TLoggerLevel(GetEnumValue(TypeInfo(TLoggerLevel), TJSONObject(LJSONObjectValue).GetValue<string>('type', LValue))));
   end;
 end;
 
@@ -626,10 +645,10 @@ procedure TDataLoggerProvider<T>.ToJSONInternal(const AJO: TJSONObject);
 var
   LJOInternal: TJSONObject;
   I: TLoggerLevel;
-  LJADisableLogLevel: TJSONArray;
-  LJAOnlyLogLevel: TJSONArray;
+  LJADisableLevel: TJSONArray;
+  LJAOnlyLevel: TJSONArray;
   LJOTransactionAutoCommit: TJSONObject;
-  LJATransactionAutoCommitLogLevel: TJSONArray;
+  LJATransactionAutoCommitLevel: TJSONArray;
 begin
   if not Assigned(AJO) then
     Exit;
@@ -639,25 +658,25 @@ begin
 
   LJOInternal.AddPair('log_format', FLogFormat);
   LJOInternal.AddPair('format_timestamp', FFormatTimestamp);
-  LJOInternal.AddPair('log_level', FLogLevel.ToString);
+  LJOInternal.AddPair('level', FLevel.ToString);
 
   // Disable Log Level
-  LJADisableLogLevel := TJSONArray.Create;
-  LJOInternal.AddPair('disable_log_level', LJADisableLogLevel);
+  LJADisableLevel := TJSONArray.Create;
+  LJOInternal.AddPair('disable_level', LJADisableLevel);
 
-  if not(FDisableLogLevel = []) then
+  if not(FDisableLevel = []) then
     for I := Low(TLoggerLevel) to High(TLoggerLevel) do
-      if TLoggerLevel(I) in FDisableLogLevel then
-        LJADisableLogLevel.Add(TLoggerLevel(I).ToString);
+      if TLoggerLevel(I) in FDisableLevel then
+        LJADisableLevel.Add(TLoggerLevel(I).ToString);
 
   // Only Log Level
-  LJAOnlyLogLevel := TJSONArray.Create;
-  LJOInternal.AddPair('only_log_level', LJAOnlyLogLevel);
+  LJAOnlyLevel := TJSONArray.Create;
+  LJOInternal.AddPair('only_level', LJAOnlyLevel);
 
-  if not(FOnlyLogLevel = []) then
+  if not(FOnlyLevel = []) then
     for I := Low(TLoggerLevel) to High(TLoggerLevel) do
-      if TLoggerLevel(I) in FOnlyLogLevel then
-        LJAOnlyLogLevel.Add(TLoggerLevel(I).ToString);
+      if TLoggerLevel(I) in FOnlyLevel then
+        LJAOnlyLevel.Add(TLoggerLevel(I).ToString);
 
   LJOInternal.AddPair('max_retries', TJSONNumber.Create(FMaxRetries));
   LJOInternal.AddPair('initial_message', FInitialMessage);
@@ -668,13 +687,13 @@ begin
   LJOTransactionAutoCommit := TJSONObject.Create;
   LJOInternal.AddPair('transaction_auto_commit', LJOTransactionAutoCommit);
 
-  LJATransactionAutoCommitLogLevel := TJSONArray.Create;
-  LJOTransactionAutoCommit.AddPair('log_level', LJATransactionAutoCommitLogLevel);
+  LJATransactionAutoCommitLevel := TJSONArray.Create;
+  LJOTransactionAutoCommit.AddPair('level', LJATransactionAutoCommitLevel);
 
-  if not(FTransactionAutoCommitLogLevel = []) then
+  if not(FTransactionAutoCommitLevel = []) then
     for I := Low(TLoggerLevel) to High(TLoggerLevel) do
-      if TLoggerLevel(I) in FTransactionAutoCommitLogLevel then
-        LJATransactionAutoCommitLogLevel.Add(TLoggerLevel(I).ToString);
+      if TLoggerLevel(I) in FTransactionAutoCommitLevel then
+        LJATransactionAutoCommitLevel.Add(TLoggerLevel(I).ToString);
 
   LJOTransactionAutoCommit.AddPair('type', GetEnumName(TypeInfo(TLoggerTransactionTypeCommit), Integer(FTransactionAutoCommitType)));
 end;

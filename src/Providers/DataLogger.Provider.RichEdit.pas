@@ -67,7 +67,7 @@ type
   public
     function RichEdit(const AValue: TCustomRichEdit): TProviderRichEdit;
     function UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
-    function ChangeColor(const ALogLevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
+    function ChangeColor(const ALevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
     function MaxLogLines(const AValue: Integer): TProviderRichEdit;
     function ModeInsert(const AValue: TRichEditModeInsert): TProviderRichEdit;
     function CleanOnStart(const AValue: Boolean): TProviderRichEdit;
@@ -119,11 +119,11 @@ begin
   FUseColorInRichEdit := AValue;
 end;
 
-function TProviderRichEdit.ChangeColor(const ALogLevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
+function TProviderRichEdit.ChangeColor(const ALevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
 begin
   Result := Self;
 
-  case ALogLevel of
+  case ALevel of
     TLoggerLevel.Trace:
       FColorTrace := AColor;
 

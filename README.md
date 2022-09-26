@@ -53,9 +53,9 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
     * [Como definir um formato em providers específicos](#como-definir-um-formato-em-providers-especificos)
     * [Como mudar o formato do TimeStamp](#como-mudar-o-formato-do-timestamp)
     * [Tipos de Tag para criar o formato do log](#tipos-de-tag-para-criar-o-formato-do-log)
-  * [LogLevel](#loglevel)
-  * [Disable LogLevel](#disable-LogLevel)
-  * [Only LogLevel](#only-LogLevel)
+  * [Level](#level)
+  * [Disable Level](#disable-Level)
+  * [Only Level](#only-Level)
   * [Log Exception](#log-exception)
   * [Max Retries](#max-retries)
   * [InitialMessage](#initialmessage)
@@ -519,16 +519,16 @@ TLoggerFormat.LOG_IP_LOCAL
 
 ```
 
-## SetLogLevel
+## SetLevel
 
 É possível mostrar somente os _logs_ a partir de um _level_ definido, com base no ```TLoggerLevel```.
 
-SetLogLevel valor padrão = ```TLoggerLevel.All```
+SetLevel valor padrão = ```TLoggerLevel.All```
 
 ### TLoggerLevel
 
 * Quando definido um level, será exibido somente a opção escolhida e seus tipos superiores.
-* Ex: ``` Logger.SetLogLevel(TLoggerLevel.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
+* Ex: ``` Logger.SetLevel(TLoggerLevel.Warn); ``` - Será registrado somente os _logs_ com o tipo ``` Warn / Error / Fatal / Custom ```.
 
 ```delphi
   TLoggerLevel.All = 'Utilizado para operações internas'
@@ -553,8 +553,8 @@ begin
   // Definindo o formato do log
   Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  // Definindo o LogLevel
-  Logger.SetLogLevel(TLoggerLevel.Warn);
+  // Definindo o Level
+  Logger.SetLevel(TLoggerLevel.Warn);
 
   // Gerando os logs
   Logger.Info('Minha mensagem no Log do tipo INFO');
@@ -566,16 +566,16 @@ begin
 end.
 ```
 
-## Disable LogLevel
+## Disable Level
 
 É possível desabilitar alguns _levels_ do log, com base no ```TLoggerLevel```.
 
-SetDisableLogLevel valor padrão = ```[]```
+SetDisableLevel valor padrão = ```[]```
 
-### SetDisableLogLevel
+### SetDisableLevel
 
 * Quando desabilitado será exibido somente as opções que não estão desabilitadas.
-* Ex: ``` Logger.SetDisableLogLevel([TLoggerLevel.Info, TLoggerLevel.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal / Custom ```.
+* Ex: ``` Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]); ``` - Será registrado somente os _logs_ com o tipo ``` Tracer / Debug / Success / Error / Fatal / Custom ```.
 
 ```delphi
 uses
@@ -588,8 +588,8 @@ begin
   // Definindo o formato do log
   Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  // Definindo o DisableLogLevel
-  Logger.SetDisableLogLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);
+  // Definindo o DisableLevel
+  Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);
 
   // Gerando os logs
   Logger.Debug('Minha mensagem no Log do tipo DEBUG');
@@ -605,16 +605,16 @@ begin
 end.
 ```
 
-## Only LogLevel
+## Only Level
 
 É possível mostrar somente alguns _levels_ do log, com base no ```TLoggerLevel```.
 
-SetOnlyLogLevel valor padrão = ```[TLoggerLevel.All]```
+SetOnlyLevel valor padrão = ```[TLoggerLevel.All]```
 
-### SetOnlyLogLevel
+### SetOnlyLevel
 
 * Quando definido será exibido somente as opções registradas.
-* Ex: ``` Logger.SetOnlyLogLevel([TLoggerLevel.Error]); ``` - Será registrado somente os _logs_ com o tipo ``` Error ```.
+* Ex: ``` Logger.SetOnlyLevel([TLoggerLevel.Error]); ``` - Será registrado somente os _logs_ com o tipo ``` Error ```.
 
 ```delphi
 uses
@@ -627,8 +627,8 @@ begin
   // Definindo o formato do log
   Logger.SetLogFormat('${timestamp} [${level}] ${message}');
 
-  // Definindo o OnlyLogLevel
-  Logger.SetOnlyLogLevel([TLoggerLevel.Error]);
+  // Definindo o OnlyLevel
+  Logger.SetOnlyLevel([TLoggerLevel.Error]);
 
   // Gerando os logs
   Logger.Debug('Minha mensagem no Log do tipo DEBUG');
