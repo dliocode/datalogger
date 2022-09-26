@@ -2,13 +2,11 @@ program ProviderConsole;
 
 {$APPTYPE CONSOLE}
 
+{$R *.res}
 
 uses
   DataLogger,
   DataLogger.Provider.Console;
-
-{$R *.res}
-
 
 begin
   Logger.AddProvider(
