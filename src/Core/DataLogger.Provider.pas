@@ -489,10 +489,6 @@ begin
       begin
         LItem := AValues[I];
 
-        if LItem.InternalItem.TargetProviderIndex > -1 then
-          if not(LItem.InternalItem.TargetProviderIndex = AProviderIndex) then
-            Continue;
-
         if not LItem.InternalItem.IsSlinebreak then
         begin
           if (TLoggerLevel.All in FDisableLevel) or (LItem.Level in FDisableLevel) then

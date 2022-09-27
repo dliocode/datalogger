@@ -68,9 +68,9 @@ type
 
     constructor Create;
 
-    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger; overload;
-    function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
     function ExtractCache: TArray<TLoggerItem>;
     procedure SaveForced;
     procedure CloseProvider;
@@ -85,77 +85,77 @@ type
     function SetProvider(const AProviders: TArray<TObject>): TDataLogger;
     function ProviderCount: Integer;
 
-    function Trace(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Trace(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Trace(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Trace(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Debug(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Debug(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Debug(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Debug(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Debug(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Debug(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Info(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Info(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Info(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Info(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Info(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Info(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Success(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Success(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Success(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Success(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Success(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Success(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Warn(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Warn(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Warn(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Warn(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Warn(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Warn(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Error(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Error(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Error(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Error(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Error(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Error(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Fatal(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Fatal(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Fatal(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Fatal(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function T(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function T(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function T(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function T(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function T(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function T(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function D(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function D(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function D(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function D(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function D(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function D(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function I(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function I(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function I(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function I(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function I(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function I(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function S(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function S(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function S(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function S(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function S(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function S(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function W(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function W(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function W(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function W(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function W(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function W(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function E(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function E(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function E(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function E(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function E(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function E(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function F(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function F(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function F(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function F(const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function F(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function F(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function C(const ALevel: string; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function C(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function C(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function C(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function C(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function C(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function L(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
-    function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger; overload;
+    function L(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
+    function L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
+    function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
     function SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
 
@@ -328,279 +328,279 @@ begin
   end;
 end;
 
-function TDataLogger.Trace(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Trace(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName);
 end;
 
-function TDataLogger.Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Trace(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Trace, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Trace, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Trace(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Trace(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Trace, AMessage, ATagName);
 end;
 
-function TDataLogger.Debug(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Debug(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName);
 end;
 
-function TDataLogger.Debug(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Debug(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Debug, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Debug, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Debug(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Debug(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Debug, AMessage, ATagName);
 end;
 
-function TDataLogger.Info(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Info(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName);
 end;
 
-function TDataLogger.Info(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Info(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Info, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Info, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Info(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Info(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Info, AMessage, ATagName);
 end;
 
-function TDataLogger.Success(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Success(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName);
 end;
 
-function TDataLogger.Success(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Success(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Success, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Success, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Success(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Success(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Success, AMessage, ATagName);
 end;
 
-function TDataLogger.Warn(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Warn(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName);
 end;
 
-function TDataLogger.Warn(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Warn(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Warn, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Warn, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Warn(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Warn(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Warn, AMessage, ATagName);
 end;
 
-function TDataLogger.Error(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Error(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName);
 end;
 
-function TDataLogger.Error(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Error(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Error, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Error, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Error(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Error(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Error, AMessage, ATagName);
 end;
 
-function TDataLogger.Fatal(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Fatal(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName);
 end;
 
-function TDataLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Fatal(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Fatal, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Fatal, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Fatal(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Fatal(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Fatal, AMessage, ATagName);
 end;
 
-function TDataLogger.Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, AMessage, '', ATagName, ALevel, False, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Custom, AMessage, '', ATagName, ALevel, False);
 end;
 
-function TDataLogger.Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, Format(AMessage, AArgs), '', ATagName, ALevel, False, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Custom, Format(AMessage, AArgs), '', ATagName, ALevel, False);
 end;
 
-function TDataLogger.Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, '', AMessage.ToString, ATagName, ALevel, False, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.Custom, '', AMessage.ToString, ATagName, ALevel, False);
 end;
 
-function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, Format(AMessage, AArgs), ATagName, ATargetProviderIndex);
+  Result := AddCache(ALevel, Format(AMessage, AArgs), ATagName);
 end;
 
-function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := AddCache(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.T(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.T(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Trace(AMessage, ATagName, ATargetProviderIndex);
+  Result := Trace(AMessage, ATagName);
 end;
 
-function TDataLogger.T(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.T(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Trace(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Trace(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.T(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.T(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Trace(AMessage, ATagName, ATargetProviderIndex);
+  Result := Trace(AMessage, ATagName);
 end;
 
-function TDataLogger.D(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.D(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Debug(AMessage, ATagName, ATargetProviderIndex);
+  Result := Debug(AMessage, ATagName);
 end;
 
-function TDataLogger.D(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.D(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Debug(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Debug(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.D(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.D(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Debug(AMessage, ATagName, ATargetProviderIndex);
+  Result := Debug(AMessage, ATagName);
 end;
 
-function TDataLogger.I(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.I(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Info(AMessage, ATagName, ATargetProviderIndex);
+  Result := Info(AMessage, ATagName);
 end;
 
-function TDataLogger.I(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.I(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Info(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Info(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.I(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.I(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Info(AMessage, ATagName, ATargetProviderIndex);
+  Result := Info(AMessage, ATagName);
 end;
 
-function TDataLogger.S(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.S(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Success(AMessage, ATagName, ATargetProviderIndex);
+  Result := Success(AMessage, ATagName);
 end;
 
-function TDataLogger.S(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.S(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Success(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Success(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.S(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.S(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Success(AMessage, ATagName, ATargetProviderIndex);
+  Result := Success(AMessage, ATagName);
 end;
 
-function TDataLogger.W(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.W(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Warn(AMessage, ATagName, ATargetProviderIndex);
+  Result := Warn(AMessage, ATagName);
 end;
 
-function TDataLogger.W(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.W(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Warn(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Warn(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.W(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.W(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Warn(AMessage, ATagName, ATargetProviderIndex);
+  Result := Warn(AMessage, ATagName);
 end;
 
-function TDataLogger.E(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.E(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Error(AMessage, ATagName, ATargetProviderIndex);
+  Result := Error(AMessage, ATagName);
 end;
 
-function TDataLogger.E(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.E(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Error(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Error(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.E(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.E(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Error(AMessage, ATagName, ATargetProviderIndex);
+  Result := Error(AMessage, ATagName);
 end;
 
-function TDataLogger.F(const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.F(const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Fatal(AMessage, ATagName, ATargetProviderIndex);
+  Result := Fatal(AMessage, ATagName);
 end;
 
-function TDataLogger.F(const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.F(const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Fatal(AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Fatal(AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.F(const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.F(const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Fatal(AMessage, ATagName, ATargetProviderIndex);
+  Result := Fatal(AMessage, ATagName);
 end;
 
-function TDataLogger.C(const ALevel: string; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.C(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Custom(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := Custom(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.C(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.C(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Custom(ALevel, AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Custom(ALevel, AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.C(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.C(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Custom(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := Custom(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Log(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := Log(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Log(ALevel, AMessage, AArgs, ATagName, ATargetProviderIndex);
+  Result := Log(ALevel, AMessage, AArgs, ATagName);
 end;
 
-function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := Log(ALevel, AMessage, ATagName, ATargetProviderIndex);
+  Result := Log(ALevel, AMessage, ATagName);
 end;
 
 function TDataLogger.SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.All, '', '', '', '', True, ATargetProviderIndex);
+  Result := AddCache(TLoggerLevel.All, '', '', '', '', True);
 end;
 
 function TDataLogger.StartTransaction: TDataLogger;
@@ -1020,7 +1020,7 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const ATargetProviderIndex: Integer): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger;
 var
   LLogItem: TLoggerItem;
 begin
@@ -1087,7 +1087,6 @@ begin
 
     LLogItem.InternalItem.IsSlinebreak := AIsSlinebreak;
     LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
-    LLogItem.InternalItem.TargetProviderIndex := ATargetProviderIndex;
 
     FListLoggerItem.Add(LLogItem);
   finally
@@ -1096,14 +1095,14 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, AMessage, '', ATagName, '', False, ATargetProviderIndex);
+  Result := AddCache(ALevel, AMessage, '', ATagName, '', False);
 end;
 
-function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''; const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, '', AMessage.ToString, ATagName, '', False, ATargetProviderIndex);
+  Result := AddCache(ALevel, '', AMessage.ToString, ATagName, '', False);
 end;
 
 function TDataLogger.ExtractCache: TArray<TLoggerItem>;

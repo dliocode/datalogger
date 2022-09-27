@@ -241,63 +241,6 @@ end.
 
 ```
 
-### Gerar log para um Provider Específico
-
-Deve ser informado o _INDEX_ do _Provider_ conforme foi adicionado no AddProvider ou SetProvider.
-
-```delphi
-uses
-  DataLogger,
-  DataLogger.Provider.Console,
-  DataLogger.Provider.TextFile;
-
-{$R *.res}
-
-begin
-  // Add First Provider - Index 0
-  Logger.AddProvider(TProviderConsole.Create);
-
-  // Add Second Provider - Index 1
-  Logger.AddProvider(TProviderTextFile.Create);
-
-  // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
-
-  // Logger for the seconds index providers - TProviderTextFile.Create
-  Logger
-    .Trace('My Trace - Second Provider', '', 1)
-    .Debug('My Debug - Second Provider', '', 1)
-    .Info('My Info - Second Provider', '', 1)
-    .Warn('My Warn - Second Provider', '', 1)
-    .Error('My Error - Second Provider', '', 1)
-    .Success('My Success - Second Provider', '', 1)
-    .Fatal('My Fatal - Second Provider', '', 1)
-    .Custom('Custom Level', 'My Custom - Second Provider', '', 1)
-    ;
-
-  Logger.SlineBreak(1);
-
-  // Logger for the first index providers - TProviderConsole.Create
-  Logger
-    .T('My Trace - First Provider', '', 0)
-    .D('My Debug - First Provider', '', 0)
-    .I('My Info - First Provider', '', 0)
-    .W('My Warn - First Provider', '', 0)
-    .E('My Error - First Provider', '', 0)
-    .S('My Success - First Provider', '', 0)
-    .F('My Fatal - First Provider', '', 0)
-    .C('Custom Level', 'My Custom - First Provider', '', 0)
-    ;
-
-  Logger.SlineBreak(0);
-
-  Writeln('END');
-
-  Readln;
-end.
-
-```
-
 ## Custom
 
 O _Custom_ é a forma de definir dar o nome para o seu próprio _level_.
