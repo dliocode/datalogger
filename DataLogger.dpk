@@ -69,6 +69,7 @@ contains
   DataLogger.Provider.Mattermost in 'src\Providers\DataLogger.Provider.Mattermost.pas',
   DataLogger.Provider.Memo in 'src\Providers\DataLogger.Provider.Memo.pas',
   DataLogger.Provider.Memory in 'src\Providers\DataLogger.Provider.Memory.pas',
+  DataLogger.Provider.Mezmo in 'src\Providers\DataLogger.Provider.Mezmo.pas',
   DataLogger.Provider.MongoDB.Cloud in 'src\Providers\DataLogger.Provider.MongoDB.Cloud.pas',
   DataLogger.Provider.NewRelic in 'src\Providers\DataLogger.Provider.NewRelic.pas',
   DataLogger.Provider.Notification in 'src\Providers\DataLogger.Provider.Notification.pas',

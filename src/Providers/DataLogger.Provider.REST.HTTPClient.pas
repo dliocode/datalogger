@@ -169,15 +169,9 @@ begin
 end;
 
 function TProviderRESTHTTPClient.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTHTTPClient;
-var
-  LBase64: TBase64Encoding;
 begin
-  LBase64 := TBase64Encoding.Create(0, '');
-  try
-    Result := Token('Basic ' + LBase64.Encode(Format('%s:%s', [AUsername, APassword])));
-  finally
-    LBase64.Free;
-  end;
+  Result := Self;
+  FToken := 'Basic ' + TNetEncoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
 end;
 
 function TProviderRESTHTTPClient.Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;

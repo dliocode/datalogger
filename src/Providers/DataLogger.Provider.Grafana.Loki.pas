@@ -210,7 +210,7 @@ begin
       Continue;
 
     LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-    LDateUNIX := IntToStr(LItem.TimeStampUNIX);
+    LDateUNIX := IntToStr(LItem.TimestampUNIX);
     LDateUNIX := SetZero(LDateUNIX, 19);
 
     LJO := TJSONObject.Create;

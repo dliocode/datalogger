@@ -151,7 +151,7 @@ begin
 
     LSysLogMessage := TIdSysLogMessage.Create(nil);
     try
-      LSysLogMessage.TimeStamp := LItem.TimeStamp;
+      LSysLogMessage.TimeStamp := LItem.Timestamp;
       LSysLogMessage.Hostname := LItem.ComputerName;
       LSysLogMessage.Facility := TIdSyslogFacility.sfUserLevel;;
       LSysLogMessage.Msg.Process := LItem.ProcessId;

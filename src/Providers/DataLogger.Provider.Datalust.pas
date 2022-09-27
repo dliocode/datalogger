@@ -46,7 +46,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.Classes, System.JSON, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON;
 
 type
   TProviderDatalust = class(TDataLoggerProvider<TProviderDatalust>)
@@ -182,7 +182,7 @@ begin
     try
       LJOEvents := TJSONObject.Create;
       LJOEvents
-        .AddPair('Timestamp', TJSONString.Create(DateToISO8601(LItem.TimeStamp, False)))
+        .AddPair('Timestamp', LItem.TimestampISO8601)
         .AddPair('Level', LItem.LevelString)
         .AddPair('Properties', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 

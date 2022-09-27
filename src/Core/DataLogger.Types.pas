@@ -147,7 +147,7 @@ end;
 
 function TLoggerLevelHelper.ToString: string;
 begin
-  Result := GetEnumName(TypeInfo(TLoggerLevel), Integer(Self));
+  Result := GetEnumName(TypeInfo(TLoggerLevel), Integer(Self)).ToUpper;
 end;
 
 { TLoggerSerializeItem }

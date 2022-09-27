@@ -166,8 +166,7 @@ end;
 function TProviderRESTIndy.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTIndy;
 begin
   Result := Self;
-
-  FToken := 'Basic ' + TNetencoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
+  FToken := 'Basic ' + TNetEncoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
 end;
 
 function TProviderRESTIndy.Method(const AValue: TRESTMethod): TProviderRESTIndy;

@@ -30,18 +30,19 @@
   ********************************************************************************
 }
 
-// https://axiom.co/
-// https://axiom.co/docs/usage/ingest#ingest-api
+// https://www.mezmo.com/
+// https://docs.mezmo.com/docs
+// https://docs.mezmo.com/log-analysis-api/ref#ingest
 
-unit DataLogger.Provider.Axiom;
+unit DataLogger.Provider.Mezmo;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_AXIOM_USE_INDY)}
+{$IF DEFINED(DATALOGGER_LogDNA_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_AXIOM_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_LogDNA_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -49,25 +50,25 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderAxiom = class(TDataLoggerProvider<TProviderAxiom>)
+  TProviderLogDNA = class(TDataLoggerProvider<TProviderLogDNA>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_AXIOM_USE_INDY)}
+{$IF DEFINED(DATALOGGER_LogDNA_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_AXIOM_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_LogDNA_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
 {$ENDIF});
+
   private
     FHTTP: TProviderHTTP;
-    FDataset: string;
+    FApiKey: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function ApiToken(const AValue: string): TProviderAxiom;
-    function Dataset(const AValue: string): TProviderAxiom;
+    function ApiKey(const AValue: string): TProviderLogDNA;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -79,44 +80,38 @@ type
 
 implementation
 
-{ TProviderAxiom }
+{ TProviderLogDNA }
 
-constructor TProviderAxiom.Create;
+constructor TProviderLogDNA.Create;
 begin
   inherited Create;
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
-
-  Dataset('');
+  FHTTP.URL('https://logs.logdna.com/logs/ingest');
 end;
 
-procedure TProviderAxiom.AfterConstruction;
+procedure TProviderLogDNA.AfterConstruction;
 begin
   inherited;
 
   SetIgnoreLogFormat(True);
 end;
 
-destructor TProviderAxiom.Destroy;
+destructor TProviderLogDNA.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderAxiom.ApiToken(const AValue: string): TProviderAxiom;
+function TProviderLogDNA.ApiKey(const AValue: string): TProviderLogDNA;
 begin
   Result := Self;
-  FHTTP.BearerToken(AValue);
+  FApiKey := AValue;
+  FHTTP.BasicAuth(AValue, '');
 end;
 
-function TProviderAxiom.Dataset(const AValue: string): TProviderAxiom;
-begin
-  Result := Self;
-  FDataset := AValue;
-end;
-
-procedure TProviderAxiom.LoadFromJSON(const AJSON: string);
+procedure TProviderLogDNA.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -134,8 +129,7 @@ begin
     Exit;
 
   try
-    ApiToken(LJO.GetValue<string>('api_token', FHTTP.Token));
-    Dataset(LJO.GetValue<string>('dataset', FDataset));
+    ApiKey(LJO.GetValue<string>('api_key', FApiKey));
 
     SetJSONInternal(LJO);
   finally
@@ -143,14 +137,13 @@ begin
   end;
 end;
 
-function TProviderAxiom.ToJSON(const AFormat: Boolean): string;
+function TProviderLogDNA.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_token', FHTTP.Token);
-    LJO.AddPair('dataset', FDataset);
+    LJO.AddPair('api_key', FApiKey);
 
     ToJSONInternal(LJO);
 
@@ -160,12 +153,13 @@ begin
   end;
 end;
 
-procedure TProviderAxiom.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderLogDNA.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
-  LJA: TJSONArray;
   LJO: TJSONObject;
+  LJOLog: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -178,18 +172,23 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LJA := TJSONArray.Create;
+    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+
+    LJO := TJSONObject.Create;
     try
-      LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-      LJO.AddPair('_time', LItem.TimestampISO8601);
+      LJOLog := TJSONObject.Create;
+      LJOLog.AddPair('timestamp', TJSONNumber.Create(LItem.TimestampUNIX));
+      LJOLog.AddPair('line', LLog);
+      LJOLog.AddPair('app', LItem.AppName);
+      LJOLog.AddPair('level', LItem.LevelString);
 
-      LJA.Add(LJO);
+      LJO.AddPair('lines', TJSONArray.Create(LJOLog));
 
-      LLogItemREST.Stream := TStringStream.Create(LJA.ToString, TEncoding.UTF8);
+      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://cloud.axiom.co/api/v1/datasets/%s/ingest', [FDataset]);
+      LLogItemREST.URL := Format('https://logs.logdna.com/logs/ingest?hostname=%s&mac=%s&ip=%s&now=%d', [LItem.ComputerName, '', LItem.IPLocal, LItem.TimestampUNIX]);
     finally
-      LJA.Free;
+      LJO.Free;
     end;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
@@ -208,6 +207,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderAxiom);
+ForceReferenceToClass(TProviderLogDNA);
 
 end.
