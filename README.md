@@ -297,6 +297,7 @@ TLoggerFormat.LOG_COMPUTERNAME = '${computer_name}';
 TLoggerFormat.LOG_USERNAME = '${username}';
 TLoggerFormat.LOG_OSVERSION = '${os_version}';
 TLoggerFormat.LOG_IP_LOCAL = '${ip_local}';
+TLoggerFormat.LOG_MAC_ADDRESS = '${mac_address}';
 ```
 
 ### Como definir um formato
@@ -357,7 +358,7 @@ begin
 
   // Output TextFile: 
   // 2022-12-01 09:00:05.500 - Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR  
+  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR 
 
   Readln;
 end.

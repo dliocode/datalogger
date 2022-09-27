@@ -1084,6 +1084,7 @@ begin
     LLogItem.OSVersion := TLoggerUtils.OS;
     LLogItem.ProcessID := TLoggerUtils.ProcessID;
     LLogItem.IPLocal := TLoggerUtils.IPLocal;
+    LLogItem.MACAddress := TLoggerUtils.MACAddress;
 
     LLogItem.InternalItem.IsSlinebreak := AIsSlinebreak;
     LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;

@@ -36,7 +36,7 @@ interface
 
 uses
 {$IF DEFINED(MSWINDOWS)}
-  Winapi.Windows,
+  Winapi.Windows, Winapi.Nb30,
 {$ELSEIF DEFINED(LINUX)}
     Posix.SysUtsname, Posix.Unistd, Posix.SysStat,
 {$ELSEIF DEFINED(MACOS)}
@@ -71,6 +71,7 @@ type
     class var FAppSize: string;
     class var FOS: string;
     class var FProcessId: string;
+    class var FMacAddress: string;
   public
     class function AppName: string;
     class function AppPath: string;
@@ -81,6 +82,7 @@ type
     class function OS: string;
     class function ProcessId: string;
     class function IPLocal: string;
+    class function MACAddress: string;
   end;
 
   TLoggerRTTI = class
@@ -471,6 +473,98 @@ begin
   end;
 end;
 
+class function TLoggerUtils.MACAddress: string;
+
+  function GetMACAddress: TArray<string>;
+{$IF DEFINED(MSWINDOWS)}
+  var
+    LNCB: PNCB;
+    LEnum: PlanaEnum;
+    LAdapter: PAdapterStatus;
+    I: Integer;
+    LRetCode: AnsiChar;
+    LMAC: string;
+  begin
+    Result := [];
+
+    Getmem(LNCB, SizeOf(TNCB));
+    FillChar(LNCB^, SizeOf(TNCB), 0);
+
+    Getmem(LEnum, SizeOf(TLanaEnum));
+    FillChar(LEnum^, SizeOf(TLanaEnum), 0);
+
+    Getmem(LAdapter, SizeOf(TAdapterStatus));
+    FillChar(LAdapter^, SizeOf(TAdapterStatus), 0);
+
+    LEnum.Length := chr(0);
+    LNCB.ncb_command := chr(NCBENUM);
+    LNCB.ncb_buffer := Pointer(LEnum);
+    LNCB.ncb_length := SizeOf(LEnum);
+    Netbios(LNCB);
+
+    I := 0;
+    repeat
+      FillChar(LNCB^, SizeOf(TNCB), 0);
+      LNCB.ncb_command := chr(NCBRESET);
+      LNCB.ncb_lana_num := LEnum.lana[I];
+      Netbios(LNCB);
+
+      FillChar(LNCB^, SizeOf(TNCB), 0);
+      LNCB.ncb_command := chr(NCBASTAT);
+      LNCB.ncb_lana_num := LEnum.lana[I];
+      LNCB.ncb_callname := '*               ';
+      LNCB.ncb_buffer := Pointer(LAdapter);
+      LNCB.ncb_length := SizeOf(TAdapterStatus);
+      LRetCode := Netbios(LNCB);
+
+      if (LRetCode = chr(0)) or (LRetCode = chr(6)) then
+      begin
+        LMAC := IntToHex(Ord(LAdapter.adapter_address[0]), 2) + ':' +
+          IntToHex(Ord(LAdapter.adapter_address[1]), 2) + ':' +
+          IntToHex(Ord(LAdapter.adapter_address[2]), 2) + ':' +
+          IntToHex(Ord(LAdapter.adapter_address[3]), 2) + ':' +
+          IntToHex(Ord(LAdapter.adapter_address[4]), 2) + ':' +
+          IntToHex(Ord(LAdapter.adapter_address[5]), 2);
+
+        Result := Concat(Result, [LMAC]);
+      end;
+
+      Inc(I);
+    until (I >= Ord(LEnum.Length));
+
+    FreeMem(LNCB);
+    FreeMem(LEnum);
+    FreeMem(LAdapter);
+  end;
+
+{$ELSE}
+
+  begin
+    Result := [];
+  end;
+
+{$ENDIF}
+
+var
+  LMAC: TArray<string>;
+begin
+  if not Trim(FMacAddress).IsEmpty then
+    Exit(FMacAddress);
+
+  try
+    LMAC := GetMACAddress;
+  except
+    LMAC := [];
+  end;
+
+  if Length(LMAC) = 0 then
+    FMacAddress := '00:00:00:00:00'
+  else
+    FMacAddress := LMAC[Length(LMAC) - 1];
+
+  Result := FMacAddress;
+end;
+
 { TLoggerRTTI }
 
 class function TLoggerRTTI.CreateObject(const AName: string): TObject;
@@ -538,5 +632,6 @@ TLoggerUtils.FAppVersion := Default (TLoggerUtils.TAppVersion);
 TLoggerUtils.FAppSize := '';
 TLoggerUtils.FOS := '';
 TLoggerUtils.FProcessId := '';
+TLoggerUtils.FMacAddress := '';
 
 end.

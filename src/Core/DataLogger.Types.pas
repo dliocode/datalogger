@@ -84,6 +84,7 @@ type
     OSVersion: string;
     ProcessId: string;
     IPLocal: string;
+    MACAddress: string;
 
     InternalItem: TLoggerInternalItem;
   end;
@@ -132,6 +133,7 @@ type
     LOG_USERNAME = '${username}';
     LOG_OSVERSION = '${os_version}';
     LOG_IP_LOCAL = '${ip_local}';
+    LOG_MAC_ADDRESS = '${mac_address}';
 
     DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
   end;
@@ -218,6 +220,7 @@ begin
   _Add(TLoggerFormat.LOG_PROCESSID, APrefix + 'process_id', TJSONString.Create(AItem.ProcessId));
 
   _Add(TLoggerFormat.LOG_IP_LOCAL, APrefix + 'ip_local', TJSONString.Create(AItem.IPLocal));
+  _Add(TLoggerFormat.LOG_MAC_ADDRESS, APrefix + 'mac_address', TJSONString.Create(AItem.MACAddress));
 end;
 
 class function TLoggerSerializeItem.AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;

@@ -186,7 +186,7 @@ begin
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://logs.logdna.com/logs/ingest?hostname=%s&mac=%s&ip=%s&now=%d', [LItem.ComputerName, '', LItem.IPLocal, LItem.TimestampUNIX]);
+      LLogItemREST.URL := Format('https://logs.logdna.com/logs/ingest?hostname=%s&mac=%s&ip=%s&now=%d', [LItem.ComputerName, LItem.MACAddress, LItem.IPLocal, LItem.TimestampUNIX]);
     finally
       LJO.Free;
     end;
