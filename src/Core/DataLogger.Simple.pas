@@ -116,7 +116,7 @@ function L(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: s
 function L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
 function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-function SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
+function SlineBreak: TDataLogger;
 
 function StartTransaction: TDataLogger;
 function CommitTransaction: TDataLogger;
@@ -412,9 +412,9 @@ begin
   Result := GetDataLogger.L(ALevel, AMessage, ATagName);
 end;
 
-function SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
+function SlineBreak: TDataLogger;
 begin
-  Result := GetDataLogger.SlineBreak(ATargetProviderIndex);
+  Result := GetDataLogger.SlineBreak;
 end;
 
 function StartTransaction: TDataLogger;
