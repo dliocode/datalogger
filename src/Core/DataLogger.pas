@@ -53,18 +53,21 @@ type
   strict private
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
-    FExecute: TThread;
-    FTerminated: Boolean;
+    FThreadExecute: TThread;
+    FThreadTerminated: Boolean;
 
-    FListLoggerItem: TList<TLoggerItem>;
-    FListProviders: TObjectList<TObject>;
+    FLoggerItems: TList<TLoggerItem>;
+    FProviders: TObjectList<TObject>;
 
     FLevel: TLoggerLevel;
     FDisableLevel: TLoggerLevels;
     FOnlyLevel: TLoggerLevels;
-    FSequence: UInt64;
     FName: string;
     FTagNameIsRequired: Boolean;
+    FGenerateLogWithoutProvider: Boolean;
+
+    FSequence: UInt64;
+    FHasProvider: Boolean;
 
     constructor Create;
 
@@ -157,7 +160,7 @@ type
     function L(const ALevel: TLoggerLevel; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger; overload;
     function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
-    function SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
+    function SlineBreak: TDataLogger;
 
     function StartTransaction: TDataLogger;
     function CommitTransaction: TDataLogger;
@@ -179,6 +182,7 @@ type
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
     function SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
+    function SetGenerateLogWithoutProvider(const AGenerateLogWithoutProvider: Boolean): TDataLogger;
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
@@ -229,18 +233,20 @@ begin
   FCriticalSection := TCriticalSection.Create;
 
   FEvent := TEvent.Create;
-  FListLoggerItem := TList<TLoggerItem>.Create;
-  FListProviders := TObjectList<TObject>.Create(True);
+  FLoggerItems := TList<TLoggerItem>.Create;
+  FProviders := TObjectList<TObject>.Create(True);
 
   SetLevel(TLoggerLevel.All);
   SetDisableLevel([]);
   SetOnlyLevel([TLoggerLevel.All]);
   SetName('');
   SetTagNameIsRequired(False);
+  SetGenerateLogWithoutProvider(True);
 
   FSequence := 0;
+  FHasProvider := False;
 
-  FTerminated := False;
+  FThreadTerminated := False;
   Start;
 end;
 
@@ -248,18 +254,18 @@ procedure TDataLogger.BeforeDestruction;
 begin
   SetDisableLevel([TLoggerLevel.All]);
 
-  FExecute.Terminate;
-  FTerminated := True;
+  FThreadExecute.Terminate;
+  FThreadTerminated := True;
   FEvent.SetEvent;
-  FExecute.WaitFor;
-  FExecute.Free;
+  FThreadExecute.WaitFor;
+  FThreadExecute.Free;
 
   CloseProvider;
 
   Lock;
   try
-    FListProviders.Free;
-    FListLoggerItem.Free;
+    FProviders.Free;
+    FLoggerItems.Free;
     FEvent.Free;
   finally
     UnLock;
@@ -274,9 +280,13 @@ function TDataLogger.AddProvider(const AProviders: TArray<TObject>): TDataLogger
 begin
   Result := Self;
 
+  if Length(AProviders) = 0 then
+    Exit;
+
   Lock;
   try
-    FListProviders.AddRange(AProviders);
+    FProviders.AddRange(AProviders);
+    FHasProvider := True;
   finally
     UnLock;
   end;
@@ -293,8 +303,11 @@ begin
 
   Lock;
   try
-    FListProviders.Remove(AProvider);
-    FListProviders.TrimExcess;
+    FProviders.Remove(AProvider);
+    FProviders.TrimExcess;
+
+    if FProviders.Count = 0 then
+      FHasProvider := False;
   finally
     UnLock;
   end;
@@ -308,8 +321,8 @@ begin
 
   Lock;
   try
-    FListProviders.Clear;
-    FListProviders.TrimExcess;
+    FProviders.Clear;
+    FProviders.TrimExcess;
   finally
     UnLock;
   end;
@@ -322,7 +335,7 @@ function TDataLogger.ProviderCount: Integer;
 begin
   Lock;
   try
-    Result := FListProviders.Count;
+    Result := FProviders.Count;
   finally
     UnLock;
   end;
@@ -598,7 +611,7 @@ begin
   Result := Log(ALevel, AMessage, ATagName);
 end;
 
-function TDataLogger.SlineBreak(const ATargetProviderIndex: Integer = -1): TDataLogger;
+function TDataLogger.SlineBreak: TDataLogger;
 begin
   Result := AddCache(TLoggerLevel.All, '', '', '', '', True);
 end;
@@ -843,6 +856,18 @@ begin
   end;
 end;
 
+function TDataLogger.SetGenerateLogWithoutProvider(const AGenerateLogWithoutProvider: Boolean): TDataLogger;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FGenerateLogWithoutProvider := AGenerateLogWithoutProvider;
+  finally
+    UnLock;
+  end;
+end;
+
 function TDataLogger.Clear: TDataLogger;
 var
   LProviders: TArray<TObject>;
@@ -852,8 +877,8 @@ begin
 
   Lock;
   try
-    FListLoggerItem.Clear;
-    FListLoggerItem.TrimExcess;
+    FLoggerItems.Clear;
+    FLoggerItems.TrimExcess;
   finally
     UnLock;
   end;
@@ -868,7 +893,7 @@ function TDataLogger.CountLogInCache: Int64;
 begin
   Lock;
   try
-    Result := FListLoggerItem.Count;
+    Result := FLoggerItems.Count;
   finally
     UnLock;
   end;
@@ -1026,7 +1051,7 @@ var
 begin
   Result := Self;
 
-  if TThreadExecute(FExecute).Terminated then
+  if TThreadExecute(FThreadExecute).Terminated then
     Exit;
 
   if FTagNameIsRequired and not AIsSlinebreak then
@@ -1035,6 +1060,9 @@ begin
 
   Lock;
   try
+    if not FHasProvider and not FGenerateLogWithoutProvider then
+      Exit;
+
     if not AIsSlinebreak then
     begin
       if (TLoggerLevel.All in FDisableLevel) or (ALevel in FDisableLevel) then
@@ -1089,7 +1117,7 @@ begin
     LLogItem.InternalItem.IsSlinebreak := AIsSlinebreak;
     LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
-    FListLoggerItem.Add(LLogItem);
+    FLoggerItems.Add(LLogItem);
   finally
     FEvent.SetEvent;
     UnLock;
@@ -1110,10 +1138,10 @@ function TDataLogger.ExtractCache: TArray<TLoggerItem>;
 begin
   Lock;
   try
-    Result := FListLoggerItem.ToArray;
+    Result := FLoggerItems.ToArray;
 
-    FListLoggerItem.Clear;
-    FListLoggerItem.TrimExcess;
+    FLoggerItems.Clear;
+    FLoggerItems.TrimExcess;
   finally
     UnLock;
   end;
@@ -1160,7 +1188,7 @@ begin
 
   Lock;
   try
-    LProviders := FListProviders.ToArray;
+    LProviders := FProviders.ToArray;
   finally
     UnLock;
   end;
@@ -1180,7 +1208,7 @@ end;
 
 procedure TDataLogger.Start;
 begin
-  FExecute :=
+  FThreadExecute :=
     TThreadExecute.CreateAnonymousThread(
     procedure
     var
@@ -1188,7 +1216,7 @@ begin
       LProviders: TArray<TObject>;
       I: Integer;
     begin
-      while not FTerminated do
+      while not FThreadTerminated do
       begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
@@ -1206,8 +1234,8 @@ begin
       end;
     end);
 
-  FExecute.FreeOnTerminate := False;
-  FExecute.Start;
+  FThreadExecute.FreeOnTerminate := False;
+  FThreadExecute.Start;
 end;
 
 initialization
