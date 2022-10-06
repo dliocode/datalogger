@@ -112,7 +112,7 @@ type
     procedure LoadFromJSON(const AJSON: string); virtual; abstract;
     function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
 
-    function AddCache(const AProviderIndex: Integer; const AValues: TArray<TLoggerItem>): T;
+    function AddCache(const AValues: TArray<TLoggerItem>): T;
     function NotifyEvent: T;
 
     constructor Create;
@@ -472,7 +472,7 @@ begin
   end;
 end;
 
-function TDataLoggerProvider<T>.AddCache(const AProviderIndex: Integer; const AValues: TArray<TLoggerItem>): T;
+function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
   I: Integer;
   LItem: TLoggerItem;

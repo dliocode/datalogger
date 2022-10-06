@@ -78,9 +78,9 @@ type
     procedure SaveForced;
     procedure CloseProvider;
     function GetProviders: TArray<TObject>;
+    procedure Start;
     procedure Lock;
     procedure UnLock;
-    procedure Start;
   public
     function AddProvider(const AProviders: TArray<TObject>): TDataLogger; overload;
     function AddProvider(const AProvider: TObject): TDataLogger; overload;
@@ -1196,16 +1196,6 @@ begin
   Result := LProviders;
 end;
 
-procedure TDataLogger.Lock;
-begin
-  FCriticalSection.Acquire;
-end;
-
-procedure TDataLogger.UnLock;
-begin
-  FCriticalSection.Release;
-end;
-
 procedure TDataLogger.Start;
 begin
   FThreadExecute :=
@@ -1230,12 +1220,22 @@ begin
           Continue;
 
         for I := Low(LProviders) to High(LProviders) do
-          TDataLoggerProvider<TObject>(LProviders[I]).AddCache(I, LCache);
+          TDataLoggerProvider<TObject>(LProviders[I]).AddCache(LCache);
       end;
     end);
 
   FThreadExecute.FreeOnTerminate := False;
   FThreadExecute.Start;
+end;
+
+procedure TDataLogger.Lock;
+begin
+  FCriticalSection.Acquire;
+end;
+
+procedure TDataLogger.UnLock;
+begin
+  FCriticalSection.Release;
 end;
 
 initialization
