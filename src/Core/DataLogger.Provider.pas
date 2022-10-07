@@ -57,6 +57,7 @@ type
     FOnlyLevel: TLoggerLevels;
 
     FUseTransaction: Boolean;
+    FUseTransactionModeMultThread: Boolean;
     FTransactionAutoCommitLevel: TLoggerLevels;
     FTransactionAutoCommitType: TLoggerTransactionTypeCommit;
 
@@ -97,7 +98,7 @@ type
     function SetFinalMessage(const AMessage: string): T;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
 
-    function UseTransaction(const AUseTransaction: Boolean): T;
+    function UseTransaction(const AUseTransaction: Boolean; const AModeMultThread: Boolean = True): T;
     function TransactionAutoCommit(const ALevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
 
     function StartTransaction(const AID: string; const AUseLock: Boolean = True): T;
@@ -259,10 +260,12 @@ begin
   FIgnoreLogFormatIncludeKeySeparator := AIncludeKeySeparator;
 end;
 
-function TDataLoggerProvider<T>.UseTransaction(const AUseTransaction: Boolean): T;
+function TDataLoggerProvider<T>.UseTransaction(const AUseTransaction: Boolean; const AModeMultThread: Boolean = True): T;
 begin
   Result := FOwner;
+
   FUseTransaction := AUseTransaction;
+  FUseTransactionModeMultThread := AModeMultThread;
 end;
 
 function TDataLoggerProvider<T>.TransactionAutoCommit(const ALevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit): T;
@@ -277,6 +280,7 @@ function TDataLoggerProvider<T>.StartTransaction(const AID: string; const AUseLo
 var
   LTransaction: TDataLoggerTransaction;
   LCountTransaction: Integer;
+  LID: string;
 begin
   Result := FOwner;
 
@@ -286,10 +290,14 @@ begin
   if AUseLock then
     Lock;
   try
-    if not FListTransaction.TryGetValue(AID, LTransaction) then
+    LID := AID;
+    if not FUseTransactionModeMultThread then
+      LID := TLoggerConst.TRANSACTION_ID;
+
+    if not FListTransaction.TryGetValue(LID, LTransaction) then
     begin
       LTransaction := TDataLoggerTransaction.Create;
-      FListTransaction.Add(AID, LTransaction);
+      FListTransaction.Add(LID, LTransaction);
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
@@ -311,6 +319,7 @@ var
   LCountTransaction: Integer;
   LCurrent: TDataLoggerListItem;
   LCurrentValues: TArray<TLoggerItem>;
+  LID: string;
 begin
   Result := FOwner;
 
@@ -320,10 +329,14 @@ begin
   if AUseLock then
     Lock;
   try
-    if not FListTransaction.TryGetValue(AID, LTransaction) then
+    LID := AID;
+    if not FUseTransactionModeMultThread then
+      LID := TLoggerConst.TRANSACTION_ID;
+
+    if not FListTransaction.TryGetValue(LID, LTransaction) then
     begin
       LTransaction := TDataLoggerTransaction.Create;
-      FListTransaction.Add(AID, LTransaction);
+      FListTransaction.Add(LID, LTransaction);
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
@@ -375,6 +388,7 @@ function TDataLoggerProvider<T>.RollbackTransaction(const AID: string; const ALe
 var
   LTransaction: TDataLoggerTransaction;
   LCountTransaction: Integer;
+  LID: string;
 begin
   Result := FOwner;
 
@@ -383,10 +397,14 @@ begin
 
   Lock;
   try
-    if not FListTransaction.TryGetValue(AID, LTransaction) then
+    LID := AID;
+    if not FUseTransactionModeMultThread then
+      LID := TLoggerConst.TRANSACTION_ID;
+
+    if not FListTransaction.TryGetValue(LID, LTransaction) then
     begin
       LTransaction := TDataLoggerTransaction.Create;
-      FListTransaction.Add(AID, LTransaction);
+      FListTransaction.Add(LID, LTransaction);
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
@@ -418,12 +436,17 @@ end;
 function TDataLoggerProvider<T>.InTransaction(const AID: string): Boolean;
 var
   LTransaction: TDataLoggerTransaction;
+  LID: string;
 begin
   Result := False;
 
   Lock;
   try
-    if not FListTransaction.TryGetValue(AID, LTransaction) then
+    LID := AID;
+    if not FUseTransactionModeMultThread then
+      LID := TLoggerConst.TRANSACTION_ID;
+
+    if not FListTransaction.TryGetValue(LID, LTransaction) then
       Exit;
   finally
     UnLock;
@@ -435,12 +458,17 @@ end;
 function TDataLoggerProvider<T>.CountTransaction(const AID: string): Integer;
 var
   LTransaction: TDataLoggerTransaction;
+  LID: string;
 begin
   Result := 0;
 
   Lock;
   try
-    if not FListTransaction.TryGetValue(AID, LTransaction) then
+    LID := AID;
+    if not FUseTransactionModeMultThread then
+      LID := TLoggerConst.TRANSACTION_ID;
+
+    if not FListTransaction.TryGetValue(LID, LTransaction) then
       Exit;
   finally
     UnLock;
@@ -512,6 +540,9 @@ begin
         finally
           LItem.Message := LMessage;
         end;
+
+        if not FUseTransactionModeMultThread then
+          LItem.InternalItem.TransactionID := TLoggerConst.TRANSACTION_ID;
 
         LTransaction := nil;
         if FListTransaction.TryGetValue(LItem.InternalItem.TransactionID, LTransaction) then

@@ -138,6 +138,11 @@ type
     DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
   end;
 
+  TLoggerConst = record
+  const
+    TRANSACTION_ID = 'DATALOGGER_TRANSACTION';
+  end;
+
 implementation
 
 { TLoggerLevelHelper }
