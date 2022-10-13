@@ -328,7 +328,11 @@ begin
             until not LLogMessage.Contains(C_TAG);
           end;
 
-          Writeln;
+          if LLogMessage.Trim.IsEmpty then
+            Writeln
+          else
+            Writeln(LLogMessage);
+
           Break;
         end;
 
