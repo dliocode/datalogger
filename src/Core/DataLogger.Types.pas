@@ -106,6 +106,7 @@ type
       const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False;
       const AIgnoreLogFormatSeparator: string = ' '; const AIgnoreLogFormatIncludeKey: Boolean = False; const AIgnoreLogFormatIncludeKeySeparator: string = ' -> '): TStream;
     class function AsStreamJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TStream;
+    class function ListTAG(const ALog: string; const ATag: TArray<string>; const AItem: TLoggerItem; const AFormatTimestamp: string): TDictionary<string, string>;
   end;
 
   TLoggerOnException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
@@ -145,7 +146,13 @@ type
 
 implementation
 
-{ TLoggerLevelHelper }
+type
+  TLoggerLetter = (tlNone, tlUpper, tlLower, tlFirstUp);
+
+const
+  TLoggerLetterKeyString: array [TLoggerLetter] of string = ((''), ('_upper'), ('_lower'), ('_first_up'));
+
+  { TLoggerLevelHelper }
 
 procedure TLoggerLevelHelper.SetLevelName(const AName: string);
 begin
@@ -232,22 +239,61 @@ class function TLoggerSerializeItem.AsCSV(const ALogFormat: string; const AItem:
 var
   LLog: string;
   LJO: TJSONObject;
-  LKey: string;
   I: Integer;
+  LKey: string;
+  LLetter: TLoggerLetter;
+  LValue: string;
+  LKeyLetter: string;
 begin
   LLog := '';
 
-  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, '');
+  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, True, '');
   try
     for I := 0 to Pred(LJO.Count) do
     begin
-      if AOnlyHeader then
+      LKey := LJO.Pairs[I].JsonString.Value;
+      LValue := LJO.Pairs[I].JsonValue.Value;
+
+      for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
       begin
-        LKey := LJO.Pairs[I].JsonString.Value;
-        LLog := LLog + LKey + ASeparator
-      end
-      else
-        LLog := LLog + LJO.Pairs[I].JsonValue.Value + ASeparator;
+        if not AIgnoreLogFormat then
+        begin
+          LKeyLetter := Format('${%s}', [LKey + TLoggerLetterKeyString[LLetter]]);
+          if not ALogFormat.Contains(LKeyLetter) then
+            Continue;
+        end;
+
+        if AOnlyHeader then
+        begin
+          LLog := LLog + LKey + ASeparator;
+          Break;
+        end
+        else
+        begin
+          if not LValue.Trim.IsEmpty then
+            case LLetter of
+              tlNone:
+                ;
+
+              tlUpper:
+                LValue := UpperCase(LValue);
+
+              tlLower:
+                LValue := LowerCase(LValue);
+
+              tlFirstUp:
+                begin
+                  LValue := LowerCase(LValue);
+                  LValue[1] := UpCase(LValue[1]);
+                end;
+            end;
+
+          LLog := LLog + LValue + ASeparator;
+
+          if AIgnoreLogFormat then
+            Break;
+        end;
+      end;
     end;
 
     Result := LLog.Trim([ASeparator]);
@@ -286,13 +332,15 @@ var
   I: Integer;
   LKey: string;
   LValue: string;
+  LKeyLetter: string;
+  LLetter: TLoggerLetter;
 begin
   if not AIgnoreLogFormat then
     LLog := ALogFormat
   else
     LLog := '';
 
-  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat, '');
+  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, True, '');
   try
     for I := 0 to Pred(LJO.Count) do
     begin
@@ -301,7 +349,32 @@ begin
 
       if not AIgnoreLogFormat then
       begin
-        LLog := LLog.Replace(Format('${%s}', [LKey]), LValue);
+        for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
+        begin
+          LKeyLetter := Format('${%s}', [LKey + TLoggerLetterKeyString[LLetter]]);
+          if not LLog.Contains(LKeyLetter) then
+            Continue;
+
+          if not LValue.Trim.IsEmpty then
+            case LLetter of
+              tlNone:
+                ;
+
+              tlUpper:
+                LValue := UpperCase(LValue);
+
+              tlLower:
+                LValue := LowerCase(LValue);
+
+              tlFirstUp:
+                begin
+                  LValue := LowerCase(LValue);
+                  LValue[1] := UpCase(LValue[1]);
+                end;
+            end;
+
+          LLog := LLog.Replace(LKeyLetter, LValue);
+        end;
       end
       else
       begin
@@ -341,6 +414,59 @@ begin
 
   Result := TStringStream.Create(LLog, TEncoding.UTF8);
   Result.Seek(0, soFromBeginning);
+end;
+
+class function TLoggerSerializeItem.ListTAG(const ALog: string; const ATag: TArray<string>; const AItem: TLoggerItem; const AFormatTimestamp: string): TDictionary<string, string>;
+var
+  LJO: TJSONObject;
+  LLogFormatBase: TArray<string>;
+  LTag: string;
+  I: Integer;
+  LLetter: TLoggerLetter;
+  LKey: string;
+  LValue: string;
+begin
+  Result := TDictionary<string, string>.Create;
+
+  LJO := TLoggerSerializeItem.AsBase('', AItem, AFormatTimestamp, True, '');
+  try
+    LLogFormatBase := [];
+
+    for LTag in ATag do
+      for I := 0 to Pred(LJO.Count) do
+      begin
+        LValue := LJO.Pairs[I].JsonValue.Value;
+
+        for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
+        begin
+          LKey := LJO.Pairs[I].JsonString.Value + TLoggerLetterKeyString[LLetter] + LTag;
+          if not ALog.Contains(Format('{%s}', [LKey])) then
+            Continue;
+
+          if not LValue.Trim.IsEmpty then
+            case LLetter of
+              tlNone:
+                ;
+
+              tlUpper:
+                LValue := UpperCase(LValue);
+
+              tlLower:
+                LValue := LowerCase(LValue);
+
+              tlFirstUp:
+                begin
+                  LValue := LowerCase(LValue);
+                  LValue[1] := UpCase(LValue[1]);
+                end;
+            end;
+
+          Result.Add(LKey, LValue);
+        end;
+      end;
+  finally
+    LJO.Free;
+  end;
 end;
 
 end.
