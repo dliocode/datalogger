@@ -45,7 +45,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo;
+  System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo, System.Classes;
 
 type
 {$SCOPEDENUMS ON}
@@ -85,13 +85,16 @@ type
 
 implementation
 
+type
+  TProviderTelegramHelper = record helper for TTelegramParseMode
+  public
+    function ToString: string;
+  end;
+
 { TProviderTelegram }
 
 const
-  TELEGRAM_API_SENDMSG = 'https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s';
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates'; // https://api.telegram.org/bot<TOKEN>/getUpdates
-  TELEGRAM_API_MARKDOWN = '&parse_mode=MarkdownV2';
-  TELEGRAM_API_HTML = '&parse_mode=HTML';
 
 constructor TProviderTelegram.Create;
 begin
@@ -184,7 +187,7 @@ var
   LItem: TLoggerItem;
   LLogItemREST: TLogItemREST;
   LLog: string;
-  LParseMode: string;
+  LJO: TJSONObject;
 
   procedure SerializeMessageParseMode;
   const
@@ -195,8 +198,6 @@ var
     case FParseMode of
       TTelegramParseMode.tpHTML:
         begin
-          LParseMode := TELEGRAM_API_HTML;
-
           case LItem.Level of
             TLoggerLevel.All:
               ;
@@ -221,8 +222,6 @@ var
 
       TTelegramParseMode.tpMarkdown:
         begin
-          LParseMode := TELEGRAM_API_MARKDOWN;
-
           // https://core.telegram.org/bots/api#formatting-options
           for I := Low(FormattingMarkdown) to High(FormattingMarkdown) do
             LLog := LLog.Replace(FormattingMarkdown[I], '\' + FormattingMarkdown[I]);
@@ -262,26 +261,44 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LParseMode := '';
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
+    LLog := LLog.Replace('\', '\\');
     if FParseMode <> TTelegramParseMode.tpNone then
       SerializeMessageParseMode;
 
-    LLog := TNetEncoding.URL.Encode(LLog);
+    LJO:= TJSONObject.Create;
+    try
+      LJO.AddPair('chat_id', FChatId);
+      LJO.AddPair('text', LLog);
+      LJO.AddPair('parse_mode', FParseMode.ToString);
 
-    LLogItemREST.Stream := nil;
-    LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format(TELEGRAM_API_SENDMSG + LParseMode, [FBotToken, FChatId, LLog]);
+      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
+      LLogItemREST.LogItem := LItem;
+      LLogItemREST.URL := Format('https://api.telegram.org/bot%s/sendMessage', [FBotToken]);
 
-    LItemREST := Concat(LItemREST, [LLogItemREST]);
+      LItemREST := Concat(LItemREST, [LLogItemREST]);
+    finally
+      LJO.Free;
+    end;
   end;
 
   FHTTP
     .SetLogException(FLogException)
     .SetMaxRetries(FMaxRetries);
 
-  FHTTP.InternalSaveSync(TRESTMethod.tlmGet, LItemREST);
+  FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+{ TProviderTelegramHelper }
+
+function TProviderTelegramHelper.ToString: string;
+begin
+  case Self of
+    TTelegramParseMode.tpNone: Result := 'HTML';
+    TTelegramParseMode.tpHTML: Result := 'HTML';
+    TTelegramParseMode.tpMarkdown: Result := 'MarkdownV2';
+  end;
 end;
 
 procedure ForceReferenceToClass(C: TClass);
