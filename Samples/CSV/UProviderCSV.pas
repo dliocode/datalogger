@@ -67,8 +67,8 @@ begin
   Logger.AddProvider(
     TProviderCSV.Create
     .LogDir(FLogDir)
-//    .PrefixFileName('my_log_')
-//    .Separator(',')
+    .PrefixFileName('my_log_')
+    .Separator('|')
 //    .Extension('.csv')
 //    .MaxFileSizeInKiloByte(10)
 //    .MaxBackupFileCount(5)

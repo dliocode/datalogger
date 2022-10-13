@@ -4,6 +4,7 @@ program ProviderConsole;
 
 {$R *.res}
 
+
 uses
   DataLogger,
   DataLogger.Provider.Console;
@@ -11,8 +12,8 @@ uses
 begin
   Logger.AddProvider(
     TProviderConsole.Create
-    // .UseColorInConsole(True)
-    // .UseColorOnlyInLevels(True)
+    .UseColorInConsole(True)
+    // .UseColorInConsoleByLogFormat(True) .UseColorInConsoleByLogFormat(False)
 
     // .ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta)
     // .ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan)
@@ -26,6 +27,9 @@ begin
 
   // Log Format
   Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+
+  // if (UseColorInConsole = False) and (UseColorInConsoleByLogFormat = True) - use this logformat
+  // Logger.SetLogFormat('${timestamp_color} - [${level_color_warn}]: ${message_color}');
 
   Logger
     .Trace('My Trace')
