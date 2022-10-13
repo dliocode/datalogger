@@ -39,7 +39,7 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
-  System.SysUtils, System.JSON;
+  System.SysUtils, System.JSON, System.Generics.Collections;
 
 type
 {$SCOPEDENUMS ON}
@@ -60,7 +60,8 @@ type
 
   private
     FUseColorInConsole: Boolean;
-    FUseColorOnlyInLevels: Boolean;
+    FUseColorInConsoleByLogFormat: Boolean;
+
     FColorTrace: TColorConsole;
     FColorDebug: TColorConsole;
     FColorInfo: TColorConsole;
@@ -75,7 +76,7 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function UseColorInConsole(const AValue: Boolean): TProviderConsole;
-    function UseColorOnlyInLevels(const AValue: Boolean): TProviderConsole;
+    function UseColorInConsoleByLogFormat(const AValue: Boolean): TProviderConsole;
     function ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -93,7 +94,7 @@ begin
   inherited Create;
 
   UseColorInConsole(True);
-  UseColorOnlyInLevels(False);
+  UseColorInConsoleByLogFormat(False);
 
   ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta);
   ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan);
@@ -111,10 +112,10 @@ begin
   FUseColorInConsole := AValue;
 end;
 
-function TProviderConsole.UseColorOnlyInLevels(const AValue: Boolean): TProviderConsole;
+function TProviderConsole.UseColorInConsoleByLogFormat(const AValue: Boolean): TProviderConsole;
 begin
   Result := Self;
-  FUseColorOnlyInLevels := AValue;
+  FUseColorInConsoleByLogFormat := AValue;
 end;
 
 function TProviderConsole.ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
@@ -191,7 +192,7 @@ begin
 
   try
     UseColorInConsole(LJO.GetValue<Boolean>('use_color_in_console', FUseColorInConsole));
-    UseColorOnlyInLevels(LJO.GetValue<Boolean>('use_color_only_in_levels', FUseColorOnlyInLevels));
+    UseColorInConsoleByLogFormat(LJO.GetValue<Boolean>('use_color_in_console_by_logformat', FUseColorInConsoleByLogFormat));
 
     SetJSONInternal(LJO);
   finally
@@ -206,7 +207,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColorInConsole));
-    LJO.AddPair('use_color_only_in_levels', TJSONBool.Create(FUseColorOnlyInLevels));
+    LJO.AddPair('use_color_in_console_by_logformat', TJSONBool.Create(FUseColorInConsoleByLogFormat));
 
     ToJSONInternal(LJO);
 
@@ -217,12 +218,23 @@ begin
 end;
 
 procedure TProviderConsole.Save(const ACache: TArray<TLoggerItem>);
+const
+  C_TAG = '_color';
+
 var
   LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
-  LLogFormat: TArray<string>;
+  LTagsKeys: TArray<string>;
+  LTagsValues: TArray<string>;
+  LTagsLevel: TArray<TLoggerLevel>;
+  LLevel: TLoggerLevel;  
+  LTag: string;
+  LTags: TDictionary<string, string>;
+  LLogMessage: string;
   I: Integer;
+  J: Integer;
+  LLogFormatBase: TArray<string>;
 begin
   if not IsConsole then
     Exit;
@@ -246,28 +258,81 @@ begin
       try
         if FUseColorInConsole then
         begin
-          if FUseColorOnlyInLevels and FLogFormat.Contains(TLoggerFormat.LOG_LEVEL) then
+          WriteColor(LItem.Level, LLog);
+          Break;
+        end;
+
+        if FUseColorInConsoleByLogFormat then
+        begin
+          LTagsKeys := [];        
+          LTagsValues := [];
+          LTagsLevel := [];
+
+          for LLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
           begin
-            LLogFormat := FLogFormat.Split([TLoggerFormat.LOG_LEVEL]);
+            LTag := C_TAG;
+            if not(LLevel = TLoggerLevel.All) then
+              LTag := LTag + '_' + LLevel.ToString.ToLower;
 
-            for I := Low(LLogFormat) to High(LLogFormat) do
-            begin
-              LLog := TLoggerSerializeItem.AsString(LLogFormat[I], LItem, FFormatTimestamp);
+            LTags := TLoggerSerializeItem.ListTAG(LLog, [LTag], LItem, FFormatTimestamp);
+            try
+              if LTags.Count = 0 then
+                Continue;
 
-              Write(LLog);
+              LTagsKeys := LTagsKeys + LTags.Keys.ToArray;
+              LTagsValues := LTagsValues + LTags.Values.ToArray;
 
-              if I = 0 then
-                WriteColor(LItem.Level, LItem.LevelString, False);
+              for I := Low(LTagsKeys) to High(LTagsKeys) do
+                if LLevel = TLoggerLevel.All then
+                  LTagsLevel := LTagsLevel + [LItem.Level]
+                else
+                  LTagsLevel := LTagsLevel + [LLevel];
+            finally
+              LTags.Free;
             end;
+          end;
 
-            Writeln;
-          end
+          if Length(LTagsKeys) = 0 then
+            Write(LLog)
           else
-            WriteColor(LItem.Level, LLog);
-        end
-        else
-          Writeln(LLog);
+          begin
+            LLogMessage := LLog;
 
+            repeat
+              for I := 0 to Pred(Length(LTagsKeys)) do
+              begin
+                if LLogMessage.Trim.IsEmpty then
+                  Break;
+
+                if not LLogMessage.Contains(LTagsKeys[I]) then
+                  Continue;
+
+                LLogFormatBase := LLogMessage.Split(['${' + LTagsKeys[I] + '}']);
+                if Length(LLogFormatBase) > 1 then
+                  if LLogFormatBase[0].Contains(C_TAG) then
+                    Continue;
+
+                LLogMessage := '';
+                if Length(LLogFormatBase) > 1 then
+                  for J := 1 to High(LLogFormatBase) do
+                  begin
+                    LLogMessage := LLogMessage + LLogFormatBase[J];
+
+                    if J <> High(LLogFormatBase) then
+                      LLogMessage := LLogMessage + '${' + LTagsKeys[I] + '}';
+                  end;
+
+                Write(LLogFormatBase[0]);
+                WriteColor(LTagsLevel[I], LTagsValues[I], False);
+              end;
+            until not LLogMessage.Contains(C_TAG);
+          end;
+
+          Writeln;
+          Break;
+        end;
+
+        Writeln(LLog);
         Break;
       except
         on E: Exception do
