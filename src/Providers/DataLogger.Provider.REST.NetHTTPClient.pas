@@ -259,10 +259,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FURL);
-    LJO.AddPair('content_type', FContentType);
-    LJO.AddPair('token', FToken);
-    LJO.AddPair('method', GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod)));
+    LJO.AddPair('url', TJSONString.Create(FURL));
+    LJO.AddPair('content_type', TJSONString.Create(FContentType));
+    LJO.AddPair('token', TJSONString.Create(FToken));
+    LJO.AddPair('method', TJSONString.Create(GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod))));
     LJO.AddPair('mode_async', TJSONBool.Create(FModeAsync));
     LJO.AddPair('wait_timeout_to_send', TJSONNumber.Create(FWaitTimeoutToSend));
 

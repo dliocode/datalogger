@@ -141,7 +141,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('app_token', FAppToken);
+    LJO.AddPair('app_token', TJSONString.Create(FAppToken));
 
     ToJSONInternal(LJO);
 

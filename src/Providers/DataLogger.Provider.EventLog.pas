@@ -111,7 +111,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('name', FName);
+    LJO.AddPair('name', TJSONString.Create(FName));
 
     ToJSONInternal(LJO);
 

@@ -34,9 +34,11 @@ unit DataLogger.Provider.ListView;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
   FMX.ListView,
 {$ELSE}
   Vcl.ComCtrls,
@@ -67,7 +69,11 @@ type
     constructor Create;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 { TProviderListView }
 
@@ -145,7 +151,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
-    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('mode_insert', TJSONString.Create(GetEnumName(TypeInfo(TListViewModeInsert), Integer(FModeInsert))));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
@@ -197,7 +203,7 @@ begin
               if (csDestroying in FListView.ComponentState) then
                 Exit;
 
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
               FListView.BeginUpdate;
 {$ELSE}
               FListView.Items.BeginUpdate;
@@ -205,7 +211,7 @@ begin
               case FModeInsert of
                 TListViewModeInsert.tmFirst:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FListView.Items.AddItem(0).IndexTitle := LLog;
 {$ELSE}
                     FListView.Items.Insert(0).Caption := LLog;
@@ -214,7 +220,7 @@ begin
 
                 TListViewModeInsert.tmLast:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FListView.Items.Add.IndexTitle := LLog;
 {$ELSE}
                     FListView.Items.Add.Caption := LLog;
@@ -263,7 +269,7 @@ begin
                 if (csDestroying in FListView.ComponentState) then
                   Exit;
 
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                 FListView.EndUpdate;
 {$ELSE}
                 FListView.Items.EndUpdate;
@@ -271,7 +277,7 @@ begin
                 case FModeInsert of
                   TListViewModeInsert.tmFirst:
                     begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                       FListView.ScrollTo(0);
 {$ELSE}
                       FListView.Scroll(0, 0);
@@ -280,7 +286,7 @@ begin
 
                   TListViewModeInsert.tmLast:
                     begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                       FListView.ScrollTo(Pred(FListView.Items.Count));
 {$ELSE}
                       FListView.Scroll(0, FListView.Items.Count);
@@ -321,5 +327,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderListView);
+
+{$ENDIF}
 
 end.

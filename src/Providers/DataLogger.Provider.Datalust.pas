@@ -150,7 +150,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
 
     ToJSONInternal(LJO);
 
@@ -182,14 +182,14 @@ begin
     try
       LJOEvents := TJSONObject.Create;
       LJOEvents
-        .AddPair('Timestamp', LItem.TimestampISO8601)
-        .AddPair('Level', LItem.LevelString)
+        .AddPair('Timestamp', TJSONString.Create(LItem.TimestampISO8601))
+        .AddPair('Level', TJSONString.Create(LItem.LevelString))
         .AddPair('Properties', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       if not LItem.Message.Trim.IsEmpty then
-        LJOEvents.AddPair('MessageTemplate', LItem.Message)
+        LJOEvents.AddPair('MessageTemplate', TJSONString.Create(LItem.Message))
       else
-        LJOEvents.AddPair('MessageTemplate', LItem.MessageJSON);
+        LJOEvents.AddPair('MessageTemplate', TJSONString.Create(LItem.MessageJSON));
 
       LJO.AddPair('Events', TJSONArray.Create.Add(LJOEvents));
 

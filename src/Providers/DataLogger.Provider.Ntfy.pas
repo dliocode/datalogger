@@ -30,17 +30,18 @@
   ********************************************************************************
 }
 
-// https://sendgrid.com/
+// https://ntfy.sh/
+// https://docs.ntfy.sh/
 
-unit DataLogger.Provider.SendGrid.WebApi;
+unit DataLogger.Provider.Ntfy;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_INDY)}
+{$IF DEFINED(DATALOGGER_NTFY_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_NTFY_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -48,86 +49,88 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderSendGridWebApi = class(TDataLoggerProvider<TProviderSendGridWebApi>)
+  TProviderNtfy = class(TDataLoggerProvider<TProviderNtfy>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_INDY)}
+{$IF DEFINED(DATALOGGER_NTFY_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_SENDGRID_WEBAPI_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_NTFY_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
 {$ENDIF});
-
   private
     FHTTP: TProviderHTTP;
-    FEmailFrom: string;
-    FEmailTo: TArray<string>;
-    FSubject: string;
+    FServerURL: string;
+    FTopic: string;
+    FTitle: string;
+    FIncludeLevelInTitle: Boolean;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function ApiKey(const AValue: string): TProviderSendGridWebApi;
-    function EmailFrom(const AValue: string): TProviderSendGridWebApi;
-    function EmailTo(const AValue: TArray<string>): TProviderSendGridWebApi;
-    function Subject(const AValue: string): TProviderSendGridWebApi;
+    function ServerURL(const AValue: string): TPRoviderNtfy;
+    function Topic(const AValue: string): TProviderNtfy;
+    function Title(const AValue: string; const AIncludeLevelInTitle: Boolean = True): TProviderNtfy;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
     destructor Destroy; override;
   end;
 
 implementation
 
-{ TProviderSendGridWebApi }
+{ TProviderNtfy }
 
-constructor TProviderSendGridWebApi.Create;
+constructor TProviderNtfy.Create;
 begin
   inherited Create;
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
-  FHTTP.URL('https://api.sendgrid.com/v3/mail/send');
+  FHTTP.URL('http://ntfy.sh');
 
-  EmailFrom('');
-  EmailTo([]);
-  Subject('DataLogger');
+  ServerURL('http://ntfy.sh');
+  Topic('datalogger');
 end;
 
-destructor TProviderSendGridWebApi.Destroy;
+procedure TProviderNtfy.AfterConstruction;
+begin
+  inherited;
+
+  SetIgnoreLogFormat(False);
+end;
+
+destructor TProviderNtfy.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderSendGridWebApi.ApiKey(const AValue: string): TProviderSendGridWebApi;
+function TProviderNtfy.ServerURL(const AValue: string): TPRoviderNtfy;
 begin
   Result := Self;
-  FHTTP.BearerToken(AValue);
+  FServerURL := AValue;
 end;
 
-function TProviderSendGridWebApi.EmailFrom(const AValue: string): TProviderSendGridWebApi;
+function TProviderNtfy.Topic(const AValue: string): TProviderNtfy;
 begin
   Result := Self;
-  FEmailFrom := AValue.Trim;
+  FTopic := AValue;
 end;
 
-function TProviderSendGridWebApi.EmailTo(const AValue: TArray<string>): TProviderSendGridWebApi;
+function TProviderNtfy.Title(const AValue: string; const AIncludeLevelInTitle: Boolean): TProviderNtfy;
 begin
   Result := Self;
-  FEmailTo := AValue;
+
+  FTitle := AValue;
+  FIncludeLevelInTitle := AIncludeLevelInTitle;
 end;
 
-function TProviderSendGridWebApi.Subject(const AValue: string): TProviderSendGridWebApi;
-begin
-  Result := Self;
-  FSubject := AValue;
-end;
-
-procedure TProviderSendGridWebApi.LoadFromJSON(const AJSON: string);
+procedure TProviderNtfy.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -145,10 +148,7 @@ begin
     Exit;
 
   try
-    ApiKey(LJO.GetValue<string>('api_key', FHTTP.Token));
-    EmailFrom(LJO.GetValue<string>('email_from', FEmailFrom));
-    EmailTo(LJO.GetValue<string>('email_to', String.Join(',', FEmailTo)).Split([',']));
-    Subject(LJO.GetValue<string>('subject', FSubject));
+    Topic(LJO.GetValue<string>('topic', FTopic));
 
     SetJSONInternal(LJO);
   finally
@@ -156,16 +156,13 @@ begin
   end;
 end;
 
-function TProviderSendGridWebApi.ToJSON(const AFormat: Boolean): string;
+function TProviderNtfy.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', TJSONString.Create(FHTTP.Token));
-    LJO.AddPair('email_from', TJSONString.Create(FEmailFrom));
-    LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
-    LJO.AddPair('subject', TJSONString.Create(FSubject));
+    LJO.AddPair('topic', TJSONString.Create(FTopic));
 
     ToJSONInternal(LJO);
 
@@ -175,22 +172,24 @@ begin
   end;
 end;
 
-procedure TProviderSendGridWebApi.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderNtfy.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LLog: string;
+  LTag: string;
+  LPriority: Integer;
+  LTitle: string;
   LJO: TJSONObject;
-  LJAPersonalizations: TJSONArray;
-  I: Integer;
-  LJATo: TJSONArray;
-  LJAContent: TJSONArray;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
 
   if Length(ACache) = 0 then
     Exit;
+
+  if FServerURL.Trim.IsEmpty then
+    FServerURL := FHTTP.URL;
 
   for LItem in ACache do
   begin
@@ -199,46 +198,87 @@ begin
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
+    // https://docs.ntfy.sh/emojis/
+    // https://docs.ntfy.sh/publish/?h=priority#message-priority
+    case LItem.Level of
+      TLoggerLevel.Trace:
+        begin
+          LTag := 'purple_circle';
+          LPriority := 1;
+        end;
+
+      TLoggerLevel.Debug:
+        begin
+          LTag := 'large_blue_circle';
+          LPriority := 2;
+        end;
+
+      TLoggerLevel.Info:
+        begin
+          LTag := 'white_circle';
+          LPriority := 3;
+        end;
+
+      TLoggerLevel.Success:
+        begin
+          LTag := 'green_circle';
+          LPriority := 3;
+        end;
+
+      TLoggerLevel.Warn:
+        begin
+          LTag := 'yellow_circle';
+          LPriority := 4;
+        end;
+
+      TLoggerLevel.Error:
+        begin
+          LTag := 'orange_circle';
+          LPriority := 5;
+        end;
+
+      TLoggerLevel.Fatal:
+        begin
+          LTag := 'red_circle';
+          LPriority := 5;
+        end;
+
+      TLoggerLevel.Custom:
+        begin
+          LTag := 'black_circle';
+          LPriority := 5;
+        end;
+    else
+      LTag := 'green_circle';
+      LPriority := 3;
+    end;
+
+    if FIncludeLevelInTitle then
+      LTitle := FTitle + ' ' + LItem.LevelString;
+
     LJO := TJSONObject.Create;
     try
-      LJAPersonalizations := TJSONArray.Create;
-
-      for I := Low(FEmailTo) to High(FEmailTo) do
-      begin
-        LJATo := TJSONArray.Create;
-        LJATo.Add(TJSONObject.Create.AddPair('email', TJSONString.Create(FEmailTo[I].Trim)));
-
-        LJAPersonalizations.Add(TJSONObject.Create.AddPair('to', LJATo));
-      end;
-
-      LJO.AddPair('personalizations', LJAPersonalizations);
-      LJO.AddPair('from', TJSONObject.Create.AddPair('email', TJSONString.Create(FEmailFrom)));
-      LJO.AddPair('subject', TJSONString.Create(FSubject));
-
-      LJAContent := TJSONArray.Create;
-      LJAContent.Add(
-        TJSONObject.Create
-        .AddPair('type', TJSONString.Create('text/plain'))
-        .AddPair('value', TJSONString.Create(LLog))
-        );
-
-      LJO.AddPair('content', LJAContent);
+      LJO.AddPair('topic', TJSONString.Create(FTopic));
+      LJO.AddPair('title', TJSONString.Create(LTitle));
+      LJO.AddPair('tags', TJSONArray.Create.Add(LTag));
+      LJO.AddPair('message', TJSONString.Create(LLog));
+      LJO.AddPair('priority', TJSONNumber.Create(LPriority));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := FHTTP.URL;
+      LLogItemREST.URL := FServerURL;
+
+      LItemREST := Concat(LItemREST, [LLogItemREST]);
     finally
       LJO.Free;
     end;
-
-    LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
   FHTTP
     .SetLogException(FLogException)
     .SetMaxRetries(FMaxRetries);
 
-  FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+  FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
@@ -247,6 +287,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderSendGridWebApi);
+ForceReferenceToClass(TProviderNtfy);
 
 end.

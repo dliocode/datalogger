@@ -173,11 +173,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('domain', FDomain);
-    LJO.AddPair('email_from', FEmailFrom);
-    LJO.AddPair('email_to', String.Join(',', FEmailTo));
-    LJO.AddPair('subject', FSubject);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+    LJO.AddPair('domain', TJSONString.Create(FDomain));
+    LJO.AddPair('email_from', TJSONString.Create(FEmailFrom));
+    LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
+    LJO.AddPair('subject', TJSONString.Create(FSubject));
 
     ToJSONInternal(LJO);
 

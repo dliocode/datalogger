@@ -29,7 +29,9 @@ package DataLogger;
 
 requires
   rtl,
+{$IF DEFINED(MSWINDOWS)}
   vcl,
+{$ENDIF}
   IndySystem,
   IndyProtocols,
   IndyCore,
@@ -71,6 +73,7 @@ contains
   DataLogger.Provider.Memory in 'src\Providers\DataLogger.Provider.Memory.pas',
   DataLogger.Provider.Mezmo in 'src\Providers\DataLogger.Provider.Mezmo.pas',
   DataLogger.Provider.MongoDB.Cloud in 'src\Providers\DataLogger.Provider.MongoDB.Cloud.pas',
+  DataLogger.Provider.Ntfy in 'src\Providers\DataLogger.Provider.Ntfy.pas',
   DataLogger.Provider.NewRelic in 'src\Providers\DataLogger.Provider.NewRelic.pas',
   DataLogger.Provider.Notification in 'src\Providers\DataLogger.Provider.Notification.pas',
   DataLogger.Provider.Novu in 'src\Providers\DataLogger.Provider.Novu.pas',

@@ -140,7 +140,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('token', FToken);
+    LJO.AddPair('token', TJSONString.Create(FToken));
 
     ToJSONInternal(LJO);
 

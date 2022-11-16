@@ -173,11 +173,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('account_sid', FAccountSID);
-    LJO.AddPair('auth_token', FAuthToken);
-    LJO.AddPair('messaging_service_sid', FMessagingServiceSID);
-    LJO.AddPair('phone_from', FPhoneFrom);
-    LJO.AddPair('phone_to', FPhoneTo);
+    LJO.AddPair('account_sid', TJSONString.Create(FAccountSID));
+    LJO.AddPair('auth_token', TJSONString.Create(FAuthToken));
+    LJO.AddPair('messaging_service_sid', TJSONString.Create(FMessagingServiceSID));
+    LJO.AddPair('phone_from', TJSONString.Create(FPhoneFrom));
+    LJO.AddPair('phone_to', TJSONString.Create(FPhoneTo));
 
     ToJSONInternal(LJO);
 

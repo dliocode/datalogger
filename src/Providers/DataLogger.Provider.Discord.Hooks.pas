@@ -154,9 +154,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('username', FUsername);
-    LJO.AddPair('avatar_url', FAvatarURL);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('username', TJSONString.Create(FUsername));
+    LJO.AddPair('avatar_url', TJSONString.Create(FAvatarURL));
 
     ToJSONInternal(LJO);
 
@@ -190,9 +190,9 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('username', FUsername);
-      LJO.AddPair('avatar_url', FAvatarURL);
-      LJO.AddPair('content', LLog);
+      LJO.AddPair('username', TJSONString.Create(FUsername));
+      LJO.AddPair('avatar_url', TJSONString.Create(FAvatarURL));
+      LJO.AddPair('content', TJSONString.Create(LLog));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

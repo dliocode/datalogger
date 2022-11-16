@@ -152,8 +152,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('token', FToken);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('token', TJSONString.Create(FToken));
 
     ToJSONInternal(LJO);
 

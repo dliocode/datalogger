@@ -132,9 +132,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('from_address', FFromAddress);
-    LJO.AddPair('to_address', FToAddress);
-    LJO.AddPair('subject', FSubject);
+    LJO.AddPair('from_address', TJSONString.Create(FFromAddress));
+    LJO.AddPair('to_address', TJSONString.Create(FToAddress));
+    LJO.AddPair('subject', TJSONString.Create(FSubject));
 
     ToJSONInternal(LJO);
 

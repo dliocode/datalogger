@@ -34,9 +34,11 @@ unit DataLogger.Provider.Memo;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
   FMX.Memo,
 {$ELSE}
   Vcl.StdCtrls, Winapi.Windows, Winapi.Messages,
@@ -69,7 +71,11 @@ type
     constructor Create;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 { TProviderMemo }
 
@@ -147,7 +153,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
-    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('mode_insert', TJSONString.Create(GetEnumName(TypeInfo(TMemoModeInsert), Integer(FModeInsert))));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
@@ -242,14 +248,14 @@ begin
               case FModeInsert of
                 TMemoModeInsert.tmFirst:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FMemo.VScrollBar.Value := FMemo.VScrollBar.Min;
 {$ENDIF}
                   end;
 
                 TMemoModeInsert.tmLast:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FMemo.VScrollBar.Value := FMemo.VScrollBar.Max;
 {$ELSE}
                     SendMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
@@ -290,5 +296,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderMemo);
+
+{$ENDIF}
 
 end.

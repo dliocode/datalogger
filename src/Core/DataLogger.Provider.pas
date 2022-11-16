@@ -682,9 +682,9 @@ begin
   LJOInternal := TJSONObject.Create;
   AJO.AddPair('internal', LJOInternal);
 
-  LJOInternal.AddPair('log_format', FLogFormat);
-  LJOInternal.AddPair('format_timestamp', FFormatTimestamp);
-  LJOInternal.AddPair('level', FLevel.ToString);
+  LJOInternal.AddPair('log_format', TJSONString.Create(FLogFormat));
+  LJOInternal.AddPair('format_timestamp', TJSONString.Create(FFormatTimestamp));
+  LJOInternal.AddPair('level', TJSONString.Create(FLevel.ToString));
 
   // Disable Log Level
   LJADisableLevel := TJSONArray.Create;
@@ -705,8 +705,8 @@ begin
         LJAOnlyLevel.Add(TLoggerLevel(I).ToString);
 
   LJOInternal.AddPair('max_retries', TJSONNumber.Create(FMaxRetries));
-  LJOInternal.AddPair('initial_message', FInitialMessage);
-  LJOInternal.AddPair('final_message', FFinalMessage);
+  LJOInternal.AddPair('initial_message', TJSONString.Create(FInitialMessage));
+  LJOInternal.AddPair('final_message', TJSONString.Create(FFinalMessage));
   LJOInternal.AddPair('use_transaction', TJSONBool.Create(FUseTransaction));
 
   // Auto Commit
@@ -721,7 +721,7 @@ begin
       if TLoggerLevel(I) in FTransactionAutoCommitLevel then
         LJATransactionAutoCommitLevel.Add(TLoggerLevel(I).ToString);
 
-  LJOTransactionAutoCommit.AddPair('type', GetEnumName(TypeInfo(TLoggerTransactionTypeCommit), Integer(FTransactionAutoCommitType)));
+  LJOTransactionAutoCommit.AddPair('type', TJSONString.Create(GetEnumName(TypeInfo(TLoggerTransactionTypeCommit), Integer(FTransactionAutoCommitType))));
 end;
 
 procedure TDataLoggerProvider<T>.Lock;

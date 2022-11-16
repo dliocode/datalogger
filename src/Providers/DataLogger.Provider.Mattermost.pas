@@ -150,9 +150,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('token', FHTTP.Token);
-    LJO.AddPair('channel_id', FChannelId);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('token', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('channel_id', TJSONString.Create(FChannelId));
 
     ToJSONInternal(LJO);
 
@@ -184,8 +184,8 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('channel_id', FChannelId);
-      LJO.AddPair('message', LLog);
+      LJO.AddPair('channel_id', TJSONString.Create(FChannelId));
+      LJO.AddPair('message', TJSONString.Create(LLog));
 
       LLog := LJO.ToString.Replace(#$D#$A,'\n');
 

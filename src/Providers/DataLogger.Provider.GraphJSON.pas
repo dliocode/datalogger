@@ -151,8 +151,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('collection', FCollection);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+    LJO.AddPair('collection', TJSONString.Create(FCollection));
 
     ToJSONInternal(LJO);
 
@@ -184,10 +184,10 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('api_key', FApiKey);
-      LJO.AddPair('collection', FCollection);
+      LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+      LJO.AddPair('collection', TJSONString.Create(FCollection));
       LJO.AddPair('timestamp', TJSONNumber.Create(LItem.TimestampUNIX));
-      LJO.AddPair('json', LLog);
+      LJO.AddPair('json', TJSONString.Create(LLog));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

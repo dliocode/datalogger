@@ -183,11 +183,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('template_id', FTemplateID);
-    LJO.AddPair('subscriber_id', FSubscriberID);
-    LJO.AddPair('email_to', String.Join(',', FEmailTo));
-    LJO.AddPair('subject', FSubject);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+    LJO.AddPair('template_id', TJSONString.Create(FTemplateID));
+    LJO.AddPair('subscriber_id', TJSONSTring.Create(FSubscriberID));
+    LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
+    LJO.AddPair('subject', TJSONString.Create(FSubject));
 
     ToJSONInternal(LJO);
 
@@ -223,15 +223,15 @@ begin
       begin
         LJO := TJSONObject.Create;
         try
-          LJO.AddPair('name', FTemplateID);
+          LJO.AddPair('name', TJSONString.Create(FTemplateID));
 
           LJOTo := TJSONObject.Create;
-          LJOTo.AddPair('subscriberId', FSubscriberID);
-          LJOTo.AddPair('email', FEmailTo[I]);
+          LJOTo.AddPair('subscriberId', TJSONString.Create(FSubscriberID));
+          LJOTo.AddPair('email', TJSONString.Create(FEmailTo[I]));
           LJO.AddPair('to', LJOTo);
 
           LJOLog.RemovePair('subject').Free;
-          LJOLog.AddPair('subject', FSubject);
+          LJOLog.AddPair('subject', TJSONString.Create(FSubject));
           LJO.AddPair('payload', LJOLog.Clone as TJSONObject);
 
           LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);

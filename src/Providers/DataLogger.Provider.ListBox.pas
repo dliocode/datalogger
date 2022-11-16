@@ -34,9 +34,11 @@ unit DataLogger.Provider.ListBox;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
   FMX.ListBox,
 {$ELSE}
   Vcl.StdCtrls,
@@ -69,7 +71,11 @@ type
     constructor Create;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 { TProviderListBox }
 
@@ -147,7 +153,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
-    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TListBoxModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('mode_insert', TJSONString.Create(GetEnumName(TypeInfo(TListBoxModeInsert), Integer(FModeInsert))));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
@@ -294,5 +300,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderListBox);
+
+{$ENDIF}
 
 end.

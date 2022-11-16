@@ -145,11 +145,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('host', FHost);
+    LJO.AddPair('host', TJSONString.Create(FHost));
     LJO.AddPair('port', TJSONNumber.Create(FPort));
-    LJO.AddPair('virtual_host', FVirtualHost);
-    LJO.AddPair('client_id', FClientID);
-    LJO.AddPair('topic_name', FTopicName);
+    LJO.AddPair('virtual_host', TJSONString.Create(FVirtualHost));
+    LJO.AddPair('client_id', TJSONString.Create(FClientID));
+    LJO.AddPair('topic_name', TJSONString.Create(FTopicName));
 
     ToJSONInternal(LJO);
 

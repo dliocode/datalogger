@@ -34,6 +34,8 @@ unit DataLogger.Provider.RichEdit;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types,
   Vcl.ComCtrls, Vcl.Graphics, Winapi.Windows, Winapi.Messages,
@@ -78,7 +80,11 @@ type
     constructor Create; overload;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 type
   THackCustom = class(TCustomRichEdit);
@@ -216,16 +222,16 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_richedit', TJSONBool.Create(FUseColorInRichEdit));
-    LJO.AddPair('change_color_trace', ColorToString(FColorTrace));
-    LJO.AddPair('change_color_debug', ColorToString(FColorDebug));
-    LJO.AddPair('change_color_info', ColorToString(FColorInfo));
-    LJO.AddPair('change_color_success', ColorToString(FColorSuccess));
-    LJO.AddPair('change_color_warn', ColorToString(FColorWarn));
-    LJO.AddPair('change_color_error', ColorToString(FColorError));
-    LJO.AddPair('change_color_fatal', ColorToString(FColorFatal));
-    LJO.AddPair('change_color_custom', ColorToString(FColorCustom));
+    LJO.AddPair('change_color_trace', TJSONString.Create(ColorToString(FColorTrace)));
+    LJO.AddPair('change_color_debug', TJSONString.Create(ColorToString(FColorDebug)));
+    LJO.AddPair('change_color_info', TJSONString.Create(ColorToString(FColorInfo)));
+    LJO.AddPair('change_color_success', TJSONString.Create(ColorToString(FColorSuccess)));
+    LJO.AddPair('change_color_warn', TJSONString.Create(ColorToString(FColorWarn)));
+    LJO.AddPair('change_color_error', TJSONString.Create(ColorToString(FColorError)));
+    LJO.AddPair('change_color_fatal', TJSONString.Create(ColorToString(FColorFatal)));
+    LJO.AddPair('change_color_custom', TJSONString.Create(ColorToString(FColorCustom)));
     LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
-    LJO.AddPair('mode_insert', GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert)));
+    LJO.AddPair('mode_insert', TJSONString.Create(GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert))));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
@@ -379,14 +385,14 @@ begin
               case FModeInsert of
                 TRichEditModeInsert.tmFirst:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Min;
 {$ENDIF}
                   end;
 
                 TRichEditModeInsert.tmLast:
                   begin
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
                     FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Max;
 {$ELSE}
                     SendMessage(FRichEdit.Handle, EM_LINESCROLL, 0, FRichEdit.Lines.Count);
@@ -427,5 +433,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderRichEdit);
+
+{$ENDIF}
 
 end.

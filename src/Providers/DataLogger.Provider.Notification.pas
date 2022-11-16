@@ -34,6 +34,8 @@ unit DataLogger.Provider.Notification;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
   System.SysUtils, System.Notification, System.JSON, System.Classes;
@@ -64,7 +66,11 @@ type
     destructor Destroy; override;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 { TProviderNotification }
 
@@ -136,7 +142,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('title', FTitle);
+    LJO.AddPair('title', TJSONString.Create(FTitle));
     LJO.AddPair('include_level_in_title', TJSONBool.Create(FIncludeLevelInTitle));
 
     ToJSONInternal(LJO);
@@ -225,5 +231,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderNotification);
+
+{$ENDIF}
 
 end.

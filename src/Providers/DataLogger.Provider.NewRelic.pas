@@ -141,7 +141,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
 
     ToJSONInternal(LJO);
 
@@ -171,9 +171,9 @@ begin
     LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       if LItem.Message.Trim.IsEmpty then
-        LJO.AddPair('message', LItem.MessageJSON)
+        LJO.AddPair('message', TJSONString.Create(LItem.MessageJSON))
       else
-        LJO.AddPair('message', LItem.Message);
+        LJO.AddPair('message', TJSONString.Create(LItem.Message));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

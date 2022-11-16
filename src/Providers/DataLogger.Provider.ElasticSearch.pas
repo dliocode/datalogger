@@ -162,10 +162,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('basic_auth_username', FBasicAuthUsername);
-    LJO.AddPair('basic_auth_password', FBasicAuthPassword);
-    LJO.AddPair('index', FIndex);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('basic_auth_username', TJSONString.Create());
+    LJO.AddPair('basic_auth_password', TJSONString.Create(FBasicAuthPassword));
+    LJO.AddPair('index', TJSONString.Create(FIndex));
 
     ToJSONInternal(LJO);
 

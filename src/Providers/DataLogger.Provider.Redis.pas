@@ -135,10 +135,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('host', FHost);
+    LJO.AddPair('host', TJSONString.Create(FHost));
     LJO.AddPair('port', TJSONNumber.Create(FPort));
-    LJO.AddPair('key_prefix', FKeyPrefix);
-    LJO.AddPair('max_size', FMaxSize);
+    LJO.AddPair('key_prefix', TJSONString.Create(FKeyPrefix));
+    LJO.AddPair('max_size', TJSONNumber.Create(FMaxSize));
 
     ToJSONInternal(LJO);
 

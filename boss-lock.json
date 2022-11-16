@@ -20,8 +20,8 @@
 		},
 		"https://github.com/dliocode/sendemail": {
 			"name": "sendemail",
-			"version": "1.0.13",
-			"hash": "d2e8086baf1ed7d83f8804869d372f1c",
+			"version": "1.015",
+			"hash": "1127e52abe14218cc8430c70d1950ca5",
 			"artifacts": {},
 			"failed": false,
 			"changed": false

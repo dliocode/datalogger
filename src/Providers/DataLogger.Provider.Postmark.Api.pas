@@ -165,10 +165,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_token', FApiToken);
-    LJO.AddPair('email_from', FEmailFrom);
-    LJO.AddPair('email_to', String.Join(',', FEmailTo));
-    LJO.AddPair('subject', FSubject);
+    LJO.AddPair('api_token', TJSONString.Create(FApiToken));
+    LJO.AddPair('email_from', TJSONString.Create(FEmailFrom));
+    LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
+    LJO.AddPair('subject', TJSONString.Create(FSubject));
 
     ToJSONInternal(LJO);
 
@@ -203,10 +203,10 @@ begin
     begin
       LJO := TJSONObject.Create;
       try
-        LJO.AddPair('From', FEmailFrom);
-        LJO.AddPair('To', FEmailTo[I]);
-        LJO.AddPair('Subject', FSubject);
-        LJO.AddPair('HTMLBody', LLog);
+        LJO.AddPair('From', TJSONString.Create(FEmailFrom));
+        LJO.AddPair('To', TJSONString.Create(FEmailTo[I]));
+        LJO.AddPair('Subject', TJSONString.Create(FSubject));
+        LJO.AddPair('HTMLBody', TJSONString.Create(LLog));
 
         LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
         LLogItemREST.LogItem := LItem;

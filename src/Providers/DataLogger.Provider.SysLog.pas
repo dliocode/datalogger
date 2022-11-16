@@ -120,7 +120,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('host', FSysLog.Host);
+    LJO.AddPair('host', TJSONString.Create(FSysLog.Host));
     LJO.AddPair('port', TJSONNumber.Create(FSysLog.Port));
 
     ToJSONInternal(LJO);

@@ -143,7 +143,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
 
     ToJSONInternal(LJO);
 
@@ -178,9 +178,9 @@ begin
     try
       LJOLog := TJSONObject.Create;
       LJOLog.AddPair('timestamp', TJSONNumber.Create(LItem.TimestampUNIX));
-      LJOLog.AddPair('line', LLog);
-      LJOLog.AddPair('app', LItem.AppName);
-      LJOLog.AddPair('level', LItem.LevelString);
+      LJOLog.AddPair('line', TJSONString.Create(LLog));
+      LJOLog.AddPair('app', TJSONString.Create(LItem.AppName));
+      LJOLog.AddPair('level', TJSONString.Create(LItem.LevelString));
 
       LJO.AddPair('lines', TJSONArray.Create(LJOLog));
 

@@ -162,9 +162,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('channel_name', FChannelName);
-    LJO.AddPair('username', FUsername);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('channel_name', TJSONString.Create(FChannelName));
+    LJO.AddPair('username', TJSONString.Create(FUsername));
     LJO.AddPair('mode_props_card', TJSONBool.Create(FModePropsCard));
 
     ToJSONInternal(LJO);
@@ -195,9 +195,9 @@ var
 
       LJO := TJSONObject.Create;
       try
-        LJO.AddPair('channel', FChannelName);
-        LJO.AddPair('username', FUsername);
-        LJO.AddPair('text', LLog);
+        LJO.AddPair('channel', TJSONString.Create(FChannelName));
+        LJO.AddPair('username', TJSONString.Create(FUsername));
+        LJO.AddPair('text', TJSONString.Create(LLog));
 
         LLog := LJO.ToString.Replace(#$D#$A,'\n');
 
@@ -220,8 +220,8 @@ var
   begin
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('channel', FChannelName);
-      LJO.AddPair('username', FUsername);
+      LJO.AddPair('channel', TJSONString.Create(FChannelName));
+      LJO.AddPair('username', TJSONString.Create(FUsername));
 
       LAppend := TStringBuilder.Create;
       try
@@ -236,12 +236,12 @@ var
           LAppend.AppendLine;
         end;
 
-        LJO.AddPair('props', TJSONObject.Create(TJSONPair.Create('card', LAppend.ToString)))
+        LJO.AddPair('props', TJSONObject.Create(TJSONPair.Create('card', TJSONString.Create(LAppend.ToString))))
       finally
         LAppend.Free;
       end;
 
-      LJO.AddPair('text', LLog);
+      LJO.AddPair('text', TJSONString.Create(LLog));
 
       LLog := LJO.ToString.Replace(#$D#$A,'\n');
 

@@ -149,8 +149,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('database', FDataBase);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('database', TJSONString.Create(FDataBase));
 
     ToJSONInternal(LJO);
 

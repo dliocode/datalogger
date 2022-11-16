@@ -221,14 +221,14 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('log_dir', FLogDir);
-    LJO.AddPair('prefix_filename', FPrefixFileName);
-    LJO.AddPair('extension', FExtension);
+    LJO.AddPair('log_dir', TJSONString.Create(FLogDir));
+    LJO.AddPair('prefix_filename', TJSONString.Create(FPrefixFileName));
+    LJO.AddPair('extension', TJSONString.Create(FExtension));
     LJO.AddPair('max_file_size_in_kilo_byte', TJSONNumber.Create(FMaxFileSizeInKiloByte));
     LJO.AddPair('max_backup_file_count', TJSONNumber.Create(FMaxBackupFileCount));
     LJO.AddPair('compress', TJSONBool(FCompress));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
-    LJO.AddPair('format_datetime', FFormatDateTime);
+    LJO.AddPair('format_datetime', TJSONString.Create(FFormatDateTime));
 
     ToJSONInternal(LJO);
 

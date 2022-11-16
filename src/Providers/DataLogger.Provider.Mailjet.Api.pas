@@ -201,15 +201,15 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('basic_auth_username', FBasicAuthUsername);
-    LJO.AddPair('basic_auth_password', FBasicAuthPassword);
-    LJO.AddPair('custom_id', FCustomID);
-    LJO.AddPair('email_from', FEmailFrom);
-    LJO.AddPair('email_from_name', FEmailFromName);
-    LJO.AddPair('email_to', String.Join(',', FEmailTo));
-    LJO.AddPair('email_cc', String.Join(',', FEmailCc));
-    LJO.AddPair('email_bcc', String.Join(',', FEmailBcc));
-    LJO.AddPair('subject', FSubject);
+    LJO.AddPair('basic_auth_username', TJSONString.Create(FBasicAuthUsername));
+    LJO.AddPair('basic_auth_password', TJSONString.Create(FBasicAuthPassword));
+    LJO.AddPair('custom_id', TJSONString.Create(FCustomID));
+    LJO.AddPair('email_from', TJSONString.Create(FEmailFrom));
+    LJO.AddPair('email_from_name', TJSONString.Create(FEmailFromName));
+    LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
+    LJO.AddPair('email_cc', TJSONString.Create(String.Join(',', FEmailCc)));
+    LJO.AddPair('email_bcc', TJSONString.Create(String.Join(',', FEmailBcc)));
+    LJO.AddPair('subject', TJSONString.Create(FSubject));
 
     ToJSONInternal(LJO);
 
@@ -268,11 +268,11 @@ begin
         LJOMessage.AddPair('Bcc', LJAEmails);
       end;
 
-      LJOMessage.AddPair('Subject', FSubject);
-      LJOMessage.AddPair('HTMLPart', LLog);
+      LJOMessage.AddPair('Subject', TJSONString.Create(FSubject));
+      LJOMessage.AddPair('HTMLPart', TJSONString.Create(LLog));
 
       if FCustomID.Trim.IsEmpty then
-        LJOMessage.AddPair('CustomID', FCustomID);
+        LJOMessage.AddPair('CustomID', TJSONString.Create(FCustomID));
 
       LJO.AddPair('Messages', TJSONArray.Create.Add(LJOMessage));
 

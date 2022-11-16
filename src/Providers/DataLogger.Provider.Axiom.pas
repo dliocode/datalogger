@@ -149,8 +149,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_token', FHTTP.Token);
-    LJO.AddPair('dataset', FDataset);
+    LJO.AddPair('api_token', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('dataset', TJSONString.Create(FDataset));
 
     ToJSONInternal(LJO);
 
@@ -181,7 +181,7 @@ begin
     LJA := TJSONArray.Create;
     try
       LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-      LJO.AddPair('_time', LItem.TimestampISO8601);
+      LJO.AddPair('_time', TJSONString.Create(LItem.TimestampISO8601));
 
       LJA.Add(LJO);
 

@@ -169,9 +169,9 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('bot_token', FBotToken);
-    LJO.AddPair('chat_id', FChatId);
-    LJO.AddPair('parse_mode', GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode)));
+    LJO.AddPair('bot_token', TJSONString.Create(FBotToken));
+    LJO.AddPair('chat_id', TJSONString.Create(FChatId));
+    LJO.AddPair('parse_mode', TJSONString.Create(GetEnumName(TypeInfo(TTelegramParseMode), Integer(FParseMode))));
 
     ToJSONInternal(LJO);
 
@@ -269,9 +269,9 @@ begin
 
     LJO:= TJSONObject.Create;
     try
-      LJO.AddPair('chat_id', FChatId);
-      LJO.AddPair('text', LLog);
-      LJO.AddPair('parse_mode', FParseMode.ToString);
+      LJO.AddPair('chat_id', TJSONString.Create(FChatId));
+      LJO.AddPair('text', TJSONString.Create(LLog));
+      LJO.AddPair('parse_mode', TJSONString.Create(FParseMode.ToString));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

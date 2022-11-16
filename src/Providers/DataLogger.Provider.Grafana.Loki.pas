@@ -165,10 +165,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('basic_auth_username', FBasicAuthUsername);
-    LJO.AddPair('basic_auth_password', FBasicAuthPassword);
-    LJO.AddPair('service_name', FServiceName);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('basic_auth_username', TJSONString.Create(FBasicAuthUsername));
+    LJO.AddPair('basic_auth_password', TJSONString.Create(FBasicAuthPassword));
+    LJO.AddPair('service_name', TJSONString.Create(FServiceName));
 
     ToJSONInternal(LJO);
 
@@ -218,8 +218,8 @@ begin
       LJOData := TJSONObject.Create;
       LJOData.AddPair('stream',
         TJSONObject.Create
-        .AddPair('service', FServiceName)
-        .AddPair('type', LItem.LevelString)
+        .AddPair('service', TJSONString.Create(FServiceName))
+        .AddPair('type', TJSONString.Create(LItem.LevelString))
         );
 
       LJOData.AddPair('values', TJSONArray.Create.Add(TJSONArray.Create.Add(LDateUNIX).Add(LLog)));

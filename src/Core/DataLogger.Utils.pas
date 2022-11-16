@@ -349,7 +349,7 @@ begin
     else
       LAppPathFull := ParamStr(0);
 
-{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
+{$IF RTLVersion > 34} // 34 = Delphi 10.4 Sydney
     Result := TFile.GetSize(LAppPathFull);
 {$ELSE}
     Result := GetSize(LAppPathFull);

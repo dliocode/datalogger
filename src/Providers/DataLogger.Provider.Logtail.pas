@@ -140,7 +140,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('source_token', FHTTP.Token);
+    LJO.AddPair('source_token', TJSONString.Create(FHTTP.Token));
 
     ToJSONInternal(LJO);
 
@@ -170,9 +170,9 @@ begin
     LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     try
       if LItem.Message.Trim.IsEmpty then
-        LJO.AddPair('message', LItem.MessageJSON)
+        LJO.AddPair('message', TJSONString.Create(LItem.MessageJSON))
       else
-        LJO.AddPair('message', LItem.Message);
+        LJO.AddPair('message', TJSONString.Create(LItem.Message));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

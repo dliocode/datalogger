@@ -148,8 +148,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
-    LJO.AddPair('index', FIndex);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
+    LJO.AddPair('index', TJSONString.Create(FIndex));
 
     ToJSONInternal(LJO);
 

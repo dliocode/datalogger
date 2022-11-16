@@ -114,6 +114,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory) | 
  | [Mezmo](https://www.mezmo.com/) | DataLogger.Provider.Mezmo | [Mezmo](https://github.com/dliocode/datalogger/tree/main/Samples/Mezmo) | 
  | [MongoDB](https://www.mongodb.com) | DataLogger.Provider.MongoDB.Cloud | [MongoDB](https://github.com/dliocode/datalogger/tree/main/Samples/MongoDB) |  
+ | [Ntfy](https://ntfy.sh) | DataLogger.Provider.Ntfy | [Ntfy](https://github.com/dliocode/datalogger/tree/main/Samples/Ntfy) |   
  | [NewRelic](https://newrelic.com) | DataLogger.Provider.NewRelic | [NewRelic](https://github.com/dliocode/datalogger/tree/main/Samples/NewRelic) |  
  | Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification) | 
  | [Novu](https://novu.co/) | DataLogger.Provider.Novu | [Novu](https://github.com/dliocode/datalogger/tree/main/Samples/Novu) |   

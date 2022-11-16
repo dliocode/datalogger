@@ -172,10 +172,10 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('application_key', FApplicationKey);
-    LJO.AddPair('source', FSource);
-    LJO.AddPair('service', FService);
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+    LJO.AddPair('application_key', TJSONString.Create(FApplicationKey));
+    LJO.AddPair('source', TJSONString.Create(FSource));
+    LJO.AddPair('service', TJSONString.Create(FService));
 
     ToJSONInternal(LJO);
 
@@ -206,11 +206,11 @@ begin
     LJA := TJSONArray.Create;
     try
       LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-      LJO.AddPair('ddsource', FSource);
-      LJO.AddPair('ddtags', LItem.Tag);
-      LJO.AddPair('host', LItem.ComputerName);
-      LJO.AddPair('service', FService);
-      LJO.AddPair('status', LItem.LevelString.ToUpper);
+      LJO.AddPair('ddsource', TJSONString.Create(FSource));
+      LJO.AddPair('ddtags', TJSONString.Create(LItem.Tag));
+      LJO.AddPair('host', TJSONString.Create(LItem.ComputerName));
+      LJO.AddPair('service', TJSONString.Create(FService));
+      LJO.AddPair('status', TJSONString.Create(LItem.LevelString.ToUpper));
 
       LJA.Add(LJO);
 

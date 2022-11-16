@@ -130,7 +130,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('url', FHTTP.URL);
+    LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
 
     ToJSONInternal(LJO);
 
@@ -162,7 +162,7 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('text', LLog);
+      LJO.AddPair('text', TJSONString.Create(LLog));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
       LLogItemREST.LogItem := LItem;

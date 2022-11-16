@@ -34,9 +34,11 @@ unit DataLogger.Provider.OutputDebugString;
 
 interface
 
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
   FMX.Types,
 {$ELSE}
   Winapi.Windows,
@@ -52,7 +54,11 @@ type
     function ToJSON(const AFormat: Boolean = False): string; override;
   end;
 
+{$ENDIF}
+
 implementation
+
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
 { TProviderOutputDebugString }
 
@@ -117,7 +123,7 @@ begin
 
     while True do
       try
-{$IF DEFINED(DATALOGGER_FMX)}
+{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
         FMX.Types.Log.d(LLog);
 {$ELSE}
         OutputDebugString(PChar(LLog));
@@ -153,5 +159,7 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderOutputDebugString);
+
+{$ENDIF}
 
 end.

@@ -183,11 +183,11 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('app_service_id', FAppServiceID);
-    LJO.AddPair('api_key', FApiKey);
-    LJO.AddPair('data_source', FDataSource);
-    LJO.AddPair('data_base', FDataBase);
-    LJO.AddPair('collection', FCollection);
+    LJO.AddPair('app_service_id', TJSONString.Create(FAppServiceID));
+    LJO.AddPair('api_key', TJSONString.Create(FApiKey));
+    LJO.AddPair('data_source', TJSONString.Create(FDataSource));
+    LJO.AddPair('data_base', TJSONString.Create(FDataBase));
+    LJO.AddPair('collection', TJSONString.Create(FCollection));
 
     ToJSONInternal(LJO);
 
@@ -216,9 +216,9 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('dataSource', FDataSource);
-      LJO.AddPair('database', FDataBase);
-      LJO.AddPair('collection', FCollection);
+      LJO.AddPair('dataSource', TJSONString.Create(FDataSource));
+      LJO.AddPair('database', TJSONString.Create(FDataBase));
+      LJO.AddPair('collection', TJSONString.Create(FCollection));
       LJO.AddPair('document', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
       LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
