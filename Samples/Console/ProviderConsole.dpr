@@ -13,7 +13,7 @@ begin
   Logger.AddProvider(
     TProviderConsole.Create
     .UseColorInConsole(True)
-    // .UseColorInConsoleByLogFormat(True) .UseColorInConsoleByLogFormat(False)
+    // .UseColorInConsoleByLogFormat(True)
 
     // .ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta)
     // .ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan)

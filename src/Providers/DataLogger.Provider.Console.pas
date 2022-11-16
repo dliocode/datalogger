@@ -256,7 +256,7 @@ begin
 
     while True do
       try
-        if FUseColorInConsole then
+        if FUseColorInConsole and not FUseColorInConsoleByLogFormat then
         begin
           WriteColor(LItem.Level, LLog);
           Break;
