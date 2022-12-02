@@ -83,7 +83,7 @@ type
     procedure CloseProvider;
     function GetProviders(const AUseLock: Boolean = True): TArray<TDataLoggerProviderBase>;
     procedure Start;
-    procedure NotifyEvent;
+    procedure NotifyEvent(const AUseLock: Boolean = True);
     procedure Lock;
     procedure UnLock;
 
@@ -279,12 +279,12 @@ begin
   begin
     FThreadExecute.Terminate;
     FThreadTerminated := True;
-
-    FEvent.SetEvent;
+    NotifyEvent;
     FThreadExecute.WaitFor;
-
     FThreadExecute.Free;
-  end;
+  end
+  else
+    NotifyEvent;
 
   CloseProvider;
 
@@ -1169,7 +1169,7 @@ begin
 
     FLoggerItems.Add(LLogItem);
 
-    NotifyEvent;
+    NotifyEvent(False);
   finally
     UnLock;
   end;
@@ -1208,12 +1208,7 @@ begin
   if LCount = 0 then
     Exit;
 
-  Lock;
-  try
-    FEvent.SetEvent;
-  finally
-    UnLock;
-  end;
+  NotifyEvent;
 
   while LCount > 0 do
   begin
@@ -1234,21 +1229,15 @@ begin
 end;
 
 function TDataLogger.GetProviders(const AUseLock: Boolean = True): TArray<TDataLoggerProviderBase>;
-var
-  LProviders: TArray<TDataLoggerProviderBase>;
 begin
-  Result := [];
-
   if AUseLock then
     Lock;
   try
-    LProviders := FProviders.ToArray;
+    Result := FProviders.ToArray;
   finally
     if AUseLock then
       UnLock;
   end;
-
-  Result := LProviders;
 end;
 
 procedure TDataLogger.Start;
@@ -1283,31 +1272,38 @@ begin
   FThreadExecute.Start;
 end;
 
-procedure TDataLogger.NotifyEvent;
+procedure TDataLogger.NotifyEvent(const AUseLock: Boolean = True);
 var
-  LCache: TArray<TLoggerItem>;
   LProviders: TArray<TDataLoggerProviderBase>;
+  LCache: TArray<TLoggerItem>;
   I: Integer;
 begin
-  if FLiveMode then
-  begin
-    LCache := ExtractCache(False);
-    if Length(LCache) = 0 then
-      Exit;
+  if AUseLock then
+    Lock;
+  try
+    if FLiveMode then
+    begin
+      LProviders := GetProviders(False);
+      if Length(LProviders) = 0 then
+        Exit;
 
-    LProviders := GetProviders(False);
-    if Length(LProviders) = 0 then
-      Exit;;
+      LCache := ExtractCache(False);
+      if Length(LCache) = 0 then
+        Exit;
 
-    for I := Low(LProviders) to High(LProviders) do
-      TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
-  end
-  else
-  begin
-    if not Assigned(FThreadExecute) then
-      Start;
+      for I := Low(LProviders) to High(LProviders) do
+        TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
+    end
+    else
+    begin
+      if not Assigned(FThreadExecute) then
+        Start;
 
-    FEvent.SetEvent;
+      FEvent.SetEvent;
+    end;
+  finally
+    if AUseLock then
+      UnLock;
   end;
 end;
 

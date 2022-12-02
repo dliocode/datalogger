@@ -121,7 +121,7 @@ type
     function CountLogInCache: Int64;
 
     function AddCache(const AValues: TArray<TLoggerItem>): T;
-    function NotifyEvent: T;
+    function NotifyEvent(const AUseLock: Boolean = True): T;
 
     constructor Create;
     procedure AfterConstruction; override;
@@ -173,10 +173,12 @@ begin
   begin
     FThreadExecute.Terminate;
     FThreadTerminated := True;
-    FEvent.SetEvent;
+    NotifyEvent;
     FThreadExecute.WaitFor;
     FThreadExecute.Free;
-  end;
+  end
+  else
+    NotifyEvent;
 
   Lock;
   try
@@ -389,7 +391,7 @@ begin
         Lock;
       try
         FListLoggerBase.AddRange(LCurrentValues);
-        FEvent.SetEvent;
+        NotifyEvent(False);
       finally
         if AUseLock then
           UnLock;
@@ -588,35 +590,41 @@ begin
       end;
     finally
       if not FUseTransaction or not Assigned(LTransaction) then
-        NotifyEvent;
+        NotifyEvent(False);
     end;
   finally
     UnLock;
   end;
 end;
 
-function TDataLoggerProvider<T>.NotifyEvent: T;
+function TDataLoggerProvider<T>.NotifyEvent(const AUseLock: Boolean = True): T;
 var
   LCache: TArray<TLoggerItem>;
 begin
   Result := FOwner;
 
-  if FLiveMode then
-  begin
-    LCache := ExtractCache(False);
-    if Length(LCache) = 0 then
-      Exit;
+  if AUseLock then
+    Lock;
+  try
+    if FLiveMode then
+    begin
+      LCache := ExtractCache(False);
+      if Length(LCache) = 0 then
+        Exit;
 
-    Save(LCache);
-  end
-  else
-  begin
-    if not Assigned(FThreadExecute) then
-      Start;
+      Save(LCache);
+    end
+    else
+    begin
+      if not Assigned(FThreadExecute) then
+        Start;
 
-    FEvent.SetEvent;
+      FEvent.SetEvent;
+    end;
+  finally
+    if AUseLock then
+      UnLock;
   end;
-
 end;
 
 procedure TDataLoggerProvider<T>.SetJSONInternal(const AJO: TJSONObject);
