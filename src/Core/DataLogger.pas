@@ -218,7 +218,7 @@ var
 function Logger: TDataLogger;
 begin
   if not Assigned(FLoggerDefault) then
-    FLoggerDefault := TDataLogger.Create;
+    FLoggerDefault := TDataLogger.Builder;
 
   Result := FLoggerDefault;
 end;
@@ -262,7 +262,7 @@ begin
   SetName('');
   SetTagNameIsRequired(False);
   SetGenerateLogWithoutProvider(True);
-  SetLiveMode(IsLibrary or ModuleIsLib);
+  FLiveMode := IsLibrary or ModuleIsLib;
 
   FSequence := 0;
   FHasProvider := False;
@@ -284,7 +284,8 @@ begin
     FThreadExecute.Free;
   end
   else
-    NotifyEvent;
+    if FLiveMode then
+      NotifyEvent;
 
   CloseProvider;
 

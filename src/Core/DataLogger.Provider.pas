@@ -178,7 +178,8 @@ begin
     FThreadExecute.Free;
   end
   else
-    NotifyEvent;
+    if FLiveMode then
+      NotifyEvent;
 
   Lock;
   try
