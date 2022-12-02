@@ -41,13 +41,20 @@ uses
 type
   TLoggerJSON = DataLogger.Utils.TLoggerJSON;
 
-  TDataLoggerProvider<T: class> = class
+  TDataLoggerProviderBase = class
+  private
+  public
+    procedure LoadFromJSON(const AJSON: string); virtual; abstract;
+    function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
+  end;
+
+  TDataLoggerProvider<T: class> = class(TDataLoggerProviderBase)
   private
     FOwner: T;
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
-    FExecute: TThread;
-    FTerminated: Boolean;
+    FThreadExecute: TThread;
+    FThreadTerminated: Boolean;
 
     FListLoggerBase: TDataLoggerListItem;
     FListTransaction: TDataLoggerListTransaction;
@@ -64,7 +71,9 @@ type
     FInitialMessage: string;
     FFinalMessage: string;
 
-    function ExtractCache: TArray<TLoggerItem>;
+    FLiveMode: Boolean;
+
+    function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
     procedure Start;
   protected
     FLogFormat: string;
@@ -97,6 +106,7 @@ type
     function SetInitialMessage(const AMessage: string): T;
     function SetFinalMessage(const AMessage: string): T;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
+    function SetLiveMode(const ALiveMode: Boolean): T;
 
     function UseTransaction(const AUseTransaction: Boolean; const AModeMultThread: Boolean = True): T;
     function TransactionAutoCommit(const ALevels: TLoggerLevels; const ATypeAutoCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock): T;
@@ -109,9 +119,6 @@ type
 
     function Clear: T;
     function CountLogInCache: Int64;
-
-    procedure LoadFromJSON(const AJSON: string); virtual; abstract;
-    function ToJSON(const AFormat: Boolean = False): string; virtual; abstract;
 
     function AddCache(const AValues: TArray<TLoggerItem>): T;
     function NotifyEvent: T;
@@ -151,21 +158,25 @@ begin
   SetInitialMessage('');
   SetFinalMessage('');
   SetIgnoreLogFormat(False);
+  SetLiveMode(IsLibrary or ModuleIsLib);
 
   UseTransaction(False);
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
 
-  FTerminated := False;
-  Start;
+  FThreadExecute := nil;
+  FThreadTerminated := False;
 end;
 
 procedure TDataLoggerProvider<T>.BeforeDestruction;
 begin
-  FExecute.Terminate;
-  FTerminated := True;
-  FEvent.SetEvent;
-  FExecute.WaitFor;
-  FExecute.Free;
+  if Assigned(FThreadExecute) then
+  begin
+    FThreadExecute.Terminate;
+    FThreadTerminated := True;
+    FEvent.SetEvent;
+    FThreadExecute.WaitFor;
+    FThreadExecute.Free;
+  end;
 
   Lock;
   try
@@ -258,6 +269,16 @@ begin
   FIgnoreLogFormatSeparator := ASeparator;
   FIgnoreLogFormatIncludeKey := AIncludeKey;
   FIgnoreLogFormatIncludeKeySeparator := AIncludeKeySeparator;
+end;
+
+function TDataLoggerProvider<T>.SetLiveMode(const ALiveMode: Boolean): T;
+begin
+  Result := FOwner;
+
+  if (IsLibrary or ModuleIsLib) then
+    FLiveMode := True
+  else
+    FLiveMode := ALiveMode;
 end;
 
 function TDataLoggerProvider<T>.UseTransaction(const AUseTransaction: Boolean; const AModeMultThread: Boolean = True): T;
@@ -567,7 +588,7 @@ begin
       end;
     finally
       if not FUseTransaction or not Assigned(LTransaction) then
-        FEvent.SetEvent;
+        NotifyEvent;
     end;
   finally
     UnLock;
@@ -575,15 +596,27 @@ begin
 end;
 
 function TDataLoggerProvider<T>.NotifyEvent: T;
+var
+  LCache: TArray<TLoggerItem>;
 begin
   Result := FOwner;
 
-  Lock;
-  try
+  if FLiveMode then
+  begin
+    LCache := ExtractCache(False);
+    if Length(LCache) = 0 then
+      Exit;
+
+    Save(LCache);
+  end
+  else
+  begin
+    if not Assigned(FThreadExecute) then
+      Start;
+
     FEvent.SetEvent;
-  finally
-    UnLock;
   end;
+
 end;
 
 procedure TDataLoggerProvider<T>.SetJSONInternal(const AJO: TJSONObject);
@@ -736,31 +769,33 @@ end;
 
 function TDataLoggerProvider<T>.Terminated: Boolean;
 begin
-  Result := FTerminated;
+  Result := FThreadTerminated;
 end;
 
-function TDataLoggerProvider<T>.ExtractCache: TArray<TLoggerItem>;
+function TDataLoggerProvider<T>.ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
 begin
-  Lock;
+  if AUseLock then
+    Lock;
   try
     Result := FListLoggerBase.ToArray;
 
     FListLoggerBase.Clear;
     FListLoggerBase.TrimExcess;
   finally
-    UnLock;
+    if AUseLock then
+      UnLock;
   end;
 end;
 
 procedure TDataLoggerProvider<T>.Start;
 begin
-  FExecute :=
+  FThreadExecute :=
     TThread.CreateAnonymousThread(
     procedure
     var
       LCache: TArray<TLoggerItem>;
     begin
-      while not FTerminated do
+      while not FThreadTerminated do
       begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
@@ -773,8 +808,8 @@ begin
       end;
     end);
 
-  FExecute.FreeOnTerminate := False;
-  FExecute.Start;
+  FThreadExecute.FreeOnTerminate := False;
+  FThreadExecute.Start;
 end;
 
 end.

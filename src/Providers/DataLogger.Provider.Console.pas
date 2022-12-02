@@ -228,7 +228,7 @@ var
   LTagsKeys: TArray<string>;
   LTagsValues: TArray<string>;
   LTagsLevel: TArray<TLoggerLevel>;
-  LLevel: TLoggerLevel;  
+  LLevel: TLoggerLevel;
   LTag: string;
   LTags: TDictionary<string, string>;
   LLogMessage: string;
@@ -264,7 +264,7 @@ begin
 
         if FUseColorInConsoleByLogFormat then
         begin
-          LTagsKeys := [];        
+          LTagsKeys := [];
           LTagsValues := [];
           LTagsLevel := [];
 
@@ -282,18 +282,25 @@ begin
               LTagsKeys := LTagsKeys + LTags.Keys.ToArray;
               LTagsValues := LTagsValues + LTags.Values.ToArray;
 
-              for I := Low(LTagsKeys) to High(LTagsKeys) do
+              for I := Low(LTags.Keys.ToArray) to High(LTags.Keys.ToArray) do
+              begin
                 if LLevel = TLoggerLevel.All then
                   LTagsLevel := LTagsLevel + [LItem.Level]
                 else
                   LTagsLevel := LTagsLevel + [LLevel];
+              end;
             finally
               LTags.Free;
             end;
           end;
 
           if Length(LTagsKeys) = 0 then
-            Write(LLog)
+          begin
+            if FUseColorInConsole then
+              WriteColor(LItem.Level, LLog, False)
+            else
+              Write(LLog);
+          end
           else
           begin
             LLogMessage := LLog;
@@ -322,7 +329,11 @@ begin
                       LLogMessage := LLogMessage + '${' + LTagsKeys[I] + '}';
                   end;
 
-                Write(LLogFormatBase[0]);
+                if FUseColorInConsole then
+                  WriteColor(LItem.Level, LLogFormatBase[0], False)
+                else
+                  Write(LLogFormatBase[0]);
+
                 WriteColor(LTagsLevel[I], LTagsValues[I], False);
               end;
             until not LLogMessage.Contains(C_TAG);
@@ -331,7 +342,10 @@ begin
           if LLogMessage.Trim.IsEmpty then
             Writeln
           else
-            Writeln(LLogMessage);
+            if FUseColorInConsole then
+              WriteColor(LItem.Level, LLogMessage)
+            else
+              Writeln(LLogMessage);
 
           Break;
         end;

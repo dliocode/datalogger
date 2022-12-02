@@ -51,7 +51,7 @@ begin
 
   Logger.AddProvider(
     TProviderMattermostHooks.Create
-    .URL('http://{your-mattermost-site}')
+    .URL('http://{your-mattermost-site}/hooks/{CODE}')
     .ChannelName('aaaaaaa000000')
     .Username('my_username')
     .ModePropsCard(False)
