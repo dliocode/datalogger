@@ -189,9 +189,9 @@ type
     function SetFinalMessage(const AMessage: string): TDataLogger;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
+    function SetLiveMode(const ALiveMode: Boolean): TDataLogger;
     function SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
     function SetGenerateLogWithoutProvider(const AGenerateLogWithoutProvider: Boolean): TDataLogger;
-    function SetLiveMode(const ALiveMode: Boolean): TDataLogger;
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
@@ -650,11 +650,14 @@ var
 begin
   Result := Self;
 
+  LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
-
-  LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).StartTransaction(LID);
@@ -668,11 +671,14 @@ var
 begin
   Result := Self;
 
+  LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
-
-  LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).CommitTransaction(LID);
@@ -686,11 +692,14 @@ var
 begin
   Result := Self;
 
+  LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
-
-  LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).RollbackTransaction(LID);
@@ -699,14 +708,17 @@ end;
 function TDataLogger.InTransaction: Boolean;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
-  LProvider: TDataLoggerProviderBase;
   LID: string;
+  LProvider: TDataLoggerProviderBase;
 begin
   Result := False;
 
-  LID := TThread.Current.ThreadID.ToString;
-
   LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
+  LID := TThread.Current.ThreadID.ToString;
 
   for LProvider in LProviders do
   begin
@@ -725,6 +737,9 @@ begin
 
   LProviders := GetProviders;
 
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat);
 end;
@@ -737,6 +752,9 @@ begin
   Result := Self;
 
   LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
@@ -802,6 +820,9 @@ begin
 
   LProviders := GetProviders;
 
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogException(AException);
 end;
@@ -814,6 +835,9 @@ begin
   Result := Self;
 
   LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetMaxRetries(AMaxRetries);
@@ -828,6 +852,9 @@ begin
 
   LProviders := GetProviders;
 
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetInitialMessage(AMessage);
 end;
@@ -841,6 +868,9 @@ begin
 
   LProviders := GetProviders;
 
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFinalMessage(AMessage);
 end;
@@ -853,6 +883,9 @@ begin
   Result := Self;
 
   LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetIgnoreLogFormat(AIgnoreLogFormat, ASeparator, AIncludeKey, AIncludeKeySeparator);
@@ -868,6 +901,32 @@ begin
   finally
     UnLock;
   end;
+end;
+
+function TDataLogger.SetLiveMode(const ALiveMode: Boolean): TDataLogger;
+var
+  LProviders: TArray<TDataLoggerProviderBase>;
+  I: Integer;
+begin
+  Result := Self;
+
+  LProviders := GetProviders;
+
+  if Length(LProviders) = 0 then
+    raise EDataLoggerException.Create('Not defined Provider!');
+
+  Lock;
+  try
+    if (IsLibrary or ModuleIsLib) then
+      FLiveMode := True
+    else
+      FLiveMode := ALiveMode;
+  finally
+    UnLock;
+  end;
+
+  for I := Low(LProviders) to High(LProviders) do
+    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLiveMode(ALiveMode);
 end;
 
 function TDataLogger.SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
@@ -889,29 +948,6 @@ begin
   Lock;
   try
     FGenerateLogWithoutProvider := AGenerateLogWithoutProvider;
-  finally
-    UnLock;
-  end;
-end;
-
-function TDataLogger.SetLiveMode(const ALiveMode: Boolean): TDataLogger;
-var
-  LProviders: TArray<TDataLoggerProviderBase>;
-  I: Integer;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    if (IsLibrary or ModuleIsLib) then
-      FLiveMode := True
-    else
-      FLiveMode := ALiveMode;
-
-    LProviders := GetProviders(False);
-
-    for I := Low(LProviders) to High(LProviders) do
-      TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLiveMode(ALiveMode);
   finally
     UnLock;
   end;
@@ -1106,7 +1142,7 @@ begin
 
   if FTagNameIsRequired and not AIsSlinebreak then
     if ATagName.Trim.IsEmpty then
-      raise EDataLoggerException.CreateFmt('DataLogger -> %s -> Tag name is required!', [ALevel.ToString]);
+      raise EDataLoggerException.Create('Tag name is required!');
 
   Lock;
   try
