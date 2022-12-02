@@ -62,6 +62,7 @@ Adicione as seguintes pastas ao seu projeto, em *Project > Options > Delphi Comp
   * [FinalMessage](#finalmessage)
   * [IgnoreLogFormat](#ignorelogformat)
   * [Name](#name)
+  * [LiveMode](#livemode)
   * [Transaction](#transaction)
 
 ## Como usar
@@ -789,6 +790,38 @@ begin
 
   // Definindo o name
   Logger.SetName('MyLogger');
+
+  // Gerando o log
+  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  
+  // Output: 
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR  
+
+  Readln;
+end.
+```
+
+## LiveMode
+
+É possível salvar os logs em tempo real, de forma que a próxima instrução do seu código só vai continuar depois que o log for salvo!
+
+Atualmente os logs são registrados em memória e depois ele é salvo sem travar a aplicação.
+
+SetLiveMode valor padrão = ```false```
+
+```delphi
+uses
+  DataLogger,
+  DataLogger.Provider.Console;
+
+begin
+  Logger.AddProvider(TProviderConsole.Create);
+
+  // Definindo o formato do log
+  Logger.SetLogFormat('${name} ${timestamp} [${level}] ${message}');
+
+  // Definindo o LiveMode
+  Logger.SetLiveMode(True);
 
   // Gerando o log
   Logger.Error('Minha mensagem no Log do tipo ERROR');
