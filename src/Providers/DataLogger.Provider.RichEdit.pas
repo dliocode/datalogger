@@ -38,40 +38,59 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-  Vcl.ComCtrls, Vcl.Graphics, Winapi.Windows, Winapi.Messages,
+  Winapi.Windows, Winapi.Messages,
+  Vcl.ComCtrls, Vcl.Graphics, Winapi.RichEdit,
   System.SysUtils, System.Classes, System.JSON, System.TypInfo, System.UITypes;
 
 type
   TColor = System.UITypes.TColor;
   TColorRec = System.UITypes.TColorRec;
+  TFontStyle = System.UITypes.TFontStyle;
+
 {$SCOPEDENUMS ON}
   TRichEditModeInsert = (tmFirst, tmLast);
 {$SCOPEDENUMS OFF}
 
   TProviderRichEdit = class(TDataLoggerProvider<TProviderRichEdit>)
+  strict private
+  type
+    TAttributesRichEdit = record
+      BackgroundColor: TColor;
+      ForegroundColor: TColor;
+      FontName: string;
+      FontSize: Integer;
+      FontStyle: TFontStyles;
+    end;
   private
     FRichEdit: TCustomRichEdit;
     FUseColorInRichEdit: Boolean;
-    FColorTrace: TColor;
-    FColorDebug: TColor;
-    FColorInfo: TColor;
-    FColorSuccess: TColor;
-    FColorWarn: TColor;
-    FColorError: TColor;
-    FColorFatal: TColor;
-    FColorCustom: TColor;
+
+    FAttributesTrace: TAttributesRichEdit;
+    FAttributesDebug: TAttributesRichEdit;
+    FAttributesInfo: TAttributesRichEdit;
+    FAttributesSuccess: TAttributesRichEdit;
+    FAttributesWarn: TAttributesRichEdit;
+    FAttributesError: TAttributesRichEdit;
+    FAttributesFatal: TAttributesRichEdit;
+    FAttributesCustom: TAttributesRichEdit;
+
     FMaxLogLines: Integer;
     FModeInsert: TRichEditModeInsert;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
+
+    function AttributesLevel(const ALevel: TLoggerLevel): TAttributesRichEdit;
+    procedure SetColor(const ALevel: TLoggerLevel);
+    procedure SetFont(const ALevel: TLoggerLevel);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function RichEdit(const AValue: TCustomRichEdit): TProviderRichEdit;
     function UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
-    function ChangeColor(const ALevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
-    function MaxLogLines(const AValue: Integer): TProviderRichEdit;
+    function ChangeColor(const ALevel: TLoggerLevel; const ABackgroundColor: TColor; const AForegroundColor: TColor): TProviderRichEdit;
+    function ChangeFont(const ALevel: TLoggerLevel; const AFontName: TFontName; const AFontSize: Integer; const AFontStyle: TFontStyles): TProviderRichEdit;
     function ModeInsert(const AValue: TRichEditModeInsert): TProviderRichEdit;
+    function MaxLogLines(const AValue: Integer): TProviderRichEdit;
     function CleanOnStart(const AValue: Boolean): TProviderRichEdit;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -86,9 +105,6 @@ implementation
 
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
-type
-  THackCustom = class(TCustomRichEdit);
-
   { TProviderRichEdit }
 
 constructor TProviderRichEdit.Create;
@@ -98,17 +114,26 @@ begin
   RichEdit(nil);
   UseColorInRichEdit(True);
 
-  ChangeColor(TLoggerLevel.Trace, $00A100AD);
-  ChangeColor(TLoggerLevel.Debug, $00AEB600);
-  ChangeColor(TLoggerLevel.Info, $000000);
-  ChangeColor(TLoggerLevel.Success, $0009AC00);
-  ChangeColor(TLoggerLevel.Warn, $0000A4D8);
-  ChangeColor(TLoggerLevel.Error, $001D2AAA);
-  ChangeColor(TLoggerLevel.Fatal, $001C0FD1);
-  ChangeColor(TLoggerLevel.Custom, $000000);
+  ChangeColor(TLoggerLevel.Trace, $FFFFFF, $00A100AD);
+  ChangeColor(TLoggerLevel.Debug, $FFFFFF, $00AEB600);
+  ChangeColor(TLoggerLevel.Info, $FFFFFF, $000000);
+  ChangeColor(TLoggerLevel.Success, $FFFFFF, $0009AC00);
+  ChangeColor(TLoggerLevel.Warn, $FFFFFF, $0000A4D8);
+  ChangeColor(TLoggerLevel.Error, $FFFFFF, $001D2AAA);
+  ChangeColor(TLoggerLevel.Fatal, $FFFFFF, $001C0FD1);
+  ChangeColor(TLoggerLevel.Custom, $FFFFFF, $000000);
 
-  MaxLogLines(0);
+  ChangeFont(TLoggerLevel.Trace, '', 0, []);
+  ChangeFont(TLoggerLevel.Debug, '', 0, []);
+  ChangeFont(TLoggerLevel.Info, '', 0, []);
+  ChangeFont(TLoggerLevel.Success, '', 0, []);
+  ChangeFont(TLoggerLevel.Warn, '', 0, []);
+  ChangeFont(TLoggerLevel.Error, '', 0, []);
+  ChangeFont(TLoggerLevel.Fatal, '', 0, []);
+  ChangeFont(TLoggerLevel.Custom, '', 0, []);
+
   ModeInsert(TRichEditModeInsert.tmLast);
+  MaxLogLines(0);
   CleanOnStart(False);
   FCleanOnRun := False;
 end;
@@ -125,34 +150,140 @@ begin
   FUseColorInRichEdit := AValue;
 end;
 
-function TProviderRichEdit.ChangeColor(const ALevel: TLoggerLevel; const AColor: TColor): TProviderRichEdit;
+function TProviderRichEdit.ChangeColor(const ALevel: TLoggerLevel; const ABackgroundColor: TColor; const AForegroundColor: TColor): TProviderRichEdit;
+var
+  LLogLevel: TLoggerLevel;
+  LAttributes: TAttributesRichEdit;
 begin
   Result := Self;
 
   case ALevel of
     TLoggerLevel.Trace:
-      FColorTrace := AColor;
+      begin
+        FAttributesTrace.BackgroundColor := ABackgroundColor;
+        FAttributesTrace.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Debug:
-      FColorDebug := AColor;
+      begin
+        FAttributesDebug.BackgroundColor := ABackgroundColor;
+        FAttributesDebug.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Info:
-      FColorInfo := AColor;
+      begin
+        FAttributesInfo.BackgroundColor := ABackgroundColor;
+        FAttributesInfo.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Success:
-      FColorSuccess := AColor;
+      begin
+        FAttributesSuccess.BackgroundColor := ABackgroundColor;
+        FAttributesSuccess.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Warn:
-      FColorWarn := AColor;
+      begin
+        FAttributesWarn.BackgroundColor := ABackgroundColor;
+        FAttributesWarn.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Error:
-      FColorError := AColor;
+      begin
+        FAttributesError.BackgroundColor := ABackgroundColor;
+        FAttributesError.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Fatal:
-      FColorFatal := AColor;
+      begin
+        FAttributesFatal.BackgroundColor := ABackgroundColor;
+        FAttributesFatal.ForegroundColor := AForegroundColor;
+      end;
 
     TLoggerLevel.Custom:
-      FColorCustom := AColor;
+      begin
+        FAttributesCustom.BackgroundColor := ABackgroundColor;
+        FAttributesCustom.ForegroundColor := AForegroundColor;
+      end;
+  else
+    for LLogLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
+    begin
+      if LLogLevel = TLoggerLevel.All then
+        Continue;
+
+      LAttributes := AttributesLevel(LLogLevel);
+
+      if ABackgroundColor <> TColorRec.SysNone then
+        LAttributes.BackgroundColor := ABackgroundColor;
+
+      if AForegroundColor <> TColorRec.SysNone then
+        LAttributes.ForegroundColor := AForegroundColor;
+
+      ChangeColor(LLogLevel, LAttributes.BackgroundColor, LAttributes.ForegroundColor);
+    end;
+  end;
+end;
+
+function TProviderRichEdit.ChangeFont(const ALevel: TLoggerLevel; const AFontName: TFontName; const AFontSize: Integer; const AFontStyle: TFontStyles): TProviderRichEdit;
+begin
+  Result := Self;
+
+  case ALevel of
+    TLoggerLevel.Trace:
+      begin
+        FAttributesTrace.FontName := AFontName;
+        FAttributesTrace.FontSize := AFontSize;
+        FAttributesTrace.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Debug:
+      begin
+        FAttributesDebug.FontName := AFontName;
+        FAttributesDebug.FontSize := AFontSize;
+        FAttributesDebug.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Info:
+      begin
+        FAttributesInfo.FontName := AFontName;
+        FAttributesInfo.FontSize := AFontSize;
+        FAttributesInfo.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Success:
+      begin
+        FAttributesSuccess.FontName := AFontName;
+        FAttributesSuccess.FontSize := AFontSize;
+        FAttributesSuccess.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Warn:
+      begin
+        FAttributesWarn.FontName := AFontName;
+        FAttributesWarn.FontSize := AFontSize;
+        FAttributesWarn.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Error:
+      begin
+        FAttributesError.FontName := AFontName;
+        FAttributesError.FontSize := AFontSize;
+        FAttributesError.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Fatal:
+      begin
+        FAttributesFatal.FontName := AFontName;
+        FAttributesFatal.FontSize := AFontSize;
+        FAttributesFatal.FontStyle := AFontStyle;
+      end;
+
+    TLoggerLevel.Custom:
+      begin
+        FAttributesCustom.FontName := AFontName;
+        FAttributesCustom.FontSize := AFontSize;
+        FAttributesCustom.FontStyle := AFontStyle;
+      end;
   end;
 end;
 
@@ -194,14 +325,39 @@ begin
 
   try
     UseColorInRichEdit(LJO.GetValue<Boolean>('use_color_in_richedit', FUseColorInRichEdit));
-    ChangeColor(TLoggerLevel.Trace, StringToColor(LJO.GetValue<string>('change_color_trace', ColorToString(FColorTrace))));
-    ChangeColor(TLoggerLevel.Debug, StringToColor(LJO.GetValue<string>('change_color_debug', ColorToString(FColorDebug))));
-    ChangeColor(TLoggerLevel.Info, StringToColor(LJO.GetValue<string>('change_color_info', ColorToString(FColorInfo))));
-    ChangeColor(TLoggerLevel.Success, StringToColor(LJO.GetValue<string>('change_color_success', ColorToString(FColorSuccess))));
-    ChangeColor(TLoggerLevel.Warn, StringToColor(LJO.GetValue<string>('change_color_warn', ColorToString(FColorWarn))));
-    ChangeColor(TLoggerLevel.Error, StringToColor(LJO.GetValue<string>('change_color_error', ColorToString(FColorError))));
-    ChangeColor(TLoggerLevel.Fatal, StringToColor(LJO.GetValue<string>('change_color_fatal', ColorToString(FColorFatal))));
-    ChangeColor(TLoggerLevel.Custom, StringToColor(LJO.GetValue<string>('change_color_custom', ColorToString(FColorCustom))));
+
+    ChangeColor(TLoggerLevel.Trace,
+      StringToColor(LJO.GetValue<string>('change_color_trace_background', ColorToString(FAttributesTrace.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_trace_foreground', ColorToString(FAttributesTrace.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Debug,
+      StringToColor(LJO.GetValue<string>('change_color_debug_background', ColorToString(FAttributesDebug.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_debug_foreground', ColorToString(FAttributesDebug.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Info,
+      StringToColor(LJO.GetValue<string>('change_color_info_background', ColorToString(FAttributesInfo.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_info_foreground', ColorToString(FAttributesInfo.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Success,
+      StringToColor(LJO.GetValue<string>('change_color_success_background', ColorToString(FAttributesSuccess.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_success_foreground', ColorToString(FAttributesSuccess.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Warn,
+      StringToColor(LJO.GetValue<string>('change_color_warn_background', ColorToString(FAttributesWarn.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_warn_foreground', ColorToString(FAttributesWarn.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Error,
+      StringToColor(LJO.GetValue<string>('change_color_error_background', ColorToString(FAttributesError.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_error_foreground', ColorToString(FAttributesError.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Fatal,
+      StringToColor(LJO.GetValue<string>('change_color_fatal_background', ColorToString(FAttributesFatal.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_fatal_foreground', ColorToString(FAttributesFatal.ForegroundColor))));
+
+    ChangeColor(TLoggerLevel.Custom,
+      StringToColor(LJO.GetValue<string>('change_color_custom_background', ColorToString(FAttributesCustom.BackgroundColor))),
+      StringToColor(LJO.GetValue<string>('change_color_custom_foreground', ColorToString(FAttributesCustom.ForegroundColor))));
+
     MaxLogLines(LJO.GetValue<Integer>('max_log_lines', FMaxLogLines));
 
     LValue := GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert));
@@ -222,16 +378,33 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('use_color_in_richedit', TJSONBool.Create(FUseColorInRichEdit));
-    LJO.AddPair('change_color_trace', TJSONString.Create(ColorToString(FColorTrace)));
-    LJO.AddPair('change_color_debug', TJSONString.Create(ColorToString(FColorDebug)));
-    LJO.AddPair('change_color_info', TJSONString.Create(ColorToString(FColorInfo)));
-    LJO.AddPair('change_color_success', TJSONString.Create(ColorToString(FColorSuccess)));
-    LJO.AddPair('change_color_warn', TJSONString.Create(ColorToString(FColorWarn)));
-    LJO.AddPair('change_color_error', TJSONString.Create(ColorToString(FColorError)));
-    LJO.AddPair('change_color_fatal', TJSONString.Create(ColorToString(FColorFatal)));
-    LJO.AddPair('change_color_custom', TJSONString.Create(ColorToString(FColorCustom)));
-    LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
+
+    LJO.AddPair('change_color_trace_background', TJSONString.Create(ColorToString(FAttributesTrace.BackgroundColor)));
+    LJO.AddPair('change_color_trace_foreground', TJSONString.Create(ColorToString(FAttributesTrace.ForegroundColor)));
+
+    LJO.AddPair('change_color_debug_background', TJSONString.Create(ColorToString(FAttributesDebug.BackgroundColor)));
+    LJO.AddPair('change_color_debug_foreground', TJSONString.Create(ColorToString(FAttributesDebug.ForegroundColor)));
+
+    LJO.AddPair('change_color_info_background', TJSONString.Create(ColorToString(FAttributesInfo.BackgroundColor)));
+    LJO.AddPair('change_color_info_foreground', TJSONString.Create(ColorToString(FAttributesInfo.ForegroundColor)));
+
+    LJO.AddPair('change_color_success_background', TJSONString.Create(ColorToString(FAttributesSuccess.BackgroundColor)));
+    LJO.AddPair('change_color_success_foreground', TJSONString.Create(ColorToString(FAttributesSuccess.ForegroundColor)));
+
+    LJO.AddPair('change_color_warn_background', TJSONString.Create(ColorToString(FAttributesWarn.BackgroundColor)));
+    LJO.AddPair('change_color_warn_foreground', TJSONString.Create(ColorToString(FAttributesWarn.ForegroundColor)));
+
+    LJO.AddPair('change_color_error_background', TJSONString.Create(ColorToString(FAttributesError.BackgroundColor)));
+    LJO.AddPair('change_color_error_foreground', TJSONString.Create(ColorToString(FAttributesError.ForegroundColor)));
+
+    LJO.AddPair('change_color_fatal_background', TJSONString.Create(ColorToString(FAttributesFatal.BackgroundColor)));
+    LJO.AddPair('change_color_fatal_foreground', TJSONString.Create(ColorToString(FAttributesFatal.ForegroundColor)));
+
+    LJO.AddPair('change_color_custom_background', TJSONString.Create(ColorToString(FAttributesCustom.BackgroundColor)));
+    LJO.AddPair('change_color_custom_foreground', TJSONString.Create(ColorToString(FAttributesCustom.ForegroundColor)));
+
     LJO.AddPair('mode_insert', TJSONString.Create(GetEnumName(TypeInfo(TRichEditModeInsert), Integer(FModeInsert))));
+    LJO.AddPair('max_log_lines', TJSONNumber.Create(FMaxLogLines));
     LJO.AddPair('clean_on_start', TJSONBool.Create(FCleanOnStart));
 
     ToJSONInternal(LJO);
@@ -246,11 +419,11 @@ procedure TProviderRichEdit.Save(const ACache: TArray<TLoggerItem>);
 var
   LItem: TLoggerItem;
   LLog: string;
-  LColor: TColor;
+  LFontName: TFontName;
+  LFontSize: Integer;
+  LFontStyle: TFontStyles;
   LRetriesCount: Integer;
   LLines: Integer;
-  LSelStart: Int64;
-  LSelLength: Int64;
 begin
   if not Assigned(FRichEdit) then
     raise EDataLoggerException.Create('RichEdit not defined!');
@@ -272,47 +445,6 @@ begin
     else
       LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
-    LColor := clBlack;
-
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        if (csDestroying in FRichEdit.ComponentState) then
-          Exit;
-
-        if not(THackCustom(FRichEdit).Color = clWindow) or not(THackCustom(FRichEdit).Color = clWhite) then
-          LColor := clWhite
-      end);
-
-    if FUseColorInRichEdit then
-      case LItem.Level of
-        TLoggerLevel.Trace:
-          LColor := FColorTrace;
-
-        TLoggerLevel.Debug:
-          LColor := FColorDebug;
-
-        TLoggerLevel.Info:
-          LColor := FColorInfo;
-
-        TLoggerLevel.Success:
-          LColor := FColorSuccess;
-
-        TLoggerLevel.Warn:
-          LColor := FColorWarn;
-
-        TLoggerLevel.Error:
-          LColor := FColorError;
-
-        TLoggerLevel.Fatal:
-          LColor := FColorFatal;
-
-        TLoggerLevel.Custom:
-          LColor := FColorCustom;
-      end;
-
-    LRetriesCount := 0;
-
     while True do
       try
         try
@@ -323,7 +455,11 @@ begin
                 Exit;
 
               if FModeInsert = TRichEditModeInsert.tmLast then
-                FRichEdit.SelAttributes.Color := LColor;
+              begin
+                SetFont(LItem.Level);
+                if FUseColorInRichEdit then
+                  SetColor(LItem.Level);
+              end;
 
               FRichEdit.Lines.BeginUpdate;
               case FModeInsert of
@@ -334,24 +470,29 @@ begin
                   FRichEdit.Lines.Add(LLog);
               end;
 
-              if FUseColorInRichEdit then
-                if FModeInsert = TRichEditModeInsert.tmFirst then
-                begin
-                  LSelStart := FRichEdit.SelStart;
-                  LSelLength := FRichEdit.SelLength;
+              if FModeInsert = TRichEditModeInsert.tmFirst then
+              begin
+                FRichEdit.SelStart := 0;
+                FRichEdit.SelLength := Length(LLog);
 
-                  FRichEdit.SelStart := 0;
-                  FRichEdit.SelLength := Length(LLog);
+                LFontName := FRichEdit.SelAttributes.Name;
+                LFontSize := FRichEdit.SelAttributes.Size;
+                LFontStyle := FRichEdit.SelAttributes.Style;
 
-                  FRichEdit.SelAttributes.Color := LColor;
+                SetFont(LItem.Level);
+                if FUseColorInRichEdit then
+                  SetColor(LItem.Level);
 
-                  FRichEdit.SelStart := LSelStart;
-                  FRichEdit.SelLength := LSelLength;
-                end;
+                FRichEdit.SelStart := 0;
+                FRichEdit.SelLength := 0;
+
+                FRichEdit.SelAttributes.Name := LFontName;
+                FRichEdit.SelAttributes.Size := LFontSize;
+                FRichEdit.SelAttributes.Style := LFontStyle;
+              end;
             end);
 
           if FMaxLogLines > 0 then
-          begin
             TThread.Synchronize(nil,
               procedure
               begin
@@ -372,7 +513,6 @@ begin
                   LLines := FRichEdit.Lines.Count;
                 end;
               end);
-          end;
         finally
           TThread.Synchronize(nil,
             procedure
@@ -424,6 +564,75 @@ begin
         end;
       end;
   end;
+end;
+
+function TProviderRichEdit.AttributesLevel(const ALevel: TLoggerLevel): TAttributesRichEdit;
+begin
+  case ALevel of
+    TLoggerLevel.Trace:
+      Result := FAttributesTrace;
+
+    TLoggerLevel.Debug:
+      Result := FAttributesDebug;
+
+    TLoggerLevel.Info:
+      Result := FAttributesInfo;
+
+    TLoggerLevel.Success:
+      Result := FAttributesSuccess;
+
+    TLoggerLevel.Warn:
+      Result := FAttributesWarn;
+
+    TLoggerLevel.Error:
+      Result := FAttributesError;
+
+    TLoggerLevel.Fatal:
+      Result := FAttributesFatal;
+
+    TLoggerLevel.Custom:
+      Result := FAttributesCustom;
+  else
+    Result := FAttributesInfo;
+  end;
+end;
+
+procedure TProviderRichEdit.SetColor(const ALevel: TLoggerLevel);
+var
+{$IF CompilerVersion <= 34} // 34 = Delphi 10.4 Sydney
+  LFormat: TCharFormat2;
+{$ENDIF}
+  LAttributes: TAttributesRichEdit;
+begin
+  LAttributes := AttributesLevel(ALevel);
+
+  FRichEdit.SelAttributes.Color := LAttributes.ForegroundColor;
+
+{$IF RTLVersion > 34} // 34 = Delphi 10.4 Sydney
+  FRichEdit.SelAttributes.BackColor := LAttributes.BackgroundColor;
+{$ELSE}
+  FillChar(LFormat, SizeOf(LFormat), 0);
+  LFormat.cbSize := SizeOf(LFormat);
+  LFormat.dwMask := CFM_BACKCOLOR;
+  LFormat.crBackColor := TColorRec.ColorToRGB(LAttributes.BackgroundColor);
+  FRichEdit.Perform(EM_SETCHARFORMAT, SCF_SELECTION, Longint(@LFormat));
+{$ENDIF}
+end;
+
+procedure TProviderRichEdit.SetFont(const ALevel: TLoggerLevel);
+var
+  LAttributes: TAttributesRichEdit;
+begin
+  LAttributes := AttributesLevel(ALevel);
+
+  if not LAttributes.FontName.Trim.IsEmpty then
+    FRichEdit.SelAttributes.Name := LAttributes.FontName;
+
+  if LAttributes.FontSize > 0 then
+    FRichEdit.SelAttributes.Size := LAttributes.FontSize;
+
+  if LAttributes.FontStyle <> [] then
+    FRichEdit.SelAttributes.Style := LAttributes.FontStyle;
 end;
 
 procedure ForceReferenceToClass(C: TClass);

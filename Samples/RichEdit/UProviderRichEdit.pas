@@ -44,7 +44,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')    
+    .Custom('Custom Level', 'My Custom')
     ;
 end;
 
@@ -55,10 +55,11 @@ begin
   Logger.AddProvider(
     TProviderRichEdit.Create
     .RichEdit(RichEdit1)
-    // .ChangeColor(TLoggerType.Debug, TColorRec.Hotpink)
     // .UseColorInRichEdit(True)
-    // .MaxLogLines(10)
+    // .ChangeColor(TLoggerLevel.Debug, TColorRec.Black, $00AEB600)
+    // .ChangeFont(TLoggerLevel.Debug, '', 14, [TFontStyle.fsBold])
     // .ModeInsert(TRichEditModeInsert.tmFirst)
+    // .MaxLogLines(10)
     // .CleanOnStart(False)
     );
 
