@@ -422,6 +422,12 @@ begin
     Result := '';
 end;
 
+{$ELSEIF DEFINED(LINUX)}
+
+begin
+  Result := GetEnvironmentVariable('USER');
+end;
+
 {$ELSE}
 
 begin

@@ -175,7 +175,8 @@ type
     function RollbackTransaction: TDataLogger;
     function InTransaction: Boolean;
 
-    function SetLogFormat(const ALogFormat: string): TDataLogger;
+    function SetLogFormat(const ALogFormat: string): TDataLogger; overload;
+    function SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger; overload;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLevel(const ALevel: TLoggerLevel): TDataLogger;
     function SetDisableLevel(const ALevels: TLoggerLevels): TDataLogger;
@@ -743,6 +744,11 @@ begin
 
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat);
+end;
+
+function TDataLogger.SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger;
+begin
+  Result := SetLogFormat(Format(ALogFormat, AArgs));
 end;
 
 function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
