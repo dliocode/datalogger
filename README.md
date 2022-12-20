@@ -136,6 +136,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
  | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) | 
  | [Twilio](https://www.twilio.com/) | DataLogger.Provider.Twilio.SMS<br />DataLogger.Provider.Twilio.WhatsApp | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio) |  
+ | [Z-API](https://z-api.io/) | DataLogger.Provider.ZAPI.WhatsApp | [ZAP-API](https://github.com/dliocode/datalogger/tree/main/Samples/ZAPI) |  
 
 
 ## Dependências

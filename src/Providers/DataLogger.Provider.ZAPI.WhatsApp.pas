@@ -30,9 +30,10 @@
   ********************************************************************************
 }
 
-// https://www.twilio.com/
+// https://www.z-api.io/
+// https://developer.z-api.io/
 
-unit DataLogger.Provider.Twilio.WhatsApp;
+unit DataLogger.Provider.ZAPI.WhatsApp;
 
 interface
 
@@ -48,7 +49,7 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.RegularExpressions;
 
 type
-  TProviderTwilioWhatsApp = class(TDataLoggerProvider<TProviderTwilioWhatsApp>)
+  TProviderZAPIWhatsApp = class(TDataLoggerProvider<TProviderZAPIWhatsApp>)
   private
     type
     TProviderHTTP = class(
@@ -62,19 +63,15 @@ type
 
   private
     FHTTP: TProviderHTTP;
-    FAccountSID: string;
-    FAuthToken: string;
-    FMessagingServiceSID: string;
-    FPhoneFrom: string;
+    FInstanceID: string;
+    FInstanceToken: string;
     FPhoneTo: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function AccountSID(const AValue: string): TProviderTwilioWhatsApp;
-    function AuthToken(const AValue: string): TProviderTwilioWhatsApp;
-    function MessagingServiceSID(const AValue: string): TProviderTwilioWhatsApp;
-    function PhoneFrom(const AValue: string): TProviderTwilioWhatsApp;
-    function PhoneTo(const AValue: string): TProviderTwilioWhatsApp;
+    function InstanceID(const AValue: string): TProviderZAPIWhatsApp;
+    function InstanceToken(const AValue: string): TProviderZAPIWhatsApp;
+    function PhoneTo(const AValue: string): TProviderZAPIWhatsApp;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -85,59 +82,45 @@ type
 
 implementation
 
-{ TProviderTwilioWhatsApp }
+{ TProviderZAPIWhatsApp }
 
-constructor TProviderTwilioWhatsApp.Create;
+constructor TProviderZAPIWhatsApp.Create;
 begin
   inherited Create;
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
 
-  AccountSID('');
-  AuthToken('');
-  MessagingServiceSID('');
-  PhoneFrom('');
+  InstanceID('');
+  InstanceToken('');
   PhoneTo('');
 end;
 
-destructor TProviderTwilioWhatsApp.Destroy;
+destructor TProviderZAPIWhatsApp.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderTwilioWhatsApp.AccountSID(const AValue: string): TProviderTwilioWhatsApp;
+function TProviderZAPIWhatsApp.InstanceID(const AValue: string): TProviderZAPIWhatsApp;
 begin
   Result := Self;
-  FAccountSID := AValue;
+  FInstanceID := AValue;
 end;
 
-function TProviderTwilioWhatsApp.AuthToken(const AValue: string): TProviderTwilioWhatsApp;
+function TProviderZAPIWhatsApp.InstanceToken(const AValue: string): TProviderZAPIWhatsApp;
 begin
   Result := Self;
-  FAuthToken := AValue;
+  FInstanceToken := AValue;
 end;
 
-function TProviderTwilioWhatsApp.MessagingServiceSID(const AValue: string): TProviderTwilioWhatsApp;
-begin
-  Result := Self;
-  FMessagingServiceSID := AValue;
-end;
-
-function TProviderTwilioWhatsApp.PhoneFrom(const AValue: string): TProviderTwilioWhatsApp;
-begin
-  Result := Self;
-  FPhoneFrom := TRegEx.Match(AValue, '\d+').Value;
-end;
-
-function TProviderTwilioWhatsApp.PhoneTo(const AValue: string): TProviderTwilioWhatsApp;
+function TProviderZAPIWhatsApp.PhoneTo(const AValue: string): TProviderZAPIWhatsApp;
 begin
   Result := Self;
   FPhoneTo := TRegEx.Match(AValue, '\d+').Value;
 end;
 
-procedure TProviderTwilioWhatsApp.LoadFromJSON(const AJSON: string);
+procedure TProviderZAPIWhatsApp.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -155,10 +138,8 @@ begin
     Exit;
 
   try
-    AccountSID(LJO.GetValue<string>('account_sid', FAccountSID));
-    AuthToken(LJO.GetValue<string>('auth_token', FAuthToken));
-    MessagingServiceSID(LJO.GetValue<string>('messaging_service_sid', FMessagingServiceSID));
-    PhoneFrom(LJO.GetValue<string>('phone_from', FPhoneFrom));
+    InstanceID(LJO.GetValue<string>('instance_id', FInstanceID));
+    InstanceToken(LJO.GetValue<string>('instance_token', FInstanceToken));
     PhoneTo(LJO.GetValue<string>('phone_to', FPhoneTo));
 
     SetJSONInternal(LJO);
@@ -167,16 +148,14 @@ begin
   end;
 end;
 
-function TProviderTwilioWhatsApp.ToJSON(const AFormat: Boolean): string;
+function TProviderZAPIWhatsApp.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('account_sid', TJSONString.Create(FAccountSID));
-    LJO.AddPair('auth_token', TJSONString.Create(FAuthToken));
-    LJO.AddPair('messaging_service_sid', TJSONString.Create(FMessagingServiceSID));
-    LJO.AddPair('phone_from', TJSONString.Create(FPhoneFrom));
+    LJO.AddPair('instance_id', TJSONString.Create(FInstanceID));
+    LJO.AddPair('instance_token', TJSONString.Create(FInstanceToken));
     LJO.AddPair('phone_to', TJSONString.Create(FPhoneTo));
 
     ToJSONInternal(LJO);
@@ -187,19 +166,18 @@ begin
   end;
 end;
 
-procedure TProviderTwilioWhatsApp.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderZAPIWhatsApp.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LLog: string;
+  LJO: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
 
   if Length(ACache) = 0 then
     Exit;
-
-  FHTTP.BasicAuth(FAccountSID, FAuthToken);
 
   for LItem in ACache do
   begin
@@ -208,10 +186,17 @@ begin
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
 
-    LLogItemREST.Stream := nil;
-    LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json', [FAccountSID]);
-    LLogItemREST.FormData := [TLogFormData.Create('From', 'whatsapp:' + FPhoneFrom), TLogFormData.Create('To', 'whatsapp:' + FPhoneTo), TLogFormData.Create('Body', LLog)];
+    LJO := TJSONObject.Create;
+    try
+      LJO.AddPair('phone', TJSONString.Create(FPhoneTo));
+      LJO.AddPair('message', TJSONString.Create(LLog));
+
+      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
+      LLogItemREST.LogItem := LItem;
+      LLogItemREST.URL := Format('https://api.z-api.io/instances/%s/token/%s/send-messages', [FInstanceID, FInstanceToken]);
+    finally
+      LJO.Free;
+    end;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
@@ -229,6 +214,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderTwilioWhatsApp);
+ForceReferenceToClass(TProviderZAPIWhatsApp);
 
 end.

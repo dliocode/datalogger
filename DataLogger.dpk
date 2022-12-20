@@ -9,33 +9,31 @@ package DataLogger;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
+{$LOCALSYMBOLS OFF}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION OFF}
+{$OPTIMIZATION ON}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO ON}
+{$REFERENCEINFO OFF}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES ON}
+{$STACKFRAMES OFF}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DEFINE DEBUG}
+{$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
-{$IF DEFINED(MSWINDOWS)}
-  vcl,
-{$ENDIF}
   IndySystem,
   IndyProtocols,
   IndyCore,
-  RESTComponents;
+  RESTComponents,
+  vcl;
 
 contains
   DataLogger in 'src\Core\DataLogger.pas',
@@ -96,6 +94,7 @@ contains
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
   DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',
   DataLogger.Provider.Twilio.SMS in 'src\Providers\DataLogger.Provider.Twilio.SMS.pas',
-  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas';
+  DataLogger.Provider.Twilio.WhatsApp in 'src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas',
+  DataLogger.Provider.ZAPI.WhatsApp in 'src\Providers\DataLogger.Provider.ZAPI.WhatsApp.pas';
 
 end.
