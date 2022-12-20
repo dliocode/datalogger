@@ -45,7 +45,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.Classes, System.JSON;
+  System.SysUtils, System.Classes, System.JSON, System.RegularExpressions;
 
 type
   TProviderTwilioSMS = class(TDataLoggerProvider<TProviderTwilioSMS>)
@@ -128,13 +128,13 @@ end;
 function TProviderTwilioSMS.PhoneFrom(const AValue: string): TProviderTwilioSMS;
 begin
   Result := Self;
-  FPhoneFrom := AValue;
+  FPhoneFrom := TRegEx.Match(AValue, '\d+').Value;
 end;
 
 function TProviderTwilioSMS.PhoneTo(const AValue: string): TProviderTwilioSMS;
 begin
   Result := Self;
-  FPhoneTo := AValue;
+  FPhoneTo := TRegEx.Match(AValue, '\d+').Value;
 end;
 
 procedure TProviderTwilioSMS.LoadFromJSON(const AJSON: string);

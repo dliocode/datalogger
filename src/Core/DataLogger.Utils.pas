@@ -400,12 +400,6 @@ begin
     Result := '';
 end;
 
-{$ELSE}
-
-begin
-  Result := '';
-end;
-
 {$ENDIF}
 
 class function TLoggerUtils.Username: string;
