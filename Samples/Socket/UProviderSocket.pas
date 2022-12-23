@@ -27,7 +27,6 @@ type
     procedure btnOpenPreviewClick(Sender: TObject);
     procedure TimerCountClientsTimer(Sender: TObject);
     procedure btnDisconnectAllClick(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -129,11 +128,8 @@ begin
   Logger.AddProvider(FSocket);
 
   btnStop.Enabled := FSocket.IsActive;
-end;
 
-procedure TForm2.FormDestroy(Sender: TObject);
-begin
-//  FSocket.Free;
+  btnStart.Click;
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);
