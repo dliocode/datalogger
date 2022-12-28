@@ -199,9 +199,24 @@ begin
   _Add(TLoggerFormat.LOG_TAG, APrefix + 'tag', TJSONString.Create(AItem.Tag));
 
   if not AItem.MessageJSON.IsEmpty then
-  begin
-    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.MessageJSON.Trim));
+    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.MessageJSON.Trim))
+  else
+    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.Message.Trim));
 
+  _Add(TLoggerFormat.LOG_APPNAME, APrefix + 'app_name', TJSONString.Create(AItem.AppName));
+  _Add(TLoggerFormat.LOG_APPVERSION, APrefix + 'app_version', TJSONString.Create(AItem.AppVersion.FileVersion));
+  _Add(TLoggerFormat.LOG_APPPATH, APrefix + 'app_path', TJSONString.Create(AItem.AppPath));
+  _Add(TLoggerFormat.LOG_APPSIZE, APrefix + 'app_size', TJSONString.Create(FormatFloat('#,##0.00 MB', AItem.AppSize / 1024)));
+
+  _Add(TLoggerFormat.LOG_COMPUTERNAME, APrefix + 'computer_name', TJSONString.Create(AItem.ComputerName));
+  _Add(TLoggerFormat.LOG_USERNAME, APrefix + 'username', TJSONString.Create(AItem.Username));
+  _Add(TLoggerFormat.LOG_OSVERSION, APrefix + 'os_version', TJSONString.Create(AItem.OSVersion));
+  _Add(TLoggerFormat.LOG_PROCESSID, APrefix + 'process_id', TJSONString.Create(AItem.ProcessId));
+
+  _Add(TLoggerFormat.LOG_IP_LOCAL, APrefix + 'ip_local', TJSONString.Create(AItem.IPLocal));
+  _Add(TLoggerFormat.LOG_MAC_ADDRESS, APrefix + 'mac_address', TJSONString.Create(AItem.MACAddress));
+
+  if not AItem.MessageJSON.IsEmpty then
     try
       LJO := TJSONObject.ParseJSONValue(AItem.MessageJSON) as TJSONObject;
 
@@ -222,22 +237,7 @@ begin
         end;
     except
     end;
-  end
-  else
-    _Add(TLoggerFormat.LOG_MESSAGE, APrefix + 'message', TJSONString.Create(AItem.Message.Trim));
 
-  _Add(TLoggerFormat.LOG_APPNAME, APrefix + 'app_name', TJSONString.Create(AItem.AppName));
-  _Add(TLoggerFormat.LOG_APPVERSION, APrefix + 'app_version', TJSONString.Create(AItem.AppVersion.FileVersion));
-  _Add(TLoggerFormat.LOG_APPPATH, APrefix + 'app_path', TJSONString.Create(AItem.AppPath));
-  _Add(TLoggerFormat.LOG_APPSIZE, APrefix + 'app_size', TJSONString.Create(FormatFloat('#,##0.00 MB', AItem.AppSize / 1024)));
-
-  _Add(TLoggerFormat.LOG_COMPUTERNAME, APrefix + 'computer_name', TJSONString.Create(AItem.ComputerName));
-  _Add(TLoggerFormat.LOG_USERNAME, APrefix + 'username', TJSONString.Create(AItem.Username));
-  _Add(TLoggerFormat.LOG_OSVERSION, APrefix + 'os_version', TJSONString.Create(AItem.OSVersion));
-  _Add(TLoggerFormat.LOG_PROCESSID, APrefix + 'process_id', TJSONString.Create(AItem.ProcessId));
-
-  _Add(TLoggerFormat.LOG_IP_LOCAL, APrefix + 'ip_local', TJSONString.Create(AItem.IPLocal));
-  _Add(TLoggerFormat.LOG_MAC_ADDRESS, APrefix + 'mac_address', TJSONString.Create(AItem.MACAddress));
 end;
 
 class function TLoggerSerializeItem.AsHeader(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;

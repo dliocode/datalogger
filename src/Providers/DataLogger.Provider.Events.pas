@@ -42,35 +42,55 @@ type
   TLoggerItem = DataLogger.Types.TLoggerItem;
 
   TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
+  TExecuteEventsJSON = reference to procedure(const AItem: TJSONObject);
 
   TProviderEvents = class(TDataLoggerProvider<TProviderEvents>)
   private
     FOnAny: TExecuteEvents;
+    FOnAnyJSON: TExecuteEventsJSON;
     FOnTrace: TExecuteEvents;
+    FOnTraceJSON: TExecuteEventsJSON;
     FOnDebug: TExecuteEvents;
+    FOnDebugJSON: TExecuteEventsJSON;
     FOnInfo: TExecuteEvents;
+    FOnInfoJSON: TExecuteEventsJSON;
     FOnSuccess: TExecuteEvents;
+    FOnSuccessJSON: TExecuteEventsJSON;
     FOnWarn: TExecuteEvents;
+    FOnWarnJSON: TExecuteEventsJSON;
     FOnError: TExecuteEvents;
+    FOnErrorJSON: TExecuteEventsJSON;
     FOnFatal: TExecuteEvents;
+    FOnFatalJSON: TExecuteEventsJSON;
     FOnCustom: TExecuteEvents;
+    FOnCustomJSON: TExecuteEventsJSON;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function OnAny(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnTrace(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnDebug(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnInfo(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnSuccess(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnWarn(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnError(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnFatal(const AEvent: TExecuteEvents): TProviderEvents;
-    function OnCustom(const AEvent: TExecuteEvents): TProviderEvents;
+    function OnAny(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnAny(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnTrace(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnTrace(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnDebug(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnDebug(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnInfo(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnInfo(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnSuccess(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnSuccess(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnWarn(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnWarn(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnError(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnError(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnFatal(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnFatal(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
+    function OnCustom(const AEvent: TExecuteEvents): TProviderEvents; overload;
+    function OnCustom(const AEvent: TExecuteEventsJSON): TProviderEvents; overload;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
     constructor Create;
+    procedure AfterConstruction; override;
   end;
 
 implementation
@@ -82,13 +102,27 @@ begin
   inherited Create;
 
   FOnAny := nil;
+  FOnAnyJSON := nil;
   FOnTrace := nil;
+  FOnTraceJSON := nil;
   FOnDebug := nil;
+  FOnDebugJSON := nil;
   FOnInfo := nil;
+  FOnInfoJSON := nil;
   FOnWarn := nil;
+  FOnWarnJSON := nil;
   FOnError := nil;
+  FOnErrorJSON := nil;
   FOnSuccess := nil;
+  FOnSuccessJSON := nil;
   FOnFatal := nil;
+  FOnFatalJSON := nil;
+end;
+
+procedure TProviderEvents.AfterConstruction;
+begin
+  inherited;
+  SetIgnoreLogFormat(True);
 end;
 
 function TProviderEvents.OnAny(const AEvent: TExecuteEvents): TProviderEvents;
@@ -97,10 +131,22 @@ begin
   FOnAny := AEvent;
 end;
 
+function TProviderEvents.OnAny(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnAnyJSON := AEvent;
+end;
+
 function TProviderEvents.OnTrace(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
   FOnTrace := AEvent;
+end;
+
+function TProviderEvents.OnTrace(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnTraceJSON := AEvent;
 end;
 
 function TProviderEvents.OnDebug(const AEvent: TExecuteEvents): TProviderEvents;
@@ -109,10 +155,22 @@ begin
   FOnDebug := AEvent;
 end;
 
+function TProviderEvents.OnDebug(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnDebugJSON := AEvent;
+end;
+
 function TProviderEvents.OnInfo(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
   FOnInfo := AEvent;
+end;
+
+function TProviderEvents.OnInfo(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnInfoJSON := AEvent;
 end;
 
 function TProviderEvents.OnWarn(const AEvent: TExecuteEvents): TProviderEvents;
@@ -121,10 +179,22 @@ begin
   FOnWarn := AEvent;
 end;
 
+function TProviderEvents.OnWarn(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnWarnJSON := AEvent;
+end;
+
 function TProviderEvents.OnError(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
   FOnError := AEvent;
+end;
+
+function TProviderEvents.OnError(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnErrorJSON := AEvent;
 end;
 
 function TProviderEvents.OnSuccess(const AEvent: TExecuteEvents): TProviderEvents;
@@ -133,16 +203,34 @@ begin
   FOnSuccess := AEvent;
 end;
 
+function TProviderEvents.OnSuccess(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnSuccessJSON := AEvent;
+end;
+
 function TProviderEvents.OnFatal(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
   FOnFatal := AEvent;
 end;
 
+function TProviderEvents.OnFatal(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnFatalJSON := AEvent;
+end;
+
 function TProviderEvents.OnCustom(const AEvent: TExecuteEvents): TProviderEvents;
 begin
   Result := Self;
   FOnFatal := AEvent;
+end;
+
+function TProviderEvents.OnCustom(const AEvent: TExecuteEventsJSON): TProviderEvents;
+begin
+  Result := Self;
+  FOnFatalJSON := AEvent;
 end;
 
 procedure TProviderEvents.LoadFromJSON(const AJSON: string);
@@ -184,9 +272,10 @@ begin
 end;
 
 procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
-  procedure _Execute(const AEvent: TExecuteEvents; const AItem: TLoggerItem);
+  procedure _Execute(const AItem: TLoggerItem; const AEvent: TExecuteEvents; const AEventJSON: TExecuteEventsJSON);
   var
     LRetriesCount: Integer;
+    LJO: TJSONObject;
   begin
     LRetriesCount := 0;
 
@@ -194,6 +283,16 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
       try
         if Assigned(AEvent) then
           AEvent(FLogFormat, AItem, FFormatTimestamp);
+
+        if Assigned(AEventJSON) then
+        begin
+          LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, AItem, FFormatTimestamp, FIgnoreLogFormat);
+          try
+            AEventJSON(LJO);
+          finally
+            LJO.Free;
+          end;
+        end;
 
         Break;
       except
@@ -231,31 +330,31 @@ begin
 
     case LItem.Level of
       TLoggerLevel.Trace:
-        _Execute(FOnTrace, LItem);
+        _Execute(LItem, FOnTrace, FOnTraceJSON);
 
       TLoggerLevel.Debug:
-        _Execute(FOnDebug, LItem);
+        _Execute(LItem, FOnDebug, FOnDebugJSON);
 
       TLoggerLevel.Info:
-        _Execute(FOnInfo, LItem);
+        _Execute(LItem, FOnInfo, FOnInfoJSON);
 
       TLoggerLevel.Warn:
-        _Execute(FOnWarn, LItem);
+        _Execute(LItem, FOnWarn, FOnWarnJSON);
 
       TLoggerLevel.Error:
-        _Execute(FOnError, LItem);
+        _Execute(LItem, FOnError, FOnErrorJSON);
 
       TLoggerLevel.Success:
-        _Execute(FOnSuccess, LItem);
+        _Execute(LItem, FOnSuccess, FOnSuccessJSON);
 
       TLoggerLevel.Fatal:
-        _Execute(FOnFatal, LItem);
+        _Execute(LItem, FOnFatal, FOnFatalJSON);
 
       TLoggerLevel.Custom:
-        _Execute(FOnCustom, LItem);
+        _Execute(LItem, FOnCustom, FOnCustomJSON);
     end;
 
-    _Execute(FOnAny, LItem);
+    _Execute(LItem, FOnAny, FOnAnyJSON);
   end;
 end;
 
