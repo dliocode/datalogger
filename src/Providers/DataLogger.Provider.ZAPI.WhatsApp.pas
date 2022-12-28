@@ -39,9 +39,9 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_TWILIO_WHATSAPP_USE_INDY)}
+{$IF DEFINED(DATALOGGER_ZAPI_WHATSAPP_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_TWILIO_WHATSAPP_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_ZAPI_WHATSAPP_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -53,9 +53,9 @@ type
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_TWILIO_WHATSAPP_USE_INDY)}
+{$IF DEFINED(DATALOGGER_ZAPI_WHATSAPP_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_TWILIO_WHATSAPP_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_ZAPI_WHATSAPP_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
@@ -191,12 +191,18 @@ begin
       LJO.AddPair('phone', TJSONString.Create(FPhoneTo));
       LJO.AddPair('message', TJSONString.Create(LLog));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://api.z-api.io/instances/%s/token/%s/send-messages', [FInstanceID, FInstanceToken]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('https://api.z-api.io/instances/%s/token/%s/send-messages', [FInstanceID, FInstanceToken]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
