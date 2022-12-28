@@ -60,9 +60,6 @@
         <Projects Include="Loggly\ProviderLoggly.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Logstach\ProviderLogstach.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="Logtail\ProviderLogtail.dproj">
             <Dependencies/>
         </Projects>
@@ -178,6 +175,30 @@
             <Dependencies/>
         </Projects>
         <Projects Include="Z-API\WhatsApp\ProviderZAPIWhatsApp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="HTML\ProviderHTML.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="AWSCloudWatch\ProviderAWSCloudWatch.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="SumoLogic\ProviderSumoLogic.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logentries\ProviderLogentries.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Graylog\ProviderGraylog.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Logstash\ProviderLogstash.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Dynatrace\ProviderDynatrace.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Coralogix\ProviderCoralogix.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -358,15 +379,6 @@
     </Target>
     <Target Name="ProviderLoggly:Make">
         <MSBuild Projects="Loggly\ProviderLoggly.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="ProviderLogstach">
-        <MSBuild Projects="Logstach\ProviderLogstach.dproj"/>
-    </Target>
-    <Target Name="ProviderLogstach:Clean">
-        <MSBuild Projects="Logstach\ProviderLogstach.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ProviderLogstach:Make">
-        <MSBuild Projects="Logstach\ProviderLogstach.dproj" Targets="Make"/>
     </Target>
     <Target Name="ProviderLogtail">
         <MSBuild Projects="Logtail\ProviderLogtail.dproj"/>
@@ -719,14 +731,86 @@
     <Target Name="ProviderZAPIWhatsApp:Make">
         <MSBuild Projects="Z-API\WhatsApp\ProviderZAPIWhatsApp.dproj" Targets="Make"/>
     </Target>
+    <Target Name="ProviderHTML">
+        <MSBuild Projects="HTML\ProviderHTML.dproj"/>
+    </Target>
+    <Target Name="ProviderHTML:Clean">
+        <MSBuild Projects="HTML\ProviderHTML.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderHTML:Make">
+        <MSBuild Projects="HTML\ProviderHTML.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderAWSCloudWatch">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj"/>
+    </Target>
+    <Target Name="ProviderAWSCloudWatch:Clean">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderAWSCloudWatch:Make">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSumoLogic">
+        <MSBuild Projects="SumoLogic\ProviderSumoLogic.dproj"/>
+    </Target>
+    <Target Name="ProviderSumoLogic:Clean">
+        <MSBuild Projects="SumoLogic\ProviderSumoLogic.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSumoLogic:Make">
+        <MSBuild Projects="SumoLogic\ProviderSumoLogic.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogentries">
+        <MSBuild Projects="Logentries\ProviderLogentries.dproj"/>
+    </Target>
+    <Target Name="ProviderLogentries:Clean">
+        <MSBuild Projects="Logentries\ProviderLogentries.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogentries:Make">
+        <MSBuild Projects="Logentries\ProviderLogentries.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderGraylog">
+        <MSBuild Projects="Graylog\ProviderGraylog.dproj"/>
+    </Target>
+    <Target Name="ProviderGraylog:Clean">
+        <MSBuild Projects="Graylog\ProviderGraylog.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderGraylog:Make">
+        <MSBuild Projects="Graylog\ProviderGraylog.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderLogstash">
+        <MSBuild Projects="Logstash\ProviderLogstash.dproj"/>
+    </Target>
+    <Target Name="ProviderLogstash:Clean">
+        <MSBuild Projects="Logstash\ProviderLogstash.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderLogstash:Make">
+        <MSBuild Projects="Logstash\ProviderLogstash.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderDynatrace">
+        <MSBuild Projects="Dynatrace\ProviderDynatrace.dproj"/>
+    </Target>
+    <Target Name="ProviderDynatrace:Clean">
+        <MSBuild Projects="Dynatrace\ProviderDynatrace.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderDynatrace:Make">
+        <MSBuild Projects="Dynatrace\ProviderDynatrace.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderCoralogix">
+        <MSBuild Projects="Coralogix\ProviderCoralogix.dproj"/>
+    </Target>
+    <Target Name="ProviderCoralogix:Clean">
+        <MSBuild Projects="Coralogix\ProviderCoralogix.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderCoralogix:Make">
+        <MSBuild Projects="Coralogix\ProviderCoralogix.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="ProviderAxiom;ProviderConsole;ProviderDatadog;ProviderDatalust;ProviderDiscordHook;ProviderElasticSearch;ProviderEmail;ProviderEventLog;ProviderEvents;ProviderEventsWithDataSet;ProviderEventsWithSQLLite;ProviderFirebaseRealtimeDatabase;ProviderGrafanaLoki;ProviderGrafanaOnCallWebHook;ProviderGraphJSON;ProviderListBox;ProviderListView;ProviderLogflare;ProviderLoggly;ProviderLogstach;ProviderLogtail;ProviderLogz;ProviderMailgunApi;ProviderMailjetApi;ProviderMattermost;ProviderMattermostHook;ProviderMemo;ProviderMemoOnlyError;ProviderMemoTextFile;ProviderMemory;ProviderMongoDBCloud;ProviderNewRelic;ProviderNotification;ProviderNovu;ProviderOutputDebugString;ProviderPaperTrail;ProviderPostmarkApi;ProviderRabbitMQ;ProviderRedis;ProviderREST;ProviderRichEdit;ProviderSematextLogs;ProviderSendEmail;ProviderSendGridWebApi;ProviderSlack;ProviderSocket;ProviderSplunk;ProviderSysLog;ProviderTelegram;ProviderTextFile;DataLoggerTransaction;DataLoggerTransactionAninhada;ProviderTwilioSMS;ProviderTwilioWhatsApp;ProviderCSV;ProviderConsoleSimple;ProviderMezmo;ProviderNtfy;ProviderZAPIWhatsApp"/>
+        <CallTarget Targets="ProviderAxiom;ProviderConsole;ProviderDatadog;ProviderDatalust;ProviderDiscordHook;ProviderElasticSearch;ProviderEmail;ProviderEventLog;ProviderEvents;ProviderEventsWithDataSet;ProviderEventsWithSQLLite;ProviderFirebaseRealtimeDatabase;ProviderGrafanaLoki;ProviderGrafanaOnCallWebHook;ProviderGraphJSON;ProviderListBox;ProviderListView;ProviderLogflare;ProviderLoggly;ProviderLogtail;ProviderLogz;ProviderMailgunApi;ProviderMailjetApi;ProviderMattermost;ProviderMattermostHook;ProviderMemo;ProviderMemoOnlyError;ProviderMemoTextFile;ProviderMemory;ProviderMongoDBCloud;ProviderNewRelic;ProviderNotification;ProviderNovu;ProviderOutputDebugString;ProviderPaperTrail;ProviderPostmarkApi;ProviderRabbitMQ;ProviderRedis;ProviderREST;ProviderRichEdit;ProviderSematextLogs;ProviderSendEmail;ProviderSendGridWebApi;ProviderSlack;ProviderSocket;ProviderSplunk;ProviderSysLog;ProviderTelegram;ProviderTextFile;DataLoggerTransaction;DataLoggerTransactionAninhada;ProviderTwilioSMS;ProviderTwilioWhatsApp;ProviderCSV;ProviderConsoleSimple;ProviderMezmo;ProviderNtfy;ProviderZAPIWhatsApp;ProviderHTML;ProviderAWSCloudWatch;ProviderSumoLogic;ProviderLogentries;ProviderGraylog;ProviderLogstash;ProviderDynatrace;ProviderCoralogix"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="ProviderAxiom:Clean;ProviderConsole:Clean;ProviderDatadog:Clean;ProviderDatalust:Clean;ProviderDiscordHook:Clean;ProviderElasticSearch:Clean;ProviderEmail:Clean;ProviderEventLog:Clean;ProviderEvents:Clean;ProviderEventsWithDataSet:Clean;ProviderEventsWithSQLLite:Clean;ProviderFirebaseRealtimeDatabase:Clean;ProviderGrafanaLoki:Clean;ProviderGrafanaOnCallWebHook:Clean;ProviderGraphJSON:Clean;ProviderListBox:Clean;ProviderListView:Clean;ProviderLogflare:Clean;ProviderLoggly:Clean;ProviderLogstach:Clean;ProviderLogtail:Clean;ProviderLogz:Clean;ProviderMailgunApi:Clean;ProviderMailjetApi:Clean;ProviderMattermost:Clean;ProviderMattermostHook:Clean;ProviderMemo:Clean;ProviderMemoOnlyError:Clean;ProviderMemoTextFile:Clean;ProviderMemory:Clean;ProviderMongoDBCloud:Clean;ProviderNewRelic:Clean;ProviderNotification:Clean;ProviderNovu:Clean;ProviderOutputDebugString:Clean;ProviderPaperTrail:Clean;ProviderPostmarkApi:Clean;ProviderRabbitMQ:Clean;ProviderRedis:Clean;ProviderREST:Clean;ProviderRichEdit:Clean;ProviderSematextLogs:Clean;ProviderSendEmail:Clean;ProviderSendGridWebApi:Clean;ProviderSlack:Clean;ProviderSocket:Clean;ProviderSplunk:Clean;ProviderSysLog:Clean;ProviderTelegram:Clean;ProviderTextFile:Clean;DataLoggerTransaction:Clean;DataLoggerTransactionAninhada:Clean;ProviderTwilioSMS:Clean;ProviderTwilioWhatsApp:Clean;ProviderCSV:Clean;ProviderConsoleSimple:Clean;ProviderMezmo:Clean;ProviderNtfy:Clean;ProviderZAPIWhatsApp:Clean"/>
+        <CallTarget Targets="ProviderAxiom:Clean;ProviderConsole:Clean;ProviderDatadog:Clean;ProviderDatalust:Clean;ProviderDiscordHook:Clean;ProviderElasticSearch:Clean;ProviderEmail:Clean;ProviderEventLog:Clean;ProviderEvents:Clean;ProviderEventsWithDataSet:Clean;ProviderEventsWithSQLLite:Clean;ProviderFirebaseRealtimeDatabase:Clean;ProviderGrafanaLoki:Clean;ProviderGrafanaOnCallWebHook:Clean;ProviderGraphJSON:Clean;ProviderListBox:Clean;ProviderListView:Clean;ProviderLogflare:Clean;ProviderLoggly:Clean;ProviderLogtail:Clean;ProviderLogz:Clean;ProviderMailgunApi:Clean;ProviderMailjetApi:Clean;ProviderMattermost:Clean;ProviderMattermostHook:Clean;ProviderMemo:Clean;ProviderMemoOnlyError:Clean;ProviderMemoTextFile:Clean;ProviderMemory:Clean;ProviderMongoDBCloud:Clean;ProviderNewRelic:Clean;ProviderNotification:Clean;ProviderNovu:Clean;ProviderOutputDebugString:Clean;ProviderPaperTrail:Clean;ProviderPostmarkApi:Clean;ProviderRabbitMQ:Clean;ProviderRedis:Clean;ProviderREST:Clean;ProviderRichEdit:Clean;ProviderSematextLogs:Clean;ProviderSendEmail:Clean;ProviderSendGridWebApi:Clean;ProviderSlack:Clean;ProviderSocket:Clean;ProviderSplunk:Clean;ProviderSysLog:Clean;ProviderTelegram:Clean;ProviderTextFile:Clean;DataLoggerTransaction:Clean;DataLoggerTransactionAninhada:Clean;ProviderTwilioSMS:Clean;ProviderTwilioWhatsApp:Clean;ProviderCSV:Clean;ProviderConsoleSimple:Clean;ProviderMezmo:Clean;ProviderNtfy:Clean;ProviderZAPIWhatsApp:Clean;ProviderHTML:Clean;ProviderAWSCloudWatch:Clean;ProviderSumoLogic:Clean;ProviderLogentries:Clean;ProviderGraylog:Clean;ProviderLogstash:Clean;ProviderDynatrace:Clean;ProviderCoralogix:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="ProviderAxiom:Make;ProviderConsole:Make;ProviderDatadog:Make;ProviderDatalust:Make;ProviderDiscordHook:Make;ProviderElasticSearch:Make;ProviderEmail:Make;ProviderEventLog:Make;ProviderEvents:Make;ProviderEventsWithDataSet:Make;ProviderEventsWithSQLLite:Make;ProviderFirebaseRealtimeDatabase:Make;ProviderGrafanaLoki:Make;ProviderGrafanaOnCallWebHook:Make;ProviderGraphJSON:Make;ProviderListBox:Make;ProviderListView:Make;ProviderLogflare:Make;ProviderLoggly:Make;ProviderLogstach:Make;ProviderLogtail:Make;ProviderLogz:Make;ProviderMailgunApi:Make;ProviderMailjetApi:Make;ProviderMattermost:Make;ProviderMattermostHook:Make;ProviderMemo:Make;ProviderMemoOnlyError:Make;ProviderMemoTextFile:Make;ProviderMemory:Make;ProviderMongoDBCloud:Make;ProviderNewRelic:Make;ProviderNotification:Make;ProviderNovu:Make;ProviderOutputDebugString:Make;ProviderPaperTrail:Make;ProviderPostmarkApi:Make;ProviderRabbitMQ:Make;ProviderRedis:Make;ProviderREST:Make;ProviderRichEdit:Make;ProviderSematextLogs:Make;ProviderSendEmail:Make;ProviderSendGridWebApi:Make;ProviderSlack:Make;ProviderSocket:Make;ProviderSplunk:Make;ProviderSysLog:Make;ProviderTelegram:Make;ProviderTextFile:Make;DataLoggerTransaction:Make;DataLoggerTransactionAninhada:Make;ProviderTwilioSMS:Make;ProviderTwilioWhatsApp:Make;ProviderCSV:Make;ProviderConsoleSimple:Make;ProviderMezmo:Make;ProviderNtfy:Make;ProviderZAPIWhatsApp:Make"/>
+        <CallTarget Targets="ProviderAxiom:Make;ProviderConsole:Make;ProviderDatadog:Make;ProviderDatalust:Make;ProviderDiscordHook:Make;ProviderElasticSearch:Make;ProviderEmail:Make;ProviderEventLog:Make;ProviderEvents:Make;ProviderEventsWithDataSet:Make;ProviderEventsWithSQLLite:Make;ProviderFirebaseRealtimeDatabase:Make;ProviderGrafanaLoki:Make;ProviderGrafanaOnCallWebHook:Make;ProviderGraphJSON:Make;ProviderListBox:Make;ProviderListView:Make;ProviderLogflare:Make;ProviderLoggly:Make;ProviderLogtail:Make;ProviderLogz:Make;ProviderMailgunApi:Make;ProviderMailjetApi:Make;ProviderMattermost:Make;ProviderMattermostHook:Make;ProviderMemo:Make;ProviderMemoOnlyError:Make;ProviderMemoTextFile:Make;ProviderMemory:Make;ProviderMongoDBCloud:Make;ProviderNewRelic:Make;ProviderNotification:Make;ProviderNovu:Make;ProviderOutputDebugString:Make;ProviderPaperTrail:Make;ProviderPostmarkApi:Make;ProviderRabbitMQ:Make;ProviderRedis:Make;ProviderREST:Make;ProviderRichEdit:Make;ProviderSematextLogs:Make;ProviderSendEmail:Make;ProviderSendGridWebApi:Make;ProviderSlack:Make;ProviderSocket:Make;ProviderSplunk:Make;ProviderSysLog:Make;ProviderTelegram:Make;ProviderTextFile:Make;DataLoggerTransaction:Make;DataLoggerTransactionAninhada:Make;ProviderTwilioSMS:Make;ProviderTwilioWhatsApp:Make;ProviderCSV:Make;ProviderConsoleSimple:Make;ProviderMezmo:Make;ProviderNtfy:Make;ProviderZAPIWhatsApp:Make;ProviderHTML:Make;ProviderAWSCloudWatch:Make;ProviderSumoLogic:Make;ProviderLogentries:Make;ProviderGraylog:Make;ProviderLogstash:Make;ProviderDynatrace:Make;ProviderCoralogix:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -84,16 +84,19 @@ uses DataLogger;
 Um **_provider_** serve essencialmente para armazenar seus logs. 
 Cada instância de um TDataLogger pode ter vários **_providers_** configurados.
 
-Aqui temos uma lista de todos os _providers_ disponíveis:
+Aqui temos uma lista com **56 _providers_** disponíveis:
 
  | Nome | Uses | Samples | 
  | ------ | ------ | --------- | 
+ | [AWS CloudWatch](https://aws.amazon.com/cloudwatch) | DataLogger.Provider.AWS.CloudWatch | [AWS CloudWatch](https://github.com/dliocode/datalogger/tree/main/Samples/AWSCloudWatch) | 
  | [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) | 
  | Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console)<br /> [Console Simple](https://github.com/dliocode/datalogger/tree/main/Samples/Console%20-%20Simple)| 
+ | [Coralogix](https://coralogix.com/) | DataLogger.Provider.Coralogix | [Coralogix](https://github.com/dliocode/datalogger/tree/main/Samples/Coralogix) |  
  | CSV | DataLogger.Provider.CSV | [CSV](https://github.com/dliocode/datalogger/tree/main/Samples/CSV) |  
  | [Datadog](https://www.datadoghq.com/) | DataLogger.Provider.Datadog | [Datadog](https://github.com/dliocode/datalogger/tree/main/Samples/Datadog) |  
  | [Datalust](https://datalust.co/) | DataLogger.Provider.Datalust | [Datalust](https://github.com/dliocode/datalogger/tree/main/Samples/Datalust) |  
  | [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.Hook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) | 
+ | [Dynatrace](https://www.dynatrace.com/) | DataLogger.Provider.Dyatrace | [Dynatrace](https://github.com/dliocode/datalogger/tree/main/Samples/Dynatrace) |  
  | [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch | [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) | 
  | Email | DataLogger.Provider.Email | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) | 
  | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) | 
@@ -101,8 +104,11 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Firebase](https://firebase.google.com/) | DataLogger.Provider.Firebase.RealtimeDatabase | [Firebase](https://github.com/dliocode/datalogger/tree/main/Samples/Firebase) | 
  | [Grafana](https://grafana.com/) | DataLogger.Provider.Grafana.Loki<br />DataLogger.Provider.Grafana.OnCall.WebHook | [Grafana](https://github.com/dliocode/datalogger/tree/main/Samples/Grafana) |  
  | [GraphJSON](https://graphjson.com/) | DataLogger.Provider.GraphJSON | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON) | 
+ | [Graylog](https://www.graylog.org/) | DataLogger.Provider.Graylog | [Graylog](https://github.com/dliocode/datalogger/tree/main/Samples/Graylog) | 
+ | HTML | DataLogger.Provider.HTML | [HTML](https://github.com/dliocode/datalogger/tree/main/Samples/HTML) | 
  | ListBox | DataLogger.Provider.ListBox | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) | 
  | ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) | 
+ | [Logentries](https://logentries.com/) | DataLogger.Provider.Logentries | [Logentries](https://github.com/dliocode/datalogger/tree/main/Samples/Logentries) | 
  | [Logflare](https://logflare.app/) | DataLogger.Provider.Logflare | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare) | 
  | [Loggly](https://www.loggly.com/) | DataLogger.Provider.Loggly | [Loggly](https://github.com/dliocode/datalogger/tree/main/Samples/Loggly) | 
  | [Logstash](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstash | [Logstash](https://github.com/dliocode/datalogger/tree/main/Samples/Logstash) | 
@@ -132,6 +138,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | [Slack](https://slack.com/) | DataLogger.Provider.Slack | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) | 
  | [Splunk](https://www.splunk.com/) | DataLogger.Provider.Splunk | [Splunk](https://github.com/dliocode/datalogger/tree/main/Samples/Splunk) | 
  | Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket) | 
+ | [SumoLogic](https://www.sumologic.com/) | DataLogger.Provider.SumoLogic | [SumoLogic](https://github.com/dliocode/datalogger/tree/main/Samples/SumoLogic) | 
  | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) | 
  | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
  | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) | 
