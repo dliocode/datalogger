@@ -167,6 +167,7 @@ var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LJO: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -188,12 +189,18 @@ begin
 
       LJO.AddPair('metadata', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://api.logflare.app/api/logs?source=%s', [FSourceKey]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('https://api.logflare.app/api/logs?source=%s', [FSourceKey]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

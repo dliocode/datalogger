@@ -1,4 +1,4 @@
-unit UProviderLogstach;
+unit UProviderLogstash;
 
 interface
 
@@ -29,7 +29,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DataLogger, DataLogger.Provider.Logstach;
+  DataLogger, DataLogger.Provider.Logstash;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -50,7 +50,7 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderLogstach.Create
+    TProviderLogstash.Create
     .URL('http://localhost:5044')
     .Index('logger')
     );

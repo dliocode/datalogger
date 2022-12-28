@@ -145,7 +145,7 @@ begin
     Exit;
 
   try
-    ApiKey(LJO.GetValue<string>('api_key', FHTTP.Token));
+    ApiKey(LJO.GetValue<string>('api_key', FHTTP.Authorization));
     EmailFrom(LJO.GetValue<string>('email_from', FEmailFrom));
     EmailTo(LJO.GetValue<string>('email_to', String.Join(',', FEmailTo)).Split([',']));
     Subject(LJO.GetValue<string>('subject', FSubject));
@@ -162,7 +162,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_key', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('api_key', TJSONString.Create(FHTTP.Authorization));
     LJO.AddPair('email_from', TJSONString.Create(FEmailFrom));
     LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
     LJO.AddPair('subject', TJSONString.Create(FSubject));
@@ -224,12 +224,18 @@ begin
 
       LJO.AddPair('content', LJAContent);
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := FHTTP.URL;
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := FHTTP.URL;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

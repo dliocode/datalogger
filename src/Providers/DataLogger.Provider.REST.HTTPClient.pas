@@ -45,6 +45,8 @@ type
   TLogHeader = record
     Key: string;
     Value: string;
+
+    constructor Create(const AKey: string; const AValue: string);
   end;
 
   TLogFormData = record
@@ -52,7 +54,7 @@ type
     Value: string;
     ContentType: string;
 
-    class function Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData; static;
+    constructor Create(const AField: string; const AValue: string; const AContentType: string = '');
   end;
 
   TLogItemREST = record
@@ -69,36 +71,44 @@ type
   end;
 
   TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
+  TContentValidation = reference to function(const AContent: string; var AMessageException: string): Boolean;
   TRESTMethod = (tlmGet, tlmPost);
 
   TProviderRESTHTTPClient = class(TDataLoggerProvider<TProviderRESTHTTPClient>)
   private
     FURL: string;
     FContentType: string;
-    FToken: string;
+    FAuthorization: string;
     FMethod: TRESTMethod;
     FHeader: TArray<TLogHeader>;
-    FExecuteFinally: TExecuteFinally;
     FModeAsync: Boolean;
     FWaitTimeoutToSend: Integer;
+    FContentValidation: TContentValidation;
+    FExecuteFinally: TExecuteFinally;
     procedure HTTP(const AMethod: TRESTMethod; const AItemREST: TLogItemREST);
   protected
     function URL: string; overload;
-    function Token: string; overload;
+    function Authorization: string; overload;
+    function ContentType: string; overload;
+    function Header(const AKey: string): string;
+    function Method: TRESTMethod; overload;
+    function MethodString: string;
+
     procedure InternalSaveSync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderRESTHTTPClient; overload;
-    function ContentType(const AValue: string): TProviderRESTHTTPClient;
-    function Token(const AValue: string): TProviderRESTHTTPClient; overload;
+    function URL(const AValue: string; const AWithProtocol: Boolean = True): TProviderRESTHTTPClient; overload;
+    function ContentType(const AValue: string): TProviderRESTHTTPClient; overload;
+    function Authorization(const AValue: string): TProviderRESTHTTPClient; overload;
     function BearerToken(const AValue: string): TProviderRESTHTTPClient;
     function BasicAuth(const AUsername: string; const APassword: string): TProviderRESTHTTPClient;
-    function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
+    function Method(const AValue: TRESTMethod): TProviderRESTHTTPClient; overload;
     function AddHeader(const AKey: string; const AValue: string): TProviderRESTHTTPClient;
-    function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
     function ModeAsync(const AValue: Boolean): TProviderRESTHTTPClient;
     function WaitTimeoutToSend(const AValue: Integer): TProviderRESTHTTPClient;
+    function ContentValidation(const AContentValidation: TContentValidation): TProviderRESTHTTPClient;
+    function ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -116,24 +126,28 @@ begin
 
   URL('');
   ContentType('text/plain');
-  Token('');
+  Authorization('');
   Method(tlmPost);
-  ExecuteFinally(nil);
   ModeAsync(True);
   WaitTimeoutToSend(0);
+  ContentValidation(nil);
+  ExecuteFinally(nil);
 end;
 
-function TProviderRESTHTTPClient.URL(const AValue: string): TProviderRESTHTTPClient;
+function TProviderRESTHTTPClient.URL(const AValue: string; const AWithProtocol: Boolean = True): TProviderRESTHTTPClient;
 var
   LProtocol: string;
 begin
   Result := Self;
 
-  LProtocol := 'http://';
-
   FURL := AValue;
-  if not AValue.ToLower.StartsWith('http://') and not AValue.ToLower.StartsWith('https://') then
-    FURL := LProtocol + AValue;
+
+  if AWithProtocol then
+  begin
+    LProtocol := 'http://';
+    if not AValue.ToLower.StartsWith('http://') and not AValue.ToLower.StartsWith('https://') then
+      FURL := LProtocol + AValue;
+  end;
 end;
 
 function TProviderRESTHTTPClient.URL: string;
@@ -147,15 +161,20 @@ begin
   FContentType := AValue;
 end;
 
-function TProviderRESTHTTPClient.Token(const AValue: string): TProviderRESTHTTPClient;
+function TProviderRESTHTTPClient.ContentType: string;
 begin
-  Result := Self;
-  FToken := AValue;
+  Result := FContentType;
 end;
 
-function TProviderRESTHTTPClient.Token: string;
+function TProviderRESTHTTPClient.Authorization(const AValue: string): TProviderRESTHTTPClient;
 begin
-  Result := FToken;
+  Result := Self;
+  FAuthorization := AValue;
+end;
+
+function TProviderRESTHTTPClient.Authorization: string;
+begin
+  Result := FAuthorization;
 end;
 
 function TProviderRESTHTTPClient.BearerToken(const AValue: string): TProviderRESTHTTPClient;
@@ -163,21 +182,38 @@ begin
   Result := Self;
 
   if AValue.Trim.ToLower.Contains('bearer ') then
-    Token(AValue)
+    Authorization(AValue)
   else
-    Token('Bearer ' + AValue);
+    Authorization('Bearer ' + AValue);
 end;
 
 function TProviderRESTHTTPClient.BasicAuth(const AUsername: string; const APassword: string): TProviderRESTHTTPClient;
 begin
   Result := Self;
-  FToken := 'Basic ' + TNetEncoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
+  FAuthorization := 'Basic ' + TNetEncoding.Base64.Encode(Format('%s:%s', [AUsername, APassword]));
 end;
 
 function TProviderRESTHTTPClient.Method(const AValue: TRESTMethod): TProviderRESTHTTPClient;
 begin
   Result := Self;
   FMethod := AValue;
+end;
+
+function TProviderRESTHTTPClient.Method: TRESTMethod;
+begin
+  Result := FMethod;
+end;
+
+function TProviderRESTHTTPClient.MethodString: string;
+begin
+  Result := 'GET';
+
+  case FMethod of
+    tlmGet:
+      Result := 'GET';
+    tlmPost:
+      Result := 'POST';
+  end;
 end;
 
 function TProviderRESTHTTPClient.AddHeader(const AKey: string; const AValue: string): TProviderRESTHTTPClient;
@@ -206,10 +242,18 @@ begin
     FHeader := FHeader + [LHeader];
 end;
 
-function TProviderRESTHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+function TProviderRESTHTTPClient.Header(const AKey: string): string;
+var
+  I: Integer;
 begin
-  Result := Self;
-  FExecuteFinally := AExecuteFinally;
+  Result := '';
+
+  for I := Low(FHeader) to High(FHeader) do
+    if FHeader[I].Key = AKey then
+    begin
+      Result := FHeader[I].Value;
+      Break;
+    end;
 end;
 
 function TProviderRESTHTTPClient.ModeAsync(const AValue: Boolean): TProviderRESTHTTPClient;
@@ -222,6 +266,18 @@ function TProviderRESTHTTPClient.WaitTimeoutToSend(const AValue: Integer): TProv
 begin
   Result := Self;
   FWaitTimeoutToSend := AValue;
+end;
+
+function TProviderRESTHTTPClient.ContentValidation(const AContentValidation: TContentValidation): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FContentValidation := AContentValidation;
+end;
+
+function TProviderRESTHTTPClient.ExecuteFinally(const AExecuteFinally: TExecuteFinally): TProviderRESTHTTPClient;
+begin
+  Result := Self;
+  FExecuteFinally := AExecuteFinally;
 end;
 
 procedure TProviderRESTHTTPClient.LoadFromJSON(const AJSON: string);
@@ -245,7 +301,7 @@ begin
   try
     URL(LJO.GetValue<string>('url', FURL));
     ContentType(LJO.GetValue<string>('content_type', FContentType));
-    Token(LJO.GetValue<string>('token', FToken));
+    Authorization(LJO.GetValue<string>('token', FAuthorization));
 
     LValue := GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod));
     Method(TRESTMethod(GetEnumValue(TypeInfo(TRESTMethod), LJO.GetValue<string>('method', LValue))));
@@ -267,7 +323,7 @@ begin
   try
     LJO.AddPair('url', TJSONString.Create(FURL));
     LJO.AddPair('content_type', TJSONString.Create(FContentType));
-    LJO.AddPair('token', TJSONString.Create(FToken));
+    LJO.AddPair('token', TJSONString.Create(FAuthorization));
     LJO.AddPair('method', TJSONString.Create(GetEnumName(TypeInfo(TRESTMethod), Integer(FMethod))));
     LJO.AddPair('mode_async', TJSONBool.Create(FModeAsync));
     LJO.AddPair('wait_timeout_to_send', TJSONNumber.Create(FWaitTimeoutToSend));
@@ -348,6 +404,7 @@ var
   LResponseContent: string;
   I: Integer;
   LFormData: TMultipartFormData;
+  LExceptionMessage: string;
 begin
   try
     LURL := AItemREST.URL;
@@ -379,8 +436,8 @@ begin
     LHTTP.AcceptEncoding := 'gzip, deflate, br';
     LHTTP.Accept := '*/*';
 
-    if not FToken.Trim.IsEmpty then
-      LHTTP.CustomHeaders['Authorization'] := FToken;
+    if not FAuthorization.Trim.IsEmpty then
+      LHTTP.CustomHeaders['Authorization'] := FAuthorization;
 
     for I := Low(FHeader) to High(FHeader) do
       LHTTP.CustomHeaders[FHeader[I].Key] := FHeader[I].Value;
@@ -424,6 +481,11 @@ begin
         if not(LResponse.StatusCode in [200, 201, 202, 204]) then
           raise EDataLoggerException.Create(LResponseContent);
 
+        LExceptionMessage := '';
+        if Assigned(FContentValidation) then
+          if not FContentValidation(LResponseContent, LExceptionMessage) then
+            raise EDataLoggerException.Create(LExceptionMessage);
+
         Break;
       except
         on E: Exception do
@@ -456,13 +518,21 @@ begin
   end;
 end;
 
+{ TLogHeader }
+
+constructor TLogHeader.Create(const AKey: string; const AValue: string);
+begin
+  Self.Key := AKey;
+  Self.Value := AValue;
+end;
+
 { TLogFormData }
 
-class function TLogFormData.Create(const AField: string; const AValue: string; const AContentType: string = ''): TLogFormData;
+constructor TLogFormData.Create(const AField: string; const AValue: string; const AContentType: string = '');
 begin
-  Result.Field := AField;
-  Result.Value := AValue;
-  Result.ContentType := AContentType;
+  Self.Field := AField;
+  Self.Value := AValue;
+  Self.ContentType := AContentType;
 end;
 
 procedure ForceReferenceToClass(C: TClass);

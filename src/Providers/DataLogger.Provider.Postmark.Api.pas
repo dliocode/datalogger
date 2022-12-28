@@ -208,14 +208,20 @@ begin
         LJO.AddPair('Subject', TJSONString.Create(FSubject));
         LJO.AddPair('HTMLBody', TJSONString.Create(LLog));
 
-        LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-        LLogItemREST.LogItem := LItem;
-        LLogItemREST.URL := 'https://api.postmarkapp.com/email';
-
-        LItemREST := Concat(LItemREST, [LLogItemREST]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+        LLog := LJO.ToString;
+{$ELSE}
+        LLog := LJO.ToJSON;
+{$ENDIF}
       finally
         LJO.Free;
       end;
+
+      LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+      LLogItemREST.LogItem := LItem;
+      LLogItemREST.URL := 'https://api.postmarkapp.com/email';
+
+      LItemREST := Concat(LItemREST, [LLogItemREST]);
     end;
   end;
 

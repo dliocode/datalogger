@@ -116,7 +116,7 @@ begin
   Result := Self;
 
   FToken := AValue;
-  FHTTP.Token('Splunk ' + AValue);
+  FHTTP.Authorization('Splunk ' + AValue);
 end;
 
 procedure TProviderSplunk.LoadFromJSON(const AJSON: string);
@@ -168,6 +168,7 @@ var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LJO: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -184,12 +185,18 @@ begin
     try
       LJO.AddPair('event', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/services/collector/event', [FHTTP.URL.Trim(['/'])]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('%s/services/collector/event', [FHTTP.URL.Trim(['/'])]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

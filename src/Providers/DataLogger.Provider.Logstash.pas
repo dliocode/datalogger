@@ -30,15 +30,15 @@
   ********************************************************************************
 }
 
-unit DataLogger.Provider.Logstach;
+unit DataLogger.Provider.Logstash;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
+{$IF DEFINED(DATALOGGER_LOGSTASH_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_LOGSTACH_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_LOGSTASH_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -46,13 +46,13 @@ uses
   System.SysUtils, System.JSON;
 
 type
-  TProviderLogstach = class(TDataLoggerProvider<TProviderLogstach>)
+  TProviderLogstash = class(TDataLoggerProvider<TProviderLogstash>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_LOGSTACH_USE_INDY)}
+{$IF DEFINED(DATALOGGER_LOGSTASH_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_LOGSTACH_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_LOGSTASH_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
@@ -64,8 +64,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderLogstach;
-    function Index(const AValue: string): TProviderLogstach;
+    function URL(const AValue: string): TProviderLogstash;
+    function Index(const AValue: string): TProviderLogstash;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -77,9 +77,9 @@ type
 
 implementation
 
-{ TProviderLogstach }
+{ TProviderLogstash }
 
-constructor TProviderLogstach.Create;
+constructor TProviderLogstash.Create;
 begin
   inherited Create;
 
@@ -90,32 +90,32 @@ begin
   Index('logger');
 end;
 
-procedure TProviderLogstach.AfterConstruction;
+procedure TProviderLogstash.AfterConstruction;
 begin
   inherited;
 
   SetIgnoreLogFormat(True);
 end;
 
-destructor TProviderLogstach.Destroy;
+destructor TProviderLogstash.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderLogstach.URL(const AValue: string): TProviderLogstach;
+function TProviderLogstash.URL(const AValue: string): TProviderLogstash;
 begin
   Result := Self;
   FHTTP.URL(AValue);
 end;
 
-function TProviderLogstach.Index(const AValue: string): TProviderLogstach;
+function TProviderLogstash.Index(const AValue: string): TProviderLogstash;
 begin
   Result := Self;
   FIndex := AValue;
 end;
 
-procedure TProviderLogstach.LoadFromJSON(const AJSON: string);
+procedure TProviderLogstash.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -142,7 +142,7 @@ begin
   end;
 end;
 
-function TProviderLogstach.ToJSON(const AFormat: Boolean): string;
+function TProviderLogstash.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -159,7 +159,7 @@ begin
   end;
 end;
 
-procedure TProviderLogstach.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderLogstash.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
@@ -195,6 +195,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderLogstach);
+ForceReferenceToClass(TProviderLogstash);
 
 end.

@@ -69,7 +69,7 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function ServerURL(const AValue: string): TPRoviderNtfy;
+    function ServerURL(const AValue: string): TProviderNtfy;
     function Topic(const AValue: string): TProviderNtfy;
     function Title(const AValue: string; const AIncludeLevelInTitle: Boolean = True): TProviderNtfy;
 
@@ -110,7 +110,7 @@ begin
   inherited;
 end;
 
-function TProviderNtfy.ServerURL(const AValue: string): TPRoviderNtfy;
+function TProviderNtfy.ServerURL(const AValue: string): TProviderNtfy;
 begin
   Result := Self;
   FServerURL := AValue;
@@ -264,14 +264,20 @@ begin
       LJO.AddPair('message', TJSONString.Create(LLog));
       LJO.AddPair('priority', TJSONNumber.Create(LPriority));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := FServerURL;
-
-      LItemREST := Concat(LItemREST, [LLogItemREST]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := FServerURL;
+
+    LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
   FHTTP

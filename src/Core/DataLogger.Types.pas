@@ -43,6 +43,7 @@ type
   end;
 
 {$SCOPEDENUMS ON}
+
   TLoggerLevel = (All, Trace, Debug, Info, Success, Warn, Error, Fatal, Custom);
   TLoggerLevels = set of TLoggerLevel;
 
@@ -96,7 +97,9 @@ type
   private
     class function AsBase(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const APrefix: string = 'log_'): TJSONObject;
   public
-    class function AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
+    class function AsHeader(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;
+    class function AsValues(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;
+
     class function AsJsonObject(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TJSONObject;
     class function AsJsonObjectToString(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): string;
     class function AsString(
@@ -142,6 +145,8 @@ type
   TLoggerConst = record
   const
     TRANSACTION_ID = 'DATALOGGER_TRANSACTION';
+    BASE_FORMAT: array [0 .. 19] of string = ('timestamp', 'timestamp_iso8601', 'timestamp_unix', 'name', 'sequence', 'thread_id', 'level', 'level_value', 'tag', 'message', 'app_name', 'app_version', 'app_path', 'app_size', 'computer_name', 'username', 'os_version', 'process_id', 'ip_local', 'mac_address');
+    BASE_FORMAT_NAME: array [0 .. 19] of string = ('Timestamp', 'Timestamp ISO8601', 'Timestamp Unix', 'Name', 'Sequence', 'Thread ID', 'Level', 'Level Value', 'Tag', 'Message', 'App Name', 'App Version', 'App Path', 'App Size', 'Computer Name', 'Username', 'OS Version', 'Process ID', 'IP Local', 'Mac Address');
   end;
 
 implementation
@@ -235,9 +240,44 @@ begin
   _Add(TLoggerFormat.LOG_MAC_ADDRESS, APrefix + 'mac_address', TJSONString.Create(AItem.MACAddress));
 end;
 
-class function TLoggerSerializeItem.AsCSV(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False; const ASeparator: Char = ','; const AOnlyHeader: Boolean = False): string;
+class function TLoggerSerializeItem.AsHeader(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;
 var
-  LLog: string;
+  LJO: TJSONObject;
+  I: Integer;
+  LKey: string;
+  LLetter: TLoggerLetter;
+  LKeyLetter: string;
+begin
+  Result := [];
+
+  LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, True, '');
+  try
+    for I := 0 to Pred(LJO.Count) do
+    begin
+      LKey := LJO.Pairs[I].JsonString.Value;
+
+      for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
+      begin
+        if not AIgnoreLogFormat then
+        begin
+          LKeyLetter := Format('${%s}', [LKey + TLoggerLetterKeyString[LLetter]]);
+          if not ALogFormat.Contains(LKeyLetter) then
+            Continue;
+        end;
+
+        Result := Result + [LKey];
+
+        if AIgnoreLogFormat then
+          Break;
+      end;
+    end;
+  finally
+    LJO.Free;
+  end;
+end;
+
+class function TLoggerSerializeItem.AsValues(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;
+var
   LJO: TJSONObject;
   I: Integer;
   LKey: string;
@@ -245,7 +285,7 @@ var
   LValue: string;
   LKeyLetter: string;
 begin
-  LLog := '';
+  Result := [];
 
   LJO := AsBase(ALogFormat, AItem, AFormatTimestamp, True, '');
   try
@@ -263,40 +303,30 @@ begin
             Continue;
         end;
 
-        if AOnlyHeader then
-        begin
-          LLog := LLog + LKey + ASeparator;
-          Break;
-        end
-        else
-        begin
-          if not LValue.Trim.IsEmpty then
-            case LLetter of
-              tlNone:
-                ;
+        if not LValue.Trim.IsEmpty then
+          case LLetter of
+            tlNone:
+              ;
 
-              tlUpper:
-                LValue := UpperCase(LValue);
+            tlUpper:
+              LValue := UpperCase(LValue);
 
-              tlLower:
+            tlLower:
+              LValue := LowerCase(LValue);
+
+            tlFirstUp:
+              begin
                 LValue := LowerCase(LValue);
+                LValue[1] := UpCase(LValue[1]);
+              end;
+          end;
 
-              tlFirstUp:
-                begin
-                  LValue := LowerCase(LValue);
-                  LValue[1] := UpCase(LValue[1]);
-                end;
-            end;
+        Result := Result + [LValue];
 
-          LLog := LLog + LValue + ASeparator;
-
-          if AIgnoreLogFormat then
-            Break;
-        end;
+        if AIgnoreLogFormat then
+          Break;
       end;
     end;
-
-    Result := LLog.Trim([ASeparator]);
   finally
     LJO.Free;
   end;
@@ -313,7 +343,7 @@ var
 begin
   LJO := AsJsonObject(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat);
   try
-{$IF RTLVersion > 32} // 32 = Delphi Tokyo (10.2)
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
     Result := LJO.ToString;
 {$ELSE}
     Result := LJO.ToJSON;

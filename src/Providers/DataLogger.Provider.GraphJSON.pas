@@ -189,12 +189,18 @@ begin
       LJO.AddPair('timestamp', TJSONNumber.Create(LItem.TimestampUNIX));
       LJO.AddPair('json', TJSONString.Create(LLog));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := 'https://api.graphjson.com/api/log';
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := 'https://api.graphjson.com/api/log';
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

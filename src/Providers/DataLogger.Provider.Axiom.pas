@@ -134,7 +134,7 @@ begin
     Exit;
 
   try
-    ApiToken(LJO.GetValue<string>('api_token', FHTTP.Token));
+    ApiToken(LJO.GetValue<string>('api_token', FHTTP.Authorization));
     Dataset(LJO.GetValue<string>('dataset', FDataset));
 
     SetJSONInternal(LJO);
@@ -149,7 +149,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('api_token', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('api_token', TJSONString.Create(FHTTP.Authorization));
     LJO.AddPair('dataset', TJSONString.Create(FDataset));
 
     ToJSONInternal(LJO);

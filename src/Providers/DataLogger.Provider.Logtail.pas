@@ -126,7 +126,7 @@ begin
     Exit;
 
   try
-    SourceToken(LJO.GetValue<string>('source_token', FHTTP.Token));
+    SourceToken(LJO.GetValue<string>('source_token', FHTTP.Authorization));
 
     SetJSONInternal(LJO);
   finally
@@ -140,7 +140,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('source_token', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('source_token', TJSONString.Create(FHTTP.Authorization));
 
     ToJSONInternal(LJO);
 
@@ -155,6 +155,7 @@ var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LJO: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -174,12 +175,18 @@ begin
       else
         LJO.AddPair('message', TJSONString.Create(LItem.Message));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := 'https://in.logtail.com';
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := 'https://in.logtail.com';
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

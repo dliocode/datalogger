@@ -91,7 +91,7 @@ type
     function ToString: string;
   end;
 
-{ TProviderTelegram }
+  { TProviderTelegram }
 
 const
   TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates'; // https://api.telegram.org/bot<TOKEN>/getUpdates
@@ -267,20 +267,26 @@ begin
     if FParseMode <> TTelegramParseMode.tpNone then
       SerializeMessageParseMode;
 
-    LJO:= TJSONObject.Create;
+    LJO := TJSONObject.Create;
     try
       LJO.AddPair('chat_id', TJSONString.Create(FChatId));
       LJO.AddPair('text', TJSONString.Create(LLog));
       LJO.AddPair('parse_mode', TJSONString.Create(FParseMode.ToString));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://api.telegram.org/bot%s/sendMessage', [FBotToken]);
-
-      LItemREST := Concat(LItemREST, [LLogItemREST]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('https://api.telegram.org/bot%s/sendMessage', [FBotToken]);
+
+    LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
 
   FHTTP
@@ -295,9 +301,12 @@ end;
 function TProviderTelegramHelper.ToString: string;
 begin
   case Self of
-    TTelegramParseMode.tpNone: Result := 'HTML';
-    TTelegramParseMode.tpHTML: Result := 'HTML';
-    TTelegramParseMode.tpMarkdown: Result := 'MarkdownV2';
+    TTelegramParseMode.tpNone:
+      Result := 'HTML';
+    TTelegramParseMode.tpHTML:
+      Result := 'HTML';
+    TTelegramParseMode.tpMarkdown:
+      Result := 'MarkdownV2';
   end;
 end;
 

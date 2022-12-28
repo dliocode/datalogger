@@ -192,12 +192,18 @@ begin
       LJO.AddPair('avatar_url', TJSONString.Create(FAvatarURL));
       LJO.AddPair('content', TJSONString.Create(LLog));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := FHTTP.URL;
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := FHTTP.URL;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

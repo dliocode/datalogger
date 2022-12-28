@@ -1,8 +1,8 @@
-program ProviderLogstach;
+program ProviderLogstash;
 
 uses
   Vcl.Forms,
-  UProviderLogstach in 'UProviderLogstach.pas' {Form2};
+  UProviderLogstash in 'UProviderLogstash.pas' {Form2};
 
 {$R *.res}
 

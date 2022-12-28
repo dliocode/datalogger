@@ -105,7 +105,7 @@ Aqui temos uma lista de todos os _providers_ disponíveis:
  | ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) | 
  | [Logflare](https://logflare.app/) | DataLogger.Provider.Logflare | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare) | 
  | [Loggly](https://www.loggly.com/) | DataLogger.Provider.Loggly | [Loggly](https://github.com/dliocode/datalogger/tree/main/Samples/Loggly) | 
- | [Logstach](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstach | [Logstach](https://github.com/dliocode/datalogger/tree/main/Samples/Logstach) | 
+ | [Logstash](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstash | [Logstash](https://github.com/dliocode/datalogger/tree/main/Samples/Logstash) | 
  | [Logtail](https://betterstack.com/logtail) | DataLogger.Provider.Logtail | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail) |  
  | [Logz](https://logz.io/) | DataLogger.Provider.Logz | [Logz](https://github.com/dliocode/datalogger/tree/main/Samples/Logz) |  
  | [Mailgun](https://www.mailgun.com/) | DataLogger.Provider.Mailgun.Api | [Mailgun](https://github.com/dliocode/datalogger/tree/main/Samples/Mailgun-Api) |  

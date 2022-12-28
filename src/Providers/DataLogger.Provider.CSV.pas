@@ -70,6 +70,7 @@ type
     procedure RotateLog;
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
+    procedure MakeHeader;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -307,20 +308,20 @@ begin
   CreateWriter;
   try
     if not LFileExist then
-      InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+      MakeHeader;
 
     for LItem in ACache do
     begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, False));
+      InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsValues(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
 
       if FMaxFileSizeInKiloByte > 0 then
         if FWriter.BaseStream.Size > FMaxFileSizeInKiloByte * 1024 then
         begin
           RotateLog;
-          InternalWriteLog(TLoggerSerializeItem.AsCSV(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FSeparator, True));
+          InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsHeader(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
         end;
     end;
   finally
@@ -499,6 +500,7 @@ begin
   CreateWriter;
   InternalWriteLog('[START ROTATE ' + LRotateDateTime + ']');
   InternalWriteLog('');
+  MakeHeader;
 end;
 
 procedure TProviderCSV.ZipFile(const ADirFileName: string; const AFileName: string);
@@ -542,6 +544,13 @@ begin
     LZipFile.Close;
     LZipFile.Free;
   end;
+end;
+
+procedure TProviderCSV.MakeHeader;
+var
+  LItem: TLoggerItem;
+begin
+  InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsHeader(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
 end;
 
 procedure ForceReferenceToClass(C: TClass);

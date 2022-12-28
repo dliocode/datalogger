@@ -135,7 +135,7 @@ begin
 
   try
     URL(LJO.GetValue<string>('url', FHTTP.URL));
-    BearerToken(LJO.GetValue<string>('token', FHTTP.Token));
+    BearerToken(LJO.GetValue<string>('token', FHTTP.Authorization));
     ChannelId(LJO.GetValue<string>('channel_id', FChannelId));
 
     SetJSONInternal(LJO);
@@ -151,7 +151,7 @@ begin
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('url', TJSONString.Create(FHTTP.URL));
-    LJO.AddPair('token', TJSONString.Create(FHTTP.Token));
+    LJO.AddPair('token', TJSONString.Create(FHTTP.Authorization));
     LJO.AddPair('channel_id', TJSONString.Create(FChannelId));
 
     ToJSONInternal(LJO);
@@ -187,14 +187,19 @@ begin
       LJO.AddPair('channel_id', TJSONString.Create(FChannelId));
       LJO.AddPair('message', TJSONString.Create(LLog));
 
-      LLog := LJO.ToString.Replace(#$D#$A,'\n');
-
-      LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/api/v4/posts', [FHTTP.URL.Trim(['/'])]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
+      LLog := LLog.Replace(#$D#$A, '\n');
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('%s/api/v4/posts', [FHTTP.URL.Trim(['/'])]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

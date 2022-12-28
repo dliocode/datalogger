@@ -120,7 +120,7 @@ begin
   Result := Self;
 
   FApiKey := AValue;
-  FHTTP.Token('ApiKey ' + AValue);
+  FHTTP.Authorization('ApiKey ' + AValue);
 end;
 
 function TProviderNovu.TemplateID(const AValue: string): TProviderNovu;
@@ -185,7 +185,7 @@ begin
   try
     LJO.AddPair('api_key', TJSONString.Create(FApiKey));
     LJO.AddPair('template_id', TJSONString.Create(FTemplateID));
-    LJO.AddPair('subscriber_id', TJSONSTring.Create(FSubscriberID));
+    LJO.AddPair('subscriber_id', TJSONString.Create(FSubscriberID));
     LJO.AddPair('email_to', TJSONString.Create(String.Join(',', FEmailTo)));
     LJO.AddPair('subject', TJSONString.Create(FSubject));
 
@@ -204,6 +204,7 @@ var
   LJOLog: TJSONObject;
   LJO: TJSONObject;
   LJOTo: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
   I: Integer;
 begin
@@ -234,12 +235,18 @@ begin
           LJOLog.AddPair('subject', TJSONString.Create(FSubject));
           LJO.AddPair('payload', LJOLog.Clone as TJSONObject);
 
-          LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-          LLogItemREST.LogItem := LItem;
-          LLogItemREST.URL := 'https://api.novu.co/v1/events/trigger';
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+          LLog := LJO.ToString;
+{$ELSE}
+          LLog := LJO.ToJSON;
+{$ENDIF}
         finally
           LJO.Free;
         end;
+
+        LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+        LLogItemREST.LogItem := LItem;
+        LLogItemREST.URL := 'https://api.novu.co/v1/events/trigger';
 
         LItemREST := Concat(LItemREST, [LLogItemREST]);
       end;

@@ -156,6 +156,7 @@ var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
   LJO: TJSONObject;
+  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -175,12 +176,18 @@ begin
       else
         LJO.AddPair('message', TJSONString.Create(LItem.Message));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('https://log-api.newrelic.com/log/v1?Api-Key=%s', [FApiKey]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('https://log-api.newrelic.com/log/v1?Api-Key=%s', [FApiKey]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

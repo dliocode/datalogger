@@ -1,7 +1,7 @@
 object Form2: TForm2
   Left = 0
   Top = 0
-  Caption = 'DataLogger - Logstach'
+  Caption = 'DataLogger - Logstash'
   ClientHeight = 58
   ClientWidth = 624
   Color = clBtnFace

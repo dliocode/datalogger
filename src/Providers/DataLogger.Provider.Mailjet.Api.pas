@@ -276,12 +276,18 @@ begin
 
       LJO.AddPair('Messages', TJSONArray.Create.Add(LJOMessage));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := 'https://api.mailjet.com/v3.1/send';
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := 'https://api.mailjet.com/v3.1/send';
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;

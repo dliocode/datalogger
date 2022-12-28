@@ -225,12 +225,18 @@ begin
       LJOData.AddPair('values', TJSONArray.Create.Add(TJSONArray.Create.Add(LDateUNIX).Add(LLog)));
       LJO.AddPair('streams', TJSONArray.Create.Add(LJOData));
 
-      LLogItemREST.Stream := TStringStream.Create(LJO.ToString, TEncoding.UTF8);
-      LLogItemREST.LogItem := LItem;
-      LLogItemREST.URL := Format('%s/loki/api/v1/push', [FHTTP.URL.Trim(['/'])]);
+{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
+      LLog := LJO.ToString;
+{$ELSE}
+      LLog := LJO.ToJSON;
+{$ENDIF}
     finally
       LJO.Free;
     end;
+
+    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.LogItem := LItem;
+    LLogItemREST.URL := Format('%s/loki/api/v1/push', [FHTTP.URL.Trim(['/'])]);
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
