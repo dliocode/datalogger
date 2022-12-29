@@ -139,7 +139,7 @@ Aqui temos uma lista com **56 _providers_** disponíveis:
  | [Splunk](https://www.splunk.com/) | DataLogger.Provider.Splunk | [Splunk](https://github.com/dliocode/datalogger/tree/main/Samples/Splunk) | 
  | Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket) | 
  | [SumoLogic](https://www.sumologic.com/) | DataLogger.Provider.SumoLogic | [SumoLogic](https://github.com/dliocode/datalogger/tree/main/Samples/SumoLogic) | 
- | SysLog | DataLogger.Provider.SysLog | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) | 
+ | SysLog | DataLogger.Provider.SysLog<br />DataLogger.Provider.SysLog.Indy | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog)<br />[SysLog Indy](https://github.com/dliocode/datalogger/tree/main/Samples/SysLogIndy) | 
  | [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) | 
  | TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) | 
  | [Twilio](https://www.twilio.com/) | DataLogger.Provider.Twilio.SMS<br />DataLogger.Provider.Twilio.WhatsApp | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio) |  
