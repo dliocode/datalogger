@@ -30,40 +30,65 @@
   ********************************************************************************
 }
 
-// https://man7.org/linux/man-pages/man3/syslog.3.html
-
-unit DataLogger.Provider.SysLog;
+unit DataLogger.Provider.SysLog.Indy;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(LINUX)}
-  Posix.Base,
-{$ENDIF}
+  IdSysLog, IdSysLogMessage,
   System.SysUtils, System.JSON;
 
 type
-  TProviderSysLog = class(TDataLoggerProvider<TProviderSysLog>)
+  TProviderSysLogIndy = class(TDataLoggerProvider<TProviderSysLogIndy>)
   private
+    FSysLog: TIdSysLog;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    function Host(const AValue: string): TProviderSysLogIndy;
+    function Port(const AValue: Integer): TProviderSysLogIndy;
+
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
+
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
 
-{$IF DEFINED(LINUX)}
-procedure OpenLog(ident: MarshaledAString; option: LongInt; facility: LongInt); cdecl; external libc name _PU + 'openlog';
-procedure SysLog(priority: LongInt; _format: MarshaledAString; args: array of const); cdecl; external libc name _PU + 'syslog';
-procedure CloseLog; cdecl; external libc name _PU + 'closelog';
-{$ENDIF}
+{ TProviderSysLogIndy }
 
-{ TProviderSysLog }
+constructor TProviderSysLogIndy.Create;
+begin
+  inherited Create;
 
-procedure TProviderSysLog.LoadFromJSON(const AJSON: string);
+  FSysLog := TIdSysLog.Create(nil);
+
+  Host('127.0.0.1');
+  Port(514);
+end;
+
+destructor TProviderSysLogIndy.Destroy;
+begin
+  FSysLog.Free;
+  inherited;
+end;
+
+function TProviderSysLogIndy.Host(const AValue: string): TProviderSysLogIndy;
+begin
+  Result := Self;
+  FSysLog.Host := AValue;
+end;
+
+function TProviderSysLogIndy.Port(const AValue: Integer): TProviderSysLogIndy;
+begin
+  Result := Self;
+  FSysLog.Port := AValue;
+end;
+
+procedure TProviderSysLogIndy.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -81,18 +106,24 @@ begin
     Exit;
 
   try
+    Host(LJO.GetValue<string>('host', FSysLog.Host));
+    Port(LJO.GetValue<Integer>('port', FSysLog.Port));
+
     SetJSONInternal(LJO);
   finally
     LJO.Free;
   end;
 end;
 
-function TProviderSysLog.ToJSON(const AFormat: Boolean): string;
+function TProviderSysLogIndy.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
   LJO := TJSONObject.Create;
   try
+    LJO.AddPair('host', TJSONString.Create(FSysLog.Host));
+    LJO.AddPair('port', TJSONNumber.Create(FSysLog.Port));
+
     ToJSONInternal(LJO);
 
     Result := TLoggerJSON.Format(LJO, AFormat);
@@ -101,69 +132,72 @@ begin
   end;
 end;
 
-procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);
-const
-  LOG_OPTION_PID = $01;
-  LOG_OPTION_NDELAY = $08;
-  LOG_FACILITY_USER = 1 shl 3;
-  LOG_LEVEL_CRITICAL = 2;
-  LOG_LEVEL_ERROR = 3;
-  LOG_LEVEL_WARNING = 4;
-  LOG_LEVEL_NOTICE = 5;
-  LOG_LEVEL_INFO = 6;
-  LOG_LEVEL_DEBUG = 7;
-
+procedure TProviderSysLogIndy.Save(const ACache: TArray<TLoggerItem>);
 var
   LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
-  LPriority: LongInt;
-{$IF DEFINED(LINUX)}
-  LM: TMarshaller;
-{$ENDIF}
+  LSysLogMessage: TIdSysLogMessage;
 begin
-{$IF NOT DEFINED(LINUX)}
-  Exit;
-{$ENDIF}
   if Length(ACache) = 0 then
     Exit;
 
-  OpenLog(nil, LOG_OPTION_PID or LOG_OPTION_NDELAY, LOG_FACILITY_USER);
-  try
-    for LItem in ACache do
-    begin
-      if LItem.InternalItem.IsSlinebreak then
-        Continue;
+  for LItem in ACache do
+  begin
+    if LItem.InternalItem.IsSlinebreak then
+      Continue;
 
-      LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+
+    LSysLogMessage := TIdSysLogMessage.Create(nil);
+    try
+      LSysLogMessage.TimeStamp := LItem.Timestamp;
+      LSysLogMessage.Hostname := LItem.ComputerName;
+      LSysLogMessage.Facility := TIdSyslogFacility.sfUserLevel;;
+      LSysLogMessage.Msg.Process := LItem.ProcessId;
+      LSysLogMessage.Msg.PID := LItem.ProcessId.ToInteger;
 
       case LItem.Level of
-        TLoggerLevel.Trace, TLoggerLevel.Debug:
-          LPriority := LOG_LEVEL_DEBUG;
+        TLoggerLevel.Trace:
+          LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
 
-        TLoggerLevel.Info, TLoggerLevel.Success:
-          LPriority := LOG_LEVEL_INFO;
+        TLoggerLevel.Debug:
+          LSysLogMessage.Severity := TIdSyslogSeverity.slDebug;
+
+        TLoggerLevel.Info:
+          LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
 
         TLoggerLevel.Warn:
-          LPriority := LOG_LEVEL_WARNING;
+          LSysLogMessage.Severity := TIdSyslogSeverity.slWarning;
 
         TLoggerLevel.Error:
-          LPriority := LOG_LEVEL_ERROR;
+          LSysLogMessage.Severity := TIdSyslogSeverity.slError;
+
+        TLoggerLevel.Success:
+          LSysLogMessage.Severity := TIdSyslogSeverity.slNotice;
 
         TLoggerLevel.Fatal:
-          LPriority := LOG_LEVEL_CRITICAL;
+          LSysLogMessage.Severity := TIdSyslogSeverity.slCritical;
 
         TLoggerLevel.Custom:
-          LPriority := LOG_LEVEL_NOTICE;
-      else
-        LPriority := LOG_LEVEL_INFO;
+          LSysLogMessage.Severity := TIdSyslogSeverity.slInformational;
       end;
+
+      LSysLogMessage.Msg.Text := LItem.Message;
+      if LSysLogMessage.Msg.Text.Trim.IsEmpty then
+        LSysLogMessage.Msg.Text := LItem.MessageJSON;
+
+      if LSysLogMessage.Msg.Text.Trim.IsEmpty then
+        Exit;
 
       LRetriesCount := 0;
 
       while True do
         try
-          SysLog(LPriority, LM.AsAnsi(LLog, CP_UTF8).ToPointer, []);
+          if not FSysLog.Connected then
+            FSysLog.Connect;
+
+          FSysLog.SendLogMessage(LSysLogMessage, False);
 
           Break;
         except
@@ -186,9 +220,9 @@ begin
               Break;
           end;
         end;
+    finally
+      LSysLogMessage.Free;
     end;
-  finally
-    CloseLog();
   end;
 end;
 
@@ -198,6 +232,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderSysLog);
+ForceReferenceToClass(TProviderSysLogIndy);
 
 end.

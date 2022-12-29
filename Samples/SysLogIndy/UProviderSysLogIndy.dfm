@@ -1,7 +1,7 @@
 object Form2: TForm2
   Left = 0
   Top = 0
-  Caption = 'DataLogger - SysLog'
+  Caption = 'DataLogger - SysLogIndy'
   ClientHeight = 60
   ClientWidth = 624
   Color = clBtnFace

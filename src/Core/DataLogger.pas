@@ -50,6 +50,7 @@ type
   TLoggerSerializeItem = DataLogger.Types.TLoggerSerializeItem;
 
   EDataLoggerException = DataLogger.Types.EDataLoggerException;
+  Exception = System.SysUtils.Exception;
 
   TDataLogger = class
   private
@@ -57,20 +58,16 @@ type
     FEvent: TEvent;
     FThreadExecute: TThread;
     FThreadTerminated: Boolean;
-
     FLoggerItems: TList<TLoggerItem>;
     FProviders: TObjectList<TDataLoggerProviderBase>;
-
     FLevel: TLoggerLevel;
     FDisableLevel: TLoggerLevels;
     FOnlyLevel: TLoggerLevels;
     FName: string;
     FTagNameIsRequired: Boolean;
     FGenerateLogWithoutProvider: Boolean;
-
     FSequence: UInt64;
     FHasProvider: Boolean;
-
     FLiveMode: Boolean;
 
     constructor Create;
@@ -181,9 +178,6 @@ type
     function SetLevel(const ALevel: TLoggerLevel): TDataLogger;
     function SetDisableLevel(const ALevels: TLoggerLevels): TDataLogger;
     function SetOnlyLevel(const ALevels: TLoggerLevels): TDataLogger;
-    function SetLogLevel(const ALevel: TLoggerLevel): TDataLogger; deprecated 'Use SetLevel instead - This function will be removed in future versions';
-    function SetDisableLogLevel(const ALevels: TLoggerLevels): TDataLogger; deprecated 'Use SetDisableLevel instead - This function will be removed in future versions';
-    function SetOnlyLogLevel(const ALevels: TLoggerLevels): TDataLogger; deprecated 'Use SetOnlyLevel instead - This function will be removed in future versions';
     function SetLogException(const AException: TLoggerOnException): TDataLogger;
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
     function SetInitialMessage(const AMessage: string): TDataLogger;
@@ -801,21 +795,6 @@ begin
   finally
     UnLock;
   end;
-end;
-
-function TDataLogger.SetLogLevel(const ALevel: TLoggerLevel): TDataLogger;
-begin
-  Result := SetLevel(ALevel);
-end;
-
-function TDataLogger.SetDisableLogLevel(const ALevels: TLoggerLevels): TDataLogger;
-begin
-  Result := SetDisableLevel(ALevels);
-end;
-
-function TDataLogger.SetOnlyLogLevel(const ALevels: TLoggerLevels): TDataLogger;
-begin
-  Result := SetOnlyLevel(ALevels);
 end;
 
 function TDataLogger.SetLogException(const AException: TLoggerOnException): TDataLogger;

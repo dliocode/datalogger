@@ -224,20 +224,16 @@ begin
         try
           for I := 0 to Pred(LJO.Count) do
           begin
-            LKey := Format('${%s}', [LJO.Pairs[I].JsonString.Value]);
+            LKey := LJO.Pairs[I].JsonString.Value;
+            LValue := LJO.Pairs[I].JsonValue.Clone as TJSONValue;
 
-            if ALogFormat.Contains(LKey) or AIgnoreLogFormat then
-            begin
-              LValue := LJO.Pairs[I].JsonValue.Clone as TJSONValue;
-              Result.AddPair(LJO.Pairs[I].JsonString.Value, LValue);
-            end;
+            _Add(Format('${%s}', [LKey]), LKey, LValue);
           end;
         finally
           LJO.Free;
         end;
     except
     end;
-
 end;
 
 class function TLoggerSerializeItem.AsHeader(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string; const AIgnoreLogFormat: Boolean = False): TArray<string>;

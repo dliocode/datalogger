@@ -1,4 +1,4 @@
-unit UProviderSysLog;
+unit UProviderSysLogIndy;
 
 interface
 
@@ -29,7 +29,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DataLogger, DataLogger.Provider.SysLog;
+  DataLogger, DataLogger.Provider.SysLog.Indy;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -50,13 +50,13 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderSysLog.Create
-    .Host('http://localhost')
-    .Port(9200)
+    TProviderSysLogIndy.Create
+    .Host('127.0.0.1')
+    .Port(514)
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetLogFormat('[' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);
