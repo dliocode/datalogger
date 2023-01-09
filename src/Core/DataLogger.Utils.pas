@@ -46,8 +46,8 @@ uses
 {$ELSEIF DEFINED(ANDROID)}
     Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
 {$ENDIF}
-  IdStack,
-  System.IOUtils, System.SysUtils, System.Types, System.RTTI, System.JSON, REST.JSON;
+  IdStack, {$IF RTLVersion < 33} REST.JSON, {$ENDIF}
+  System.IOUtils, System.SysUtils, System.Types, System.RTTI, System.JSON;
 
 type
   TLoggerUtils = class

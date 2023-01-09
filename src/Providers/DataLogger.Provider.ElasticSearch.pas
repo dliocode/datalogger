@@ -30,6 +30,10 @@
   ********************************************************************************
 }
 
+// https://www.elastic.co
+// https://www.elastic.co/guide/index.html#viewall
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+
 unit DataLogger.Provider.ElasticSearch;
 
 interface
@@ -43,7 +47,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.JSON;
+  System.SysUtils, System.JSON, System.StrUtils;
 
 type
   TProviderElasticSearch = class(TDataLoggerProvider<TProviderElasticSearch>)
@@ -123,9 +127,26 @@ begin
 end;
 
 function TProviderElasticSearch.Index(const AValue: string): TProviderElasticSearch;
+const
+  C_REMOVE: array [0 .. 10] of string = ('\', '/', '*', '?', '"', '<', '>', '|', ' ', ',', '#');
+var
+  LIndex: string;
+  I: Integer;
 begin
   Result := Self;
-  FIndex := AValue;
+
+  LIndex := AValue;
+
+  // https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+  for I := Low(C_REMOVE) to High(C_REMOVE) do
+    LIndex := LIndex.Replace(C_REMOVE[I], '');
+
+  LIndex := LIndex.TrimRight(['-', '+', '_']);
+
+  if LIndex.Trim.IsEmpty or MatchText(LIndex, ['.', '..']) then
+    raise EDataLoggerException.CreateFmt('%s -> Index %s invalid!', [Self.ClassName, AValue]);
+
+  FIndex := LIndex;
 end;
 
 procedure TProviderElasticSearch.LoadFromJSON(const AJSON: string);

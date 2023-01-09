@@ -190,7 +190,6 @@ type
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
-
     function LoadFromJSON(const AJSON: string): Boolean;
     function ToJSON(const AFormat: Boolean = False): string;
 
@@ -1119,6 +1118,7 @@ end;
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger;
 var
   LLogItem: TLoggerItem;
+  LMessage: string;
 begin
   Result := Self;
 
@@ -1128,7 +1128,13 @@ begin
 
   if FTagNameIsRequired and not AIsSlinebreak then
     if ATagName.Trim.IsEmpty then
-      raise EDataLoggerException.Create('Tag name is required!');
+    begin
+      LMessage := AMessageString;
+      if AMessageString.Trim.IsEmpty then
+        LMessage := AMessageJSON;
+
+      raise EDataLoggerException.CreateFmt('Tag name is required in message "%s"!', [LMessage]);
+    end;
 
   Lock;
   try

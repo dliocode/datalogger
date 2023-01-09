@@ -45,7 +45,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.NetEncoding, System.JSON, System.TypInfo, System.Classes;
+  System.SysUtils, System.JSON, System.TypInfo, System.Classes;
 
 type
 {$SCOPEDENUMS ON}

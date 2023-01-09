@@ -102,6 +102,7 @@ begin
 end;
 
 procedure TProviderSysLog.Save(const ACache: TArray<TLoggerItem>);
+{$IF DEFINED(LINUX)}
 const
   LOG_OPTION_PID = $01;
   LOG_OPTION_NDELAY = $08;
@@ -118,13 +119,10 @@ var
   LItem: TLoggerItem;
   LLog: string;
   LPriority: LongInt;
-{$IF DEFINED(LINUX)}
   LM: TMarshaller;
 {$ENDIF}
 begin
-{$IF NOT DEFINED(LINUX)}
-  Exit;
-{$ENDIF}
+{$IF DEFINED(LINUX)}
   if Length(ACache) = 0 then
     Exit;
 
@@ -164,7 +162,6 @@ begin
       while True do
         try
           SysLog(LPriority, LM.AsAnsi(LLog, CP_UTF8).ToPointer, []);
-
           Break;
         except
           on E: Exception do
@@ -190,6 +187,7 @@ begin
   finally
     CloseLog();
   end;
+{$ENDIF}
 end;
 
 procedure ForceReferenceToClass(C: TClass);

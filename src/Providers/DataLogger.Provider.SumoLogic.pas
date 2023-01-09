@@ -153,7 +153,6 @@ procedure TProviderSumoLogic.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
-  LLog: string;
   LLogItemREST: TLogItemREST;
 begin
   LItemREST := [];
@@ -166,9 +165,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
-
-    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+    LLogItemREST.Stream := TLoggerSerializeItem.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := FHTTP.URL;
 
