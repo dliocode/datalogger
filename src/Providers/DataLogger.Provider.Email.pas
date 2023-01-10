@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -157,7 +157,7 @@ begin
   if not Assigned(FIdSMTP) then
     raise EDataLoggerException.Create('IdSMTP not defined!');
 
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   LIdMessage := TIdMessage.Create;
@@ -212,10 +212,10 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             Break;
         end;
       end;

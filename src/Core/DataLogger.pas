@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -301,7 +301,7 @@ function TDataLogger.AddProvider(const AProviders: TArray<TDataLoggerProviderBas
 begin
   Result := Self;
 
-  if Length(AProviders) = 0 then
+  if (Length(AProviders) = 0) then
     Exit;
 
   Lock;
@@ -327,7 +327,7 @@ begin
     FProviders.Remove(AProvider);
     FProviders.TrimExcess;
 
-    if FProviders.Count = 0 then
+    if (FProviders.Count = 0) then
       FHasProvider := False;
   finally
     UnLock;
@@ -647,7 +647,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   SaveForced;
@@ -668,7 +668,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   SaveForced;
@@ -689,7 +689,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   SaveForced;
@@ -710,7 +710,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LID := TThread.Current.ThreadID.ToString;
@@ -732,7 +732,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -753,7 +753,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -805,7 +805,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -821,7 +821,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -837,7 +837,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -853,7 +853,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -869,7 +869,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   for I := Low(LProviders) to High(LProviders) do
@@ -897,7 +897,7 @@ begin
 
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   Lock;
@@ -988,7 +988,7 @@ begin
   if AJSON.Trim.IsEmpty then
     Exit;
 
-  if AJSON.Trim = '{}' then
+  if (AJSON.Trim = '{}') then
     Exit;
 
   try
@@ -1022,24 +1022,24 @@ begin
       LJA := LJO.Pairs[I].JsonValue as TJSONArray;
       LJAName := LJO.Pairs[I].JsonString.Value;
 
-      if LJA.Count = 0 then
+      if (LJA.Count = 0) then
         Continue;
 
       for LProvider in LProviders do
-        if LProvider.ClassName.ToLower = LJAName.ToLower then
+        if (LProvider.ClassName.ToLower = LJAName.ToLower) then
         begin
           LProvider.LoadFromJSON(LJA.Items[0].ToString);
           LJA.Remove(0).Free;
 
-          if LJA.Count = 0 then
+          if (LJA.Count = 0) then
             Break;
         end;
 
-      if LJA.Count = 0 then
+      if (LJA.Count = 0) then
         LJO.RemovePair(LJAName).Free;
     end;
 
-    if LJO.Count = 0 then
+    if (LJO.Count = 0) then
       Exit;
 
     Lock;
@@ -1086,7 +1086,7 @@ var
 begin
   LProviders := GetProviders;
 
-  if Length(LProviders) = 0 then
+  if (Length(LProviders) = 0) then
     Exit('{}');
 
   Lock;
@@ -1149,12 +1149,12 @@ begin
       if not(TLoggerLevel.All in FOnlyLevel) and not(ALevel in FOnlyLevel) then
         Exit;
 
-      if Ord(FLevel) > Ord(ALevel) then
+      if (Ord(FLevel) > Ord(ALevel)) then
         Exit;
 
       if not(ALevel = TLoggerLevel.All) then
       begin
-        if FSequence = 18446744073709551615 then
+        if (FSequence = 18446744073709551615) then
           FSequence := 0;
 
         Inc(FSequence);
@@ -1233,12 +1233,12 @@ var
   LCount: Integer;
 begin
   LCount := CountLogInCache;
-  if LCount = 0 then
+  if (LCount = 0) then
     Exit;
 
   NotifyEvent;
 
-  while LCount > 0 do
+  while (LCount > 0) do
   begin
     Sleep(1);
     LCount := CountLogInCache;
@@ -1284,11 +1284,11 @@ begin
         FEvent.ResetEvent;
 
         LProviders := GetProviders;
-        if Length(LProviders) = 0 then
+        if (Length(LProviders) = 0) then
           Continue;
 
         LCache := ExtractCache;
-        if Length(LCache) = 0 then
+        if (Length(LCache) = 0) then
           Continue;
 
         for I := Low(LProviders) to High(LProviders) do
@@ -1312,11 +1312,11 @@ begin
     if FLiveMode then
     begin
       LProviders := GetProviders(False);
-      if Length(LProviders) = 0 then
+      if (Length(LProviders) = 0) then
         Exit;
 
       LCache := ExtractCache(False);
-      if Length(LCache) = 0 then
+      if (Length(LCache) = 0) then
         Exit;
 
       for I := Low(LProviders) to High(LProviders) do

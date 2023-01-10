@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -129,7 +129,7 @@ var
   LStatBuf: _stat;
 begin
   LFileName := UTF8Encode(Path);
-  if stat(PAnsiChar(LFileName), LStatBuf) = 0 then
+  if (stat(PAnsiChar(LFileName), LStatBuf) = 0) then
     Result := LStatBuf.st_size
   else
     Result := -1;
@@ -282,7 +282,7 @@ begin
       LAppPathFull := ParamStr(0);
 
     LInfoSize := GetFileVersionInfoSize(pWideChar(LAppPathFull), LDummy);
-    if LInfoSize = 0 then
+    if (LInfoSize = 0) then
       Exit;
 
     SetLength(LInfo, LInfoSize);
@@ -557,7 +557,7 @@ begin
     LMAC := [];
   end;
 
-  if Length(LMAC) = 0 then
+  if (Length(LMAC) = 0) then
     FMacAddress := '00:00:00:00:00'
   else
     FMacAddress := LMAC[Length(LMAC) - 1];

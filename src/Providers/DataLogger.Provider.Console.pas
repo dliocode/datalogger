@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -239,7 +239,7 @@ begin
   if not IsConsole then
     Exit;
 
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   for LItem in ACache do
@@ -276,7 +276,7 @@ begin
 
             LTags := TLoggerSerializeItem.ListTAG(LLog, [LTag], LItem, FFormatTimestamp);
             try
-              if LTags.Count = 0 then
+              if (LTags.Count = 0) then
                 Continue;
 
               LTagsKeys := LTagsKeys + LTags.Keys.ToArray;
@@ -284,7 +284,7 @@ begin
 
               for I := Low(LTags.Keys.ToArray) to High(LTags.Keys.ToArray) do
               begin
-                if LLevel = TLoggerLevel.All then
+                if (LLevel = TLoggerLevel.All) then
                   LTagsLevel := LTagsLevel + [LItem.Level]
                 else
                   LTagsLevel := LTagsLevel + [LLevel];
@@ -294,7 +294,7 @@ begin
             end;
           end;
 
-          if Length(LTagsKeys) = 0 then
+          if (Length(LTagsKeys) = 0) then
           begin
             if FUseColorInConsole then
               WriteColor(LItem.Level, LLog, False)
@@ -315,17 +315,17 @@ begin
                   Continue;
 
                 LLogFormatBase := LLogMessage.Split(['${' + LTagsKeys[I] + '}']);
-                if Length(LLogFormatBase) > 1 then
+                if (Length(LLogFormatBase) > 1) then
                   if LLogFormatBase[0].Contains(C_TAG) then
                     Continue;
 
                 LLogMessage := '';
-                if Length(LLogFormatBase) > 1 then
+                if (Length(LLogFormatBase) > 1) then
                   for J := 1 to High(LLogFormatBase) do
                   begin
                     LLogMessage := LLogMessage + LLogFormatBase[J];
 
-                    if J <> High(LLogFormatBase) then
+                    if (J <> High(LLogFormatBase)) then
                       LLogMessage := LLogMessage + '${' + LTagsKeys[I] + '}';
                   end;
 
@@ -365,10 +365,10 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             Break;
         end;
       end;
@@ -438,7 +438,7 @@ var
 begin
   LColor := Integer(_ColorLevel.Foreground) + 30;
 
-  if LColor > 37 then
+  if (LColor > 3)7 then
     LColor := LColor - 8;
 
   Write(#27'[1;' + LColor.ToString + 'm');

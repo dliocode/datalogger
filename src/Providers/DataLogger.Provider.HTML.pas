@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -316,10 +316,10 @@ begin
 
           Sleep(50);
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             raise;
         end;
 
@@ -347,8 +347,8 @@ begin
 
       InternalWriteLog(LLog);
 
-      if FMaxFileSizeInKiloByte > 0 then
-        if FWriter.BaseStream.Size > FMaxFileSizeInKiloByte * 1024 then
+      if (FMaxFileSizeInKiloByte > 0) then
+        if (FWriter.BaseStream.Size > (FMaxFileSizeInKiloByte * 1024)) then
         begin
           RotateLog;
 
@@ -428,7 +428,7 @@ begin
 
         Sleep(50);
 
-        if LRetriesCount >= FMaxRetries then
+        if (LRetriesCount >= FMaxRetries) then
           raise;
       end;
     end;
@@ -466,7 +466,7 @@ begin
 
         Sleep(50);
 
-        if LRetriesCount >= FMaxRetries then
+        if (LRetriesCount >= FMaxRetries) then
           raise EDataLoggerException.CreateFmt('Cannot rename %s to %s', [ASourceFileName, ADestFileName]);
       end;
     end;

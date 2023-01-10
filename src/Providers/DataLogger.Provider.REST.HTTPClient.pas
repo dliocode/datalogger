@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -344,7 +344,7 @@ var
 begin
   LItemREST := [];
 
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   for LItem in ACache do
@@ -378,7 +378,7 @@ begin
   begin
     HTTP(AMethod, ALogItemREST[I]);
 
-    if FWaitTimeoutToSend > 0 then
+    if (FWaitTimeoutToSend > 0) then
       Sleep(FWaitTimeoutToSend);
   end;
 end;
@@ -500,10 +500,10 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             Break;
         end;
       end;

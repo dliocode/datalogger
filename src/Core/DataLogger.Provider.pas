@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -331,7 +331,7 @@ begin
   end;
 
   LCountTransaction := LTransaction.ListItemTransaction.Count;
-  if LCountTransaction = 0 then
+  if (LCountTransaction = 0) then
     LTransaction.InTransaction := True;
 
   LTransaction.ListItemTransaction.Add(LCountTransaction + 1, TDataLoggerListItem.Create);
@@ -372,13 +372,13 @@ begin
   while True do
   begin
     LCountTransaction := LTransaction.ListItemTransaction.Count;
-    if LCountTransaction = 0 then
+    if (LCountTransaction = 0) then
       Exit;
 
     LTransaction.ListItemTransaction.TryGetValue(LCountTransaction, LCurrent);
     LCurrentValues := LCurrent.ToArray;
 
-    if LCountTransaction > 1 then
+    if (LCountTransaction > 1) then
     begin
       LTransaction.ListItemTransaction.TryGetValue(LCountTransaction - 1, LCurrent);
       LCurrent.AddRange(LCurrentValues);
@@ -386,7 +386,7 @@ begin
 
     LTransaction.ListItemTransaction.Remove(LCountTransaction);
 
-    if LCountTransaction = 1 then
+    if (LCountTransaction = 1) then
     begin
       if AUseLock then
         Lock;
@@ -403,7 +403,7 @@ begin
       Break;
     end;
 
-    if ALevelCommit = TLoggerTransactionTypeCommit.tcBlock then
+    if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
       Break;
   end;
 end;
@@ -439,12 +439,12 @@ begin
   while True do
   begin
     LCountTransaction := LTransaction.ListItemTransaction.Count;
-    if LCountTransaction = 0 then
+    if (LCountTransaction = 0) then
       Exit;
 
     LTransaction.ListItemTransaction.Remove(LCountTransaction);
 
-    if LCountTransaction = 1 then
+    if (LCountTransaction = 1) then
     begin
       NotifyEvent;
 
@@ -452,7 +452,7 @@ begin
       Break;
     end;
 
-    if ALevelCommit = TLoggerTransactionTypeCommit.tcBlock then
+    if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
       Break;
   end;
 end;
@@ -550,7 +550,7 @@ begin
             Continue;
 
           if not(LItem.Level in FOnlyLevel) then
-            if Ord(FLevel) > Ord(LItem.Level) then
+            if (Ord(FLevel) > Ord(LItem.Level)) then
               Continue;
         end;
 
@@ -610,7 +610,7 @@ begin
     if FLiveMode then
     begin
       LCache := ExtractCache(False);
-      if Length(LCache) = 0 then
+      if (Length(LCache) = 0) then
         Exit;
 
       Save(LCache);
@@ -810,7 +810,7 @@ begin
         FEvent.ResetEvent;
 
         LCache := ExtractCache;
-        if Length(LCache) = 0 then
+        if (Length(LCache) = 0) then
           Continue;
 
         Save(LCache);

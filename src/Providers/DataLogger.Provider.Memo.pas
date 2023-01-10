@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -174,7 +174,7 @@ begin
   if not Assigned(FMemo) then
     raise EDataLoggerException.Create('Memo not defined!');
 
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   if not FCleanOnRun then
@@ -213,7 +213,7 @@ begin
               end;
             end);
 
-          if FMaxLogLines > 0 then
+          if (FMaxLogLines > 0) then
           begin
             TThread.Synchronize(nil,
               procedure
@@ -222,7 +222,7 @@ begin
                   Exit;
 
                 LLines := FMemo.Lines.Count;
-                while LLines > FMaxLogLines do
+                while (LLines > FMaxLogLines) do
                 begin
                   case FModeInsert of
                     TMemoModeInsert.tmFirst:
@@ -279,10 +279,10 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             Break;
         end;
       end;

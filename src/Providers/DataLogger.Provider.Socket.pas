@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -368,7 +368,7 @@ var
   LItem: TLoggerItem;
   LLog: string;
 begin
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   if FAutoStart then
@@ -419,10 +419,10 @@ begin
               if Self.Terminated then
                 Exit;
 
-              if LRetriesCount <= 0 then
+              if (LRetriesCount <= 0) then
                 Break;
 
-              if LRetriesCount >= FMaxRetries then
+              if (LRetriesCount >= FMaxRetries) then
                 Break;
             end;
           end;
@@ -490,7 +490,7 @@ procedure TProviderSocket.CheckConnection(const AContext: TIdContext);
     begin
       LSplittedLine := LLine.Split([': ']);
 
-      if Length(LSplittedLine) > 1 then
+      if (Length(LSplittedLine) > 1) then
         Result.AddOrSetValue(Trim(LSplittedLine[0]).ToLower, Trim(LSplittedLine[1]));
     end;
   end;
@@ -904,7 +904,7 @@ begin
       LMask[2] := ReadByte;
       LMask[3] := ReadByte;
 
-      if LDecodedSize < 1 then
+      if (LDecodedSize < 1) then
         Exit;
 
       LMessage := [];
@@ -942,7 +942,7 @@ var
 begin
   LBytes := ABytes;
 
-  if Length(AMessage) <= 125 then
+  if (Length(AMessage) <= 125) then
     LBytes := LBytes + [Length(AMessage)]
   else
     if (Length(AMessage) >= 126) and (Length(AMessage) <= 65535) then

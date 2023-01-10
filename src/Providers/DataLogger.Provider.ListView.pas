@@ -7,7 +7,7 @@
 
   MIT License
 
-  Copyright (c) 2022 Danilo Lucas
+  Copyright (c) 2023 Danilo Lucas
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -172,7 +172,7 @@ begin
   if not Assigned(FListView) then
     raise EDataLoggerException.Create('ListView not defined!');
 
-  if Length(ACache) = 0 then
+  if (Length(ACache) = 0) then
     Exit;
 
   if not FCleanOnRun then
@@ -229,7 +229,7 @@ begin
               end;
             end);
 
-          if FMaxLogLines > 0 then
+          if (FMaxLogLines > 0) then
           begin
             TThread.Synchronize(nil,
               procedure
@@ -242,7 +242,7 @@ begin
                 case FModeInsert of
                   TListViewModeInsert.tmFirst:
                     begin
-                      while LLines > FMaxLogLines do
+                      while (LLines > FMaxLogLines) do
                       begin
                         FListView.Items.Delete(Pred(FListView.Items.Count));
                         LLines := FListView.Items.Count;
@@ -251,7 +251,7 @@ begin
 
                   TListViewModeInsert.tmLast:
                     begin
-                      while LLines > FMaxLogLines do
+                      while (LLines > FMaxLogLines) do
                       begin
                         FListView.Items.Delete(0);
                         LLines := FListView.Items.Count;
@@ -310,10 +310,10 @@ begin
           if Self.Terminated then
             Exit;
 
-          if LRetriesCount <= 0 then
+          if (LRetriesCount <= 0) then
             Break;
 
-          if LRetriesCount >= FMaxRetries then
+          if (LRetriesCount >= FMaxRetries) then
             Break;
         end;
       end;
