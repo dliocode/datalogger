@@ -429,7 +429,7 @@ begin
   InternalWriteLog('[ROTATE ' + LRotateDateTime + ']');
   FreeWriter;
 
-  if FMaxBackupFileCount = 0 then
+  if (FMaxBackupFileCount = 0) then
   begin
     Inc(FRotateInternal);
     LRotateInternal := FRotateInternal;

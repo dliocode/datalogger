@@ -377,7 +377,7 @@ begin
     if not IsActive then
       Exit;
 
-  if TDataLoggerSocketListConnection(FListConnection).Count = 0 then
+  if (TDataLoggerSocketListConnection(FListConnection).Count = 0) then
     Exit;
 
   LContexts := TDataLoggerSocketListConnection(FListConnection).ToArray;
@@ -456,7 +456,7 @@ begin
   LConnection := TDataLoggerSocketListConnection(FListConnection).IsEquals(AContext);
 
   LReadMessage := LConnection.ReadMessage;
-  if LReadMessage.OperationCode = TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE then
+  if (LReadMessage.OperationCode = TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE) then
   begin
     LConnection.Disconnect;
     Exit;
@@ -506,7 +506,7 @@ var
 begin
   LHandle := AContext.Connection.IOHandler;
 
-  if LHandle.Tag = -1 then
+  if (LHandle.Tag = -1) then
   begin
     LHandle.CheckForDataOnSource(10);
 
@@ -564,7 +564,7 @@ end;
 
 function TDataLoggerSocketConnection.ID: string;
 begin
-  if FID = '' then
+  if (FID = '') then
     FID := IntToStr(Int64(@FIdContext));
 
   Result := FID
@@ -626,7 +626,7 @@ begin
   if not Assigned(FIdContext) then
     Exit;
 
-  Result := FIdContext = AIdContext;
+  Result := (FIdContext = AIdContext);
 end;
 
 function TDataLoggerSocketConnection.HandShaked: Boolean;
@@ -837,7 +837,7 @@ end;
 
 function TDataLoggerSocketConnectionHandler.HandShaked: Boolean;
 begin
-  Result := Tag = 1;
+  Result := (Tag = 1);
 end;
 
 function TDataLoggerSocketConnectionHandler.ReadMessage: TDataLoggerSocketMessage;

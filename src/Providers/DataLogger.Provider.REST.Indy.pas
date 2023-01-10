@@ -207,7 +207,7 @@ begin
   LHeader.Value := AValue;
 
   for I := Low(FHeader) to High(FHeader) do
-    if FHeader[I].Key = AKey then
+    if (FHeader[I].Key = AKey) then
     begin
       FHeader[I].Value := AValue;
       LIsFound := True;
@@ -226,7 +226,7 @@ begin
   Result := '';
 
   for I := Low(FHeader) to High(FHeader) do
-    if FHeader[I].Key = AKey then
+    if (FHeader[I].Key = AKey) then
     begin
       Result := FHeader[I].Value;
       Break;
@@ -346,7 +346,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    if Trim(LowerCase(FContentType)) = 'application/json' then
+    if (Trim(LowerCase(FContentType)) = 'application/json') then
       LLogItemREST.Stream := TLoggerSerializeItem.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)
     else
       LLogItemREST.Stream := TLoggerSerializeItem.AsStream(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
@@ -366,7 +366,7 @@ procedure TProviderRESTIndy.InternalSaveSync(const AMethod: TRESTMethod; const A
 var
   I: Integer;
 begin
-  if Length(ALogItemREST) = 0 then
+  if (Length(ALogItemREST) = 0) then
     Exit;
 
   for I := Low(ALogItemREST) to High(ALogItemREST) do
@@ -380,7 +380,7 @@ end;
 
 procedure TProviderRESTIndy.InternalSaveAsync(const AMethod: TRESTMethod; const ALogItemREST: TArray<TLogItemREST>);
 begin
-  if Length(ALogItemREST) = 0 then
+  if (Length(ALogItemREST) = 0) then
     Exit;
 
   TParallel.For(Low(ALogItemREST), High(ALogItemREST),
@@ -460,7 +460,7 @@ begin
 
           tlmPost:
             begin
-              if Length(AItemREST.FormData) = 0 then
+              if (Length(AItemREST.FormData) = 0) then
                 LHTTP.Post(LURL, AItemREST.Stream)
               else
               begin

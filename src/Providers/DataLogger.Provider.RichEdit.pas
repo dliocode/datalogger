@@ -208,7 +208,7 @@ begin
   else
     for LLogLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
     begin
-      if LLogLevel = TLoggerLevel.All then
+      if (LLogLevel = TLoggerLevel.All) then
         Continue;
 
       LAttributes := AttributesLevel(LLogLevel);
@@ -454,7 +454,7 @@ begin
               if (csDestroying in FRichEdit.ComponentState) then
                 Exit;
 
-              if FModeInsert = TRichEditModeInsert.tmLast then
+              if (FModeInsert = TRichEditModeInsert.tmLast) then
               begin
                 SetFont(LItem.Level);
                 if FUseColorInRichEdit then
@@ -470,7 +470,7 @@ begin
                   FRichEdit.Lines.Add(LLog);
               end;
 
-              if FModeInsert = TRichEditModeInsert.tmFirst then
+              if (FModeInsert = TRichEditModeInsert.tmFirst) then
               begin
                 FRichEdit.SelStart := 0;
                 FRichEdit.SelLength := Length(LLog);
