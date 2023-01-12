@@ -438,7 +438,7 @@ var
 begin
   LColor := Integer(_ColorLevel.Foreground) + 30;
 
-  if (LColor > 3)7 then
+  if (LColor > 37) then
     LColor := LColor - 8;
 
   Write(#27'[1;' + LColor.ToString + 'm');
