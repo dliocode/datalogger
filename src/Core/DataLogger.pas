@@ -1117,7 +1117,7 @@ end;
 
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger;
 var
-  LLogItem: TLoggerItem;
+  LItem: TLoggerItem;
   LMessage: string;
 begin
   Result := Self;
@@ -1161,41 +1161,25 @@ begin
       end;
     end;
 
-    LLogItem := default (TLoggerItem);
-    LLogItem.Name := FName;
-    LLogItem.Sequence := FSequence;
-    LLogItem.TimeStamp := Now;
-    LLogItem.TimeStampISO8601 := DateToISO8601(LLogItem.TimeStamp, False);
-    LLogItem.TimeStampUNIX := DateTimeToUnix(LLogItem.TimeStamp, False);
-    LLogItem.ThreadID := TThread.Current.ThreadID;
-    LLogItem.Level := ALevel;
+    LItem := default (TLoggerItem);
+    LItem.Name := FName;
+    LItem.Sequence := FSequence;
+    LItem.TimeStamp := Now;
+    LItem.ThreadID := TThread.Current.ThreadID;
+    LItem.Level := ALevel;
 
-    LLogItem.LevelString := ACustom;
-    if LLogItem.LevelString.Trim.IsEmpty then
-      LLogItem.LevelString := ALevel.ToString;
+    LItem.LevelString := ACustom;
+    if LItem.LevelString.Trim.IsEmpty then
+      LItem.LevelString := ALevel.ToString;
 
-    LLogItem.LevelValue := Ord(ALevel);
+    LItem.LevelValue := Ord(ALevel);
+    LItem.Tag := ATagName;
+    LItem.Message := AMessageString;
+    LItem.MessageJSON := AMessageJSON;
+    LItem.InternalItem.IsSlinebreak := AIsSlinebreak;
+    LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
-    LLogItem.Tag := ATagName;
-    LLogItem.Message := AMessageString;
-    LLogItem.MessageJSON := AMessageJSON;
-
-    LLogItem.AppName := TLoggerUtils.AppName;
-    LLogItem.AppPath := TLoggerUtils.AppPath;
-    LLogItem.AppVersion := TLoggerUtils.AppVersion;
-    LLogItem.AppSize := TLoggerUtils.AppSize;
-
-    LLogItem.ComputerName := TLoggerUtils.ComputerName;
-    LLogItem.Username := TLoggerUtils.Username;
-    LLogItem.OSVersion := TLoggerUtils.OS;
-    LLogItem.ProcessID := TLoggerUtils.ProcessID;
-    LLogItem.IPLocal := TLoggerUtils.IPLocal;
-    LLogItem.MACAddress := TLoggerUtils.MACAddress;
-
-    LLogItem.InternalItem.IsSlinebreak := AIsSlinebreak;
-    LLogItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
-
-    FLoggerItems.Add(LLogItem);
+    FLoggerItems.Add(LItem);
 
     NotifyEvent(False);
   finally

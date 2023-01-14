@@ -36,7 +36,7 @@ interface
 
 uses
   DataLogger.Types, DataLogger.Transaction, DataLogger.Utils,
-  System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo;
+  System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo, System.DateUtils;
 
 type
   TLoggerJSON = DataLogger.Utils.TLoggerJSON;
@@ -53,6 +53,7 @@ type
     FOwner: T;
     FCriticalSection: TCriticalSection;
     FEvent: TEvent;
+    FLastCheckInfo: TDateTime;
     FThreadExecute: TThread;
     FThreadTerminated: Boolean;
 
@@ -144,6 +145,7 @@ begin
   FOwner := Self as T;
   FCriticalSection := TCriticalSection.Create;
   FEvent := TEvent.Create;
+  FLastCheckInfo := 0;
 
   FListLoggerBase := TDataLoggerListItem.Create;
   FListTransaction := TDataLoggerListTransaction.Create([doOwnsValues]);
@@ -528,11 +530,41 @@ function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
   I: Integer;
   LItem: TLoggerItem;
+
+  LAppName: string;
+  LAppPath: string;
+  LAppVersion: TLoggerUtils.TAppVersion;
+  LAppSize: Double;
+
+  LComputerName: string;
+  LUsername: string;
+  LOSVersion: string;
+  LProcessID: string;
+  LIPLocal: string;
+  LMACAddress: string;
+
   LMessage: string;
   LTransaction: TDataLoggerTransaction;
   LListLoggerItem: TDataLoggerListItem;
 begin
   Result := FOwner;
+
+  if MinutesBetween(FLastCheckInfo, Now) > 1 then
+  begin
+    FLastCheckInfo := Now;
+
+    LAppName := TLoggerUtils.AppName;
+    LAppPath := TLoggerUtils.AppPath;
+    LAppVersion := TLoggerUtils.AppVersion;
+    LAppSize := TLoggerUtils.AppSize;
+
+    LComputerName := TLoggerUtils.ComputerName;
+    LUsername := TLoggerUtils.Username;
+    LOSVersion := TLoggerUtils.OS;
+    LProcessID := TLoggerUtils.ProcessID;
+    LIPLocal := TLoggerUtils.IPLocal;
+    LMACAddress := TLoggerUtils.MACAddress;
+  end;
 
   Lock;
   try
@@ -540,6 +572,21 @@ begin
       for I := Low(AValues) to High(AValues) do
       begin
         LItem := AValues[I];
+
+        LItem.TimeStampISO8601 := DateToISO8601(LItem.TimeStamp, False);
+        LItem.TimeStampUNIX := DateTimeToUnix(LItem.TimeStamp, False);
+
+        LItem.AppName := LAppName;
+        LItem.AppPath := LAppPath;
+        LItem.AppVersion := LAppVersion;
+        LItem.AppSize := LAppSize;
+
+        LItem.ComputerName := LComputerName;
+        LItem.Username := LUsername;
+        LItem.OSVersion := LOSVersion;
+        LItem.ProcessID := LProcessID;
+        LItem.IPLocal := LIPLocal;
+        LItem.MACAddress := LMACAddress;
 
         if not LItem.InternalItem.IsSlinebreak then
         begin
