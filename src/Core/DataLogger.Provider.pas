@@ -74,6 +74,17 @@ type
 
     FLiveMode: Boolean;
 
+    FAppName: string;
+    FAppPath: string;
+    FAppVersion: TLoggerUtils.TAppVersion;
+    FAppSize: Double;
+    FComputerName: string;
+    FUsername: string;
+    FOSVersion: string;
+    FProcessID: string;
+    FIPLocal: string;
+    FMACAddress: string;
+
     function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
     procedure Start;
   protected
@@ -531,18 +542,6 @@ var
   I: Integer;
   LItem: TLoggerItem;
 
-  LAppName: string;
-  LAppPath: string;
-  LAppVersion: TLoggerUtils.TAppVersion;
-  LAppSize: Double;
-
-  LComputerName: string;
-  LUsername: string;
-  LOSVersion: string;
-  LProcessID: string;
-  LIPLocal: string;
-  LMACAddress: string;
-
   LMessage: string;
   LTransaction: TDataLoggerTransaction;
   LListLoggerItem: TDataLoggerListItem;
@@ -553,17 +552,16 @@ begin
   begin
     FLastCheckInfo := Now;
 
-    LAppName := TLoggerUtils.AppName;
-    LAppPath := TLoggerUtils.AppPath;
-    LAppVersion := TLoggerUtils.AppVersion;
-    LAppSize := TLoggerUtils.AppSize;
-
-    LComputerName := TLoggerUtils.ComputerName;
-    LUsername := TLoggerUtils.Username;
-    LOSVersion := TLoggerUtils.OS;
-    LProcessID := TLoggerUtils.ProcessID;
-    LIPLocal := TLoggerUtils.IPLocal;
-    LMACAddress := TLoggerUtils.MACAddress;
+    FAppName := TLoggerUtils.AppName;
+    FAppPath := TLoggerUtils.AppPath;
+    FAppVersion := TLoggerUtils.AppVersion;
+    FAppSize := TLoggerUtils.AppSize;
+    FComputerName := TLoggerUtils.ComputerName;
+    FUsername := TLoggerUtils.Username;
+    FOSVersion := TLoggerUtils.OS;
+    FProcessID := TLoggerUtils.ProcessID;
+    FIPLocal := TLoggerUtils.IPLocal;
+    FMACAddress := TLoggerUtils.MACAddress;
   end;
 
   Lock;
@@ -575,18 +573,16 @@ begin
 
         LItem.TimeStampISO8601 := DateToISO8601(LItem.TimeStamp, False);
         LItem.TimeStampUNIX := DateTimeToUnix(LItem.TimeStamp, False);
-
-        LItem.AppName := LAppName;
-        LItem.AppPath := LAppPath;
-        LItem.AppVersion := LAppVersion;
-        LItem.AppSize := LAppSize;
-
-        LItem.ComputerName := LComputerName;
-        LItem.Username := LUsername;
-        LItem.OSVersion := LOSVersion;
-        LItem.ProcessID := LProcessID;
-        LItem.IPLocal := LIPLocal;
-        LItem.MACAddress := LMACAddress;
+        LItem.AppName := FAppName;
+        LItem.AppPath := FAppPath;
+        LItem.AppVersion := FAppVersion;
+        LItem.AppSize := FAppSize;
+        LItem.ComputerName := FComputerName;
+        LItem.Username := FUsername;
+        LItem.OSVersion := FOSVersion;
+        LItem.ProcessID := FProcessID;
+        LItem.IPLocal := FIPLocal;
+        LItem.MACAddress := FMACAddress;
 
         if not LItem.InternalItem.IsSlinebreak then
         begin

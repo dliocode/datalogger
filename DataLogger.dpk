@@ -25,6 +25,8 @@ package DataLogger;
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'DataLogger'}
+{$RUNONLY}
 {$IMPLICITBUILD ON}
 
 requires
@@ -97,6 +99,7 @@ contains
   DataLogger.Provider.Socket in 'src\Providers\DataLogger.Provider.Socket.pas',
   DataLogger.Provider.Splunk in 'src\Providers\DataLogger.Provider.Splunk.pas',
   DataLogger.Provider.SumoLogic in 'src\Providers\DataLogger.Provider.SumoLogic.pas',
+  DataLogger.Provider.SysLog.Indy in 'src\Providers\DataLogger.Provider.SysLog.Indy.pas',
   DataLogger.Provider.SysLog in 'src\Providers\DataLogger.Provider.SysLog.pas',
   DataLogger.Provider.Telegram in 'src\Providers\DataLogger.Provider.Telegram.pas',
   DataLogger.Provider.TextFile in 'src\Providers\DataLogger.Provider.TextFile.pas',
