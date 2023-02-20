@@ -38,13 +38,13 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows, Winapi.Nb30,
 {$ELSEIF DEFINED(LINUX)}
-    Posix.SysUtsname, Posix.Unistd, Posix.SysStat,
+  Posix.SysUtsname, Posix.Unistd, Posix.SysStat,
 {$ELSEIF DEFINED(MACOS)}
-    Macapi.Helpers, Macapi.CoreFoundation, Macapi.ObjectiveC, Macapi.ObjCRuntime,
+  Macapi.Helpers, Macapi.CoreFoundation, Macapi.ObjectiveC, Macapi.ObjCRuntime,
 {$ELSEIF DEFINED(IOS)}
-    IOSApi.Foundation, IOSApi.Helpers,
+  IOSApi.Foundation, IOSApi.Helpers,
 {$ELSEIF DEFINED(ANDROID)}
-    Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider,
+  Androidapi.Helpers, Androidapi.JNI.OS, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes, Androidapi.JNI.App, Androidapi.JNI.Provider, Androidapi.JNI.Net, Androidapi.JNIBridge,
 {$ENDIF}
   IdStack, {$IF RTLVersion < 33} REST.JSON, {$ENDIF}
   System.IOUtils, System.SysUtils, System.Types, System.RTTI, System.JSON;
@@ -99,6 +99,9 @@ type
 
 implementation
 
+{$IF RTLVersion <= 34}
+
+// 34 = Delphi 10.4 Sydney
 function GetSize(const Path: string): Int64;
 {$IFDEF MSWINDOWS}
 
@@ -135,6 +138,7 @@ begin
     Result := -1;
 end;
 
+{$ENDIF}
 {$ENDIF}
 
 { TLoggerUtils }
@@ -226,13 +230,15 @@ class function TLoggerUtils.AppVersion: TAppVersion;
 var
   LPackageInfo: JPackageInfo;
 begin
-  if not Trim(FAppPath).IsEmpty then
-    Exit(FAppPath);
+  if not Trim(FAppVersion.FileVersion).IsEmpty then
+    Exit(FAppVersion);
 
   LPackageInfo := TAndroidHelper.Activity.getPackageManager.getPackageInfo(TAndroidHelper.Context.getPackageName(), TJPackageManager.JavaClass.GET_ACTIVITIES);
 
   Result.FileVersion := IntToStr(LPackageInfo.VersionCode);
   Result.FileDescription := JStringToString(LPackageInfo.versionName);
+
+  FAppVersion := Result;
 end;
 
 {$ELSEIF DEFINED(IOS)}
@@ -344,6 +350,9 @@ begin
   Result := 0;
 
   try
+{$IF DEFINED(ANDROID)}
+    Result := TJFile.JavaClass.init(TAndroidHelper.Context.getApplicationInfo.sourceDir).Length / 1024;
+{$ELSE}
     if IsLibrary then
       LAppPathFull := GetModuleName(0)
     else
@@ -355,6 +364,7 @@ begin
     Result := GetSize(LAppPathFull);
 {$ENDIF}
     Result := Result / 1024; // Kb
+{$ENDIF}
   except
   end;
 
@@ -535,6 +545,16 @@ class function TLoggerUtils.MACAddress: string;
     FreeMem(LNCB);
     FreeMem(LEnum);
     FreeMem(LAdapter);
+  end;
+{$ELSEIF DEFINED(ANDROID)}
+
+  var
+    LWifiInfo: JWifiInfo;
+  begin
+    // https://developer.android.com/training/articles/user-data-ids?hl=pt-br#mac-addresses
+
+    LWifiInfo := TJWifiManager.Wrap((TAndroidHelper.Context.getSystemService(TJContext.JavaClass.WIFI_SERVICE) as ILocalObject).GetObjectID).getConnectionInfo;
+    Result := [JStringToString(LWifiInfo.GetMACAddress)];
   end;
 
 {$ELSE}
