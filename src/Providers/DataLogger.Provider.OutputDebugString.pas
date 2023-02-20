@@ -34,33 +34,61 @@ unit DataLogger.Provider.OutputDebugString;
 
 interface
 
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
-
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
   FMX.Types,
-{$ELSE}
-  Winapi.Windows,
+{$IF DEFINED(ANDROID)}
+  Androidapi.Log,
+{$ELSEIF DEFINED(IOS)}
+  FMX.Platform.Logger.iOS,
+{$ELSEIF DEFINED(MACOS)}
+  FMX.Platform.Logger.Mac,
+{$ELSEIF DEFINED(MSWINDOWS)}
+  FMX.Platform.Logger.Win,
 {$ENDIF}
   System.SysUtils, System.JSON;
 
 type
   TProviderOutputDebugString = class(TDataLoggerProvider<TProviderOutputDebugString>)
+  private
+    FTag: string;
+    procedure WriteLog(const ALevel: TLoggerLevel; const ALog: string);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
+    function Tag(const ATag: string): TProviderOutputDebugString;
+
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
-  end;
 
-{$ENDIF}
+    constructor Create;
+    destructor Destroy; override;
+  end;
 
 implementation
 
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+{$IF DEFINED(ANDROID)}
+function __android_log_write(Priority: android_LogPriority; const Tag, Text: MarshaledAString): Integer; cdecl; external AndroidLogLib name '__android_log_write';
+{$ENDIF}
 
 { TProviderOutputDebugString }
+
+constructor TProviderOutputDebugString.Create;
+begin
+  inherited Create;
+  Tag('DataLogger');
+end;
+
+destructor TProviderOutputDebugString.Destroy;
+begin
+  inherited;
+end;
+
+function TProviderOutputDebugString.Tag(const ATag: string): TProviderOutputDebugString;
+begin
+  Result := Self;
+  FTag := ATag;
+end;
 
 procedure TProviderOutputDebugString.LoadFromJSON(const AJSON: string);
 var
@@ -123,11 +151,7 @@ begin
 
     while True do
       try
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
-        FMX.Types.Log.d(LLog);
-{$ELSE}
-        OutputDebugString(PChar(LLog));
-{$ENDIF}
+        WriteLog(LItem.Level, LLog);
         Break;
       except
         on E: Exception do
@@ -152,6 +176,47 @@ begin
   end;
 end;
 
+procedure TProviderOutputDebugString.WriteLog(const ALevel: TLoggerLevel; const ALog: string);
+{$IF DEFINED(ANDROID)}
+var
+  LTag, LMessage: MarshaledAString;
+  M: TMarshaller;
+{$ENDIF}
+begin
+{$IF DEFINED(ANDROID)}
+  if FTag.Trim.IsEmpty then
+    FTag := 'DataLogger';
+
+  LTag := M.AsUtf8(FTag).ToPointer;
+  LMessage := M.AsUtf8(ALog).ToPointer;
+
+  case ALevel of
+    TLoggerLevel.Trace:
+      __android_log_write(ANDROID_LOG_VERBOSE, LTag, LMessage);
+
+    TLoggerLevel.Debug:
+      __android_log_write(ANDROID_LOG_DEBUG, LTag, LMessage);
+
+    TLoggerLevel.Info, TLoggerLevel.Success, TLoggerLevel.Custom:
+      __android_log_write(ANDROID_LOG_INFO, LTag, LMessage);
+
+    TLoggerLevel.Warn:
+      __android_log_write(ANDROID_LOG_WARN, LTag, LMessage);
+
+    TLoggerLevel.Error:
+      __android_log_write(ANDROID_LOG_ERROR, LTag, LMessage);
+
+    TLoggerLevel.Fatal:
+      __android_log_write(ANDROID_LOG_FATAL, LTag, LMessage);
+  end;
+{$ELSE}
+  if FTag.Trim.IsEmpty then
+    Log.d(ALog)
+  else
+    Log.d(Format('%s: %s', [FTag, ALog]));
+{$ENDIF}
+end;
+
 procedure ForceReferenceToClass(C: TClass);
 begin
 end;
@@ -159,7 +224,5 @@ end;
 initialization
 
 ForceReferenceToClass(TProviderOutputDebugString);
-
-{$ENDIF}
 
 end.
