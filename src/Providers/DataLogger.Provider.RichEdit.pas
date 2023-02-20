@@ -34,7 +34,7 @@ unit DataLogger.Provider.RichEdit;
 
 interface
 
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+{$IF NOT DEFINED(DATALOGGER_FMX) AND NOT DEFINED(FRAMEWORK_FMX) AND DEFINED(MSWINDOWS)}
 
 uses
   DataLogger.Provider, DataLogger.Types,
@@ -103,7 +103,7 @@ type
 
 implementation
 
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
+{$IF NOT DEFINED(DATALOGGER_FMX) AND NOT DEFINED(FRAMEWORK_FMX) AND DEFINED(MSWINDOWS)}
 
   { TProviderRichEdit }
 
@@ -525,19 +525,10 @@ begin
               case FModeInsert of
                 TRichEditModeInsert.tmFirst:
                   begin
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
-                    FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Min;
-{$ENDIF}
                   end;
 
                 TRichEditModeInsert.tmLast:
-                  begin
-{$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
-                    FRichEdit.VScrollBar.Value := FRichEdit.VScrollBar.Max;
-{$ELSE}
-                    SendMessage(FRichEdit.Handle, EM_LINESCROLL, 0, FRichEdit.Lines.Count);
-{$ENDIF}
-                  end;
+                  SendMessage(FRichEdit.Handle, EM_LINESCROLL, 0, FRichEdit.Lines.Count);
               end;
             end);
         end;
