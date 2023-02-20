@@ -39,7 +39,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   Winapi.Windows, Winapi.Messages,
-  Vcl.ComCtrls, Vcl.Graphics, Winapi.RichEdit,
+  Vcl.ComCtrls, Vcl.Graphics,
   System.SysUtils, System.Classes, System.JSON, System.TypInfo, System.UITypes;
 
 type
