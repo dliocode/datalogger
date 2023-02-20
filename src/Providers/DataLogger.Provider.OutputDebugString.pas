@@ -43,8 +43,6 @@ uses
   FMX.Platform.Logger.iOS,
 {$ELSEIF DEFINED(MACOS)}
   FMX.Platform.Logger.Mac,
-{$ELSEIF DEFINED(MSWINDOWS)}
-  FMX.Platform.Logger.Win,
 {$ENDIF}
   System.SysUtils, System.JSON;
 
@@ -108,6 +106,8 @@ begin
     Exit;
 
   try
+    Tag(LJO.GetValue<string>('tag', FTag));
+
     SetJSONInternal(LJO);
   finally
     LJO.Free;
@@ -120,6 +120,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
+    LJO.AddPair('tag', TJSONString.Create(FTag));
+
     ToJSONInternal(LJO);
 
     Result := TLoggerJSON.Format(LJO, AFormat);
