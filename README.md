@@ -98,6 +98,7 @@ Aqui temos uma lista com **56 _providers_** disponíveis:
  | [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.Hook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) | 
  | [Dynatrace](https://www.dynatrace.com/) | DataLogger.Provider.Dyatrace | [Dynatrace](https://github.com/dliocode/datalogger/tree/main/Samples/Dynatrace) |  
  | [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch | [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) | 
+ | [Elmah](https://elmah.io/) | DataLogger.Provider.Elmah | [Elmah](https://github.com/dliocode/datalogger/tree/main/Samples/Elmah) | 
  | Email | DataLogger.Provider.Email | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) | 
  | EventLog | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) | 
  | Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) | 
@@ -155,6 +156,11 @@ Essas dependências se dá quando utilizado alguns _providers_
  | DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/danieleteti/delphistompclient) | 
  | DataLogger.Provider.Redis | [Redis](https://github.com/danieleteti/delphiredisclient) | 
  | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/sendemail) | 
+
+## Informações Extras
+
+### Plataforma Android: 
+É necessário a permissão __ACCESS_WIFI_STATE__: Utilizado para capturar o MAC Address do dispositivo.
 
 ## Exemplos
 
