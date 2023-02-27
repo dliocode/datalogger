@@ -3,7 +3,7 @@ unit UProviderEventsWithDataSet;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, System.JSON,
   Winapi.ShellAPI,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
 
@@ -110,11 +110,30 @@ begin
         end);
       end)
 
-      .OnTrace(nil)
-      .OnDebug(nil)
-      .OnInfo(nil)
-      .OnSuccess(nil)
-      .OnWarn(nil)
+      .OnTrace(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
+
+      .OnDebug(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
+
+      .OnInfo(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
+
+      .OnSuccess(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
+
+      .OnWarn(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
 
       .OnError(
       procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string)
@@ -134,8 +153,15 @@ begin
         end)
       end)
 
-      .OnFatal(nil)
-      .OnCustom(nil)
+      .OnFatal(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
+
+      .OnCustom(
+      procedure(const AItem: TJSONObject)
+      begin
+      end)
     );
 
   // Log Format
