@@ -222,11 +222,7 @@ begin
       LJO.AddPair('collection', TJSONString.Create(FCollection));
       LJO.AddPair('document', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
       LLog := LJO.ToString;
-{$ELSE}
-      LLog := LJO.ToJSON;
-{$ENDIF}
     finally
       LJO.Free;
     end;

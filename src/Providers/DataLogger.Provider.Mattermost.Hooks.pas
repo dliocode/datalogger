@@ -192,6 +192,7 @@ var
         Continue;
 
       LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLog := LLog.Replace(#$D#$A, '\n');
 
       LJO := TJSONObject.Create;
       try
@@ -199,12 +200,7 @@ var
         LJO.AddPair('username', TJSONString.Create(FUsername));
         LJO.AddPair('text', TJSONString.Create(LLog));
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
         LLog := LJO.ToString;
-{$ELSE}
-        LLog := LJO.ToJSON;
-{$ENDIF}
-        LLog := LLog.Replace(#$D#$A, '\n');
       finally
         LJO.Free;
       end;
@@ -248,11 +244,7 @@ var
 
       LJO.AddPair('text', TJSONString.Create(LLog));
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
       LLog := LJO.ToString;
-{$ELSE}
-      LLog := LJO.ToJSON;
-{$ENDIF}
       LLog := LLog.Replace(#$D#$A, '\n');
     finally
       LJO.Free;

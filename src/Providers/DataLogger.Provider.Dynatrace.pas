@@ -198,11 +198,7 @@ begin
       end;
     end;
 
-  {$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
     LLog := LJA.ToString;
-  {$ELSE}
-    LLog := LJA.ToJSON;
-  {$ENDIF}
   finally
     LJA.Free;
   end;

@@ -208,11 +208,7 @@ begin
         LJO.AddPair('Subject', TJSONString.Create(FSubject));
         LJO.AddPair('HTMLBody', TJSONString.Create(LLog));
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
         LLog := LJO.ToString;
-{$ELSE}
-        LLog := LJO.ToJSON;
-{$ENDIF}
       finally
         LJO.Free;
       end;

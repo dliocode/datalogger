@@ -262,8 +262,8 @@ begin
       Continue;
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
-
     LLog := LLog.Replace('\', '\\');
+
     if (FParseMode <> TTelegramParseMode.tpNone) then
       SerializeMessageParseMode;
 
@@ -273,11 +273,7 @@ begin
       LJO.AddPair('text', TJSONString.Create(LLog));
       LJO.AddPair('parse_mode', TJSONString.Create(FParseMode.ToString));
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
       LLog := LJO.ToString;
-{$ELSE}
-      LLog := LJO.ToJSON;
-{$ENDIF}
     finally
       LJO.Free;
     end;

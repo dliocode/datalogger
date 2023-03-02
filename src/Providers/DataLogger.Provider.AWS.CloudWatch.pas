@@ -274,11 +274,7 @@ begin
         .AddPair('message', TJSONString.Create(LLog));
     end;
 
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
-      LLog := LJO.ToString;
-{$ELSE}
-      LLog := LJO.ToJSON;
-{$ENDIF}
+    LLog := LJO.ToString;
   finally
     LJO.Free;
   end;
