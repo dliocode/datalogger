@@ -1224,7 +1224,7 @@ begin
 
   while (LCount > 0) do
   begin
-    Sleep(1);
+    Sleep(50);
     LCount := CountLogInCache;
   end;
 end;

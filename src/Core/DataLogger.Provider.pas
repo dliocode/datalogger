@@ -614,8 +614,8 @@ begin
         LTransaction := nil;
         if FListTransaction.TryGetValue(LItem.InternalItem.TransactionID, LTransaction) then
         begin
+          LListLoggerItem := nil;
           LTransaction.ListItemTransaction.TryGetValue(LTransaction.ListItemTransaction.Count, LListLoggerItem);
-
           if not Assigned(LListLoggerItem) then
             Exit;
 

@@ -140,6 +140,31 @@ type
     LOG_MAC_ADDRESS = '${mac_address}';
 
     DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+
+    LOG_ALL =
+      'LOG_NAME: ' + LOG_NAME + ' | ' +
+      'LOG_SEQUENCE: ' + LOG_SEQUENCE + ' | ' +
+      'LOG_TIMESTAMP: ' + LOG_TIMESTAMP + ' | ' +
+      'LOG_TIMESTAMP_ISO8601: ' + LOG_TIMESTAMP_ISO8601 + ' | ' +
+      'LOG_TIMESTAMP_UNIX: ' + LOG_TIMESTAMP_UNIX + ' | ' +
+      'LOG_THREADID: ' + LOG_THREADID + ' | ' +
+      'LOG_PROCESSID: ' + LOG_PROCESSID + ' | ' +
+      'LOG_LEVEL: ' + LOG_LEVEL + ' | ' +
+      'LOG_LEVEL_VALUE: ' + LOG_LEVEL_VALUE + ' | ' +
+      'LOG_TAG: ' + LOG_TAG + ' | ' +
+      'LOG_MESSAGE: ' + LOG_MESSAGE + ' | ' +
+
+      'LOG_APPNAME: ' + LOG_APPNAME + ' | ' +
+      'LOG_APPPATH: ' + LOG_APPPATH + ' | ' +
+      'LOG_APPVERSION: ' + LOG_APPVERSION + ' | ' +
+      'LOG_APPSIZE: ' + LOG_APPSIZE + ' | ' +
+
+      'LOG_COMPUTERNAME: ' + LOG_COMPUTERNAME + ' | ' +
+      'LOG_USERNAME: ' + LOG_USERNAME + ' | ' +
+      'LOG_OSVERSION: ' + LOG_OSVERSION + ' | ' +
+      'LOG_IP_LOCAL: ' + LOG_IP_LOCAL + ' | ' +
+      'LOG_MAC_ADDRESS: ' + LOG_MAC_ADDRESS + ' | '
+    ;
   end;
 
   TLoggerConst = record
@@ -339,11 +364,7 @@ var
 begin
   LJO := AsJsonObject(ALogFormat, AItem, AFormatTimestamp, AIgnoreLogFormat);
   try
-{$IF CompilerVersion > 32} // 32 = Delphi Tokyo (10.2)
     Result := LJO.ToString;
-{$ELSE}
-    Result := LJO.ToJSON;
-{$ENDIF}
   finally
     LJO.Free;
   end;
