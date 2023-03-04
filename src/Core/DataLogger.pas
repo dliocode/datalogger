@@ -76,7 +76,7 @@ type
     function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
     function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
-    procedure SaveForced;
+    procedure SaveForced(const AUseLock: Boolean = True);
     procedure CloseProvider;
     function GetProviders(const AUseLock: Boolean = True): TArray<TDataLoggerProviderBase>;
     procedure Start;
@@ -327,8 +327,7 @@ begin
     FProviders.Remove(AProvider);
     FProviders.TrimExcess;
 
-    if (FProviders.Count = 0) then
-      FHasProvider := False;
+    FHasProvider := (FProviders.Count > 0);
   finally
     UnLock;
   end;
@@ -645,15 +644,14 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
-    raise EDataLoggerException.Create('Not defined Provider!');
+  if not FHasProvider then
+    Exit;
 
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).StartTransaction(LID);
 end;
@@ -666,15 +664,14 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
-    raise EDataLoggerException.Create('Not defined Provider!');
+  if not FHasProvider then
+    Exit;
 
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).CommitTransaction(LID);
 end;
@@ -687,15 +684,14 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
-    raise EDataLoggerException.Create('Not defined Provider!');
+  if not FHasProvider then
+    Exit;
 
   SaveForced;
 
   LID := TThread.Current.ThreadID.ToString;
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).RollbackTransaction(LID);
 end;
@@ -708,13 +704,12 @@ var
 begin
   Result := False;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
-    raise EDataLoggerException.Create('Not defined Provider!');
+  if not FHasProvider then
+    Exit;
 
   LID := TThread.Current.ThreadID.ToString;
 
+  LProviders := GetProviders;
   for LProvider in LProviders do
   begin
     Result := TDataLoggerProvider<TDataLoggerProviderBase>(LProvider).InTransaction(LID);
@@ -730,11 +725,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat);
 end;
@@ -751,11 +745,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
 end;
@@ -803,11 +796,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogException(AException);
 end;
@@ -819,11 +811,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetMaxRetries(AMaxRetries);
 end;
@@ -835,11 +826,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetInitialMessage(AMessage);
 end;
@@ -851,11 +841,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFinalMessage(AMessage);
 end;
@@ -867,11 +856,10 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetIgnoreLogFormat(AIgnoreLogFormat, ASeparator, AIncludeKey, AIncludeKeySeparator);
 end;
@@ -895,9 +883,7 @@ var
 begin
   Result := Self;
 
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   Lock;
@@ -910,6 +896,7 @@ begin
     UnLock;
   end;
 
+  LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLiveMode(ALiveMode);
 end;
@@ -954,7 +941,6 @@ begin
   end;
 
   LProviders := GetProviders;
-
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).Clear;
 end;
@@ -1084,15 +1070,14 @@ var
   LProviders: TArray<TDataLoggerProviderBase>;
   LProvider: TDataLoggerProviderBase;
 begin
-  LProviders := GetProviders;
-
-  if (Length(LProviders) = 0) then
+  if not FHasProvider then
     Exit('{}');
 
   Lock;
   try
     LJO := TJSONObject.Create;
     try
+      LProviders := GetProviders(False);
       for LProvider in LProviders do
       begin
         if not Assigned(LJO.Get(LProvider.ClassName)) then
@@ -1212,20 +1197,36 @@ begin
   end;
 end;
 
-procedure TDataLogger.SaveForced;
+procedure TDataLogger.SaveForced(const AUseLock: Boolean = True);
 var
   LCount: Integer;
+  LProviders: TArray<TDataLoggerProviderBase>;
+  LCache: TArray<TLoggerItem>;
+  I: Integer;
 begin
-  LCount := CountLogInCache;
-  if (LCount = 0) then
+  if not FHasProvider then
     Exit;
 
-  NotifyEvent;
+  if AUseLock then
+    Lock;
+  try
+    LCount := FLoggerItems.Count;
+    if (LCount = 0) then
+      Exit;
 
-  while (LCount > 0) do
-  begin
-    Sleep(50);
-    LCount := CountLogInCache;
+    LProviders := GetProviders(False);
+    if (Length(LProviders) = 0) then
+      Exit;
+
+    LCache := ExtractCache(False);
+    if (Length(LCache) = 0) then
+      Exit;
+
+    for I := Low(LProviders) to High(LProviders) do
+      TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
+  finally
+    if AUseLock then
+      UnLock;
   end;
 end;
 
@@ -1234,6 +1235,9 @@ var
   LProviders: TArray<TDataLoggerProviderBase>;
   I: Integer;
 begin
+  if not FHasProvider then
+    Exit;
+
   LProviders := GetProviders;
 
   for I := Low(LProviders) to High(LProviders) do
@@ -1257,26 +1261,13 @@ begin
   FThreadExecute :=
     TThreadExecute.CreateAnonymousThread(
     procedure
-    var
-      LCache: TArray<TLoggerItem>;
-      LProviders: TArray<TDataLoggerProviderBase>;
-      I: Integer;
     begin
       while not FThreadTerminated do
       begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
-        LProviders := GetProviders;
-        if (Length(LProviders) = 0) then
-          Continue;
-
-        LCache := ExtractCache;
-        if (Length(LCache) = 0) then
-          Continue;
-
-        for I := Low(LProviders) to High(LProviders) do
-          TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
+        SaveForced(True);
       end;
     end);
 
@@ -1294,18 +1285,7 @@ begin
     Lock;
   try
     if FLiveMode then
-    begin
-      LProviders := GetProviders(False);
-      if (Length(LProviders) = 0) then
-        Exit;
-
-      LCache := ExtractCache(False);
-      if (Length(LCache) = 0) then
-        Exit;
-
-      for I := Low(LProviders) to High(LProviders) do
-        TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
-    end
+      SaveForced(False)
     else
     begin
       if not Assigned(FThreadExecute) then

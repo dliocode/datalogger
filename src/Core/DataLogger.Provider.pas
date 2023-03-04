@@ -406,12 +406,12 @@ begin
       try
         FListLoggerBase.AddRange(LCurrentValues);
         NotifyEvent(False);
+        LTransaction.InTransaction := False;
+        FListTransaction.Remove(LID);
       finally
         if AUseLock then
           UnLock;
       end;
-
-      LTransaction.InTransaction := False;
 
       Break;
     end;
@@ -459,9 +459,15 @@ begin
 
     if (LCountTransaction = 1) then
     begin
-      NotifyEvent;
+      Lock;
+      try
+        NotifyEvent(False);
+        LTransaction.InTransaction := False;
+        FListTransaction.Remove(LID);
+      finally
+        UnLock;
+      end;
 
-      LTransaction.InTransaction := False;
       Break;
     end;
 
