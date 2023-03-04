@@ -1108,7 +1108,7 @@ begin
   Result := Self;
 
   if Assigned(FThreadExecute) then
-    if TThreadExecute(FThreadExecute).Terminated then
+    if FThreadTerminated then
       Exit;
 
   if FTagNameIsRequired and not AIsSlinebreak then
@@ -1165,11 +1165,11 @@ begin
     LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
     FLoggerItems.Add(LItem);
-
-    NotifyEvent(False);
   finally
     UnLock;
   end;
+
+  NotifyEvent;
 end;
 
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
@@ -1250,14 +1250,26 @@ begin
   FThreadExecute :=
     TThreadExecute.CreateAnonymousThread(
     procedure
+    var
+      LProviders: TArray<TDataLoggerProviderBase>;
+      LCache: TArray<TLoggerItem>;
+      I: Integer;
     begin
       while not FThreadTerminated do
       begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
-        if FHasProvider then
-          SaveForced(True);
+        if not FHasProvider then
+          Continue;
+
+        LCache := ExtractCache;
+        if (Length(LCache) = 0) then
+          Exit;
+
+        LProviders := GetProviders;
+        for I := Low(LProviders) to High(LProviders) do
+          TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
       end;
     end);
 

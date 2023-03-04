@@ -554,24 +554,24 @@ var
 begin
   Result := FOwner;
 
-  if MinutesBetween(FLastCheckInfo, Now) > 1 then
-  begin
-    FLastCheckInfo := Now;
-
-    FAppName := TLoggerUtils.AppName;
-    FAppPath := TLoggerUtils.AppPath;
-    FAppVersion := TLoggerUtils.AppVersion;
-    FAppSize := TLoggerUtils.AppSize;
-    FComputerName := TLoggerUtils.ComputerName;
-    FUsername := TLoggerUtils.Username;
-    FOSVersion := TLoggerUtils.OS;
-    FProcessID := TLoggerUtils.ProcessID;
-    FIPLocal := TLoggerUtils.IPLocal;
-    FMACAddress := TLoggerUtils.MACAddress;
-  end;
-
   Lock;
   try
+    if (MinutesBetween(FLastCheckInfo, Now) > 2) then
+    begin
+      FLastCheckInfo := Now;
+
+      FAppName := TLoggerUtils.AppName;
+      FAppPath := TLoggerUtils.AppPath;
+      FAppVersion := TLoggerUtils.AppVersion;
+      FAppSize := TLoggerUtils.AppSize;
+      FComputerName := TLoggerUtils.ComputerName;
+      FUsername := TLoggerUtils.Username;
+      FOSVersion := TLoggerUtils.OS;
+      FProcessID := TLoggerUtils.ProcessID;
+      FIPLocal := TLoggerUtils.IPLocal;
+      FMACAddress := TLoggerUtils.MACAddress;
+    end;
+
     try
       for I := Low(AValues) to High(AValues) do
       begin
