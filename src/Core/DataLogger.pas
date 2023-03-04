@@ -1188,7 +1188,6 @@ begin
     Lock;
   try
     Result := FLoggerItems.ToArray;
-
     FLoggerItems.Clear;
     FLoggerItems.TrimExcess;
   finally
@@ -1204,24 +1203,14 @@ var
   LCache: TArray<TLoggerItem>;
   I: Integer;
 begin
-  if not FHasProvider then
-    Exit;
-
   if AUseLock then
     Lock;
   try
-    LCount := FLoggerItems.Count;
-    if (LCount = 0) then
-      Exit;
-
-    LProviders := GetProviders(False);
-    if (Length(LProviders) = 0) then
-      Exit;
-
     LCache := ExtractCache(False);
     if (Length(LCache) = 0) then
       Exit;
 
+    LProviders := GetProviders(False);
     for I := Low(LProviders) to High(LProviders) do
       TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).AddCache(LCache);
   finally
@@ -1267,7 +1256,8 @@ begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
-        SaveForced(True);
+        if FHasProvider then
+          SaveForced(True);
       end;
     end);
 
@@ -1281,6 +1271,9 @@ var
   LCache: TArray<TLoggerItem>;
   I: Integer;
 begin
+  if not FHasProvider then
+    Exit;
+
   if AUseLock then
     Lock;
   try
