@@ -20,7 +20,7 @@ DataLogger foi projetado para ser uma biblioteca simples de log com suporte a v√
 
 DataLogger was designed to be a simple logging library with support for multiple _providers_.
 
-To see this read-me file in English, please click here: [https://github.com/dliocode/datalogger/blob/main/README_eng.md](https://github.com/dliocode/datalogger/blob/main/README_eng.md)
+To see this read-me file in English, please click here: [README](https://github.com/dliocode/datalogger/blob/main/README_eng.md)
 
 Support: developer.dlio@gmail.com
 
