@@ -1198,7 +1198,6 @@ end;
 
 procedure TDataLogger.SaveForced(const AUseLock: Boolean = True);
 var
-  LCount: Integer;
   LProviders: TArray<TDataLoggerProviderBase>;
   LCache: TArray<TLoggerItem>;
   I: Integer;
@@ -1278,10 +1277,6 @@ begin
 end;
 
 procedure TDataLogger.NotifyEvent(const AUseLock: Boolean = True);
-var
-  LProviders: TArray<TDataLoggerProviderBase>;
-  LCache: TArray<TLoggerItem>;
-  I: Integer;
 begin
   if not FHasProvider then
     Exit;
