@@ -19,9 +19,7 @@
 
 DataLogger was designed to be a simple logging library with support for multiple _providers_.
 
-DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
-
-Para ver este arquivo leia-me em português, por favor clique aqui: [https://github.com/dliocode/datalogger/blob/main/README_eng.md](https://github.com/dliocode/datalogger/blob/main/README.md)
+Para ver este arquivo leia-me em português, por favor clique aqui: [README](https://github.com/dliocode/datalogger/blob/main/README.md)
 
 Support: developer.dlio@gmail.com
 
@@ -391,7 +389,7 @@ begin
 end.
 ```
 
-### Hwo to change the TimeStamp format
+### How to change the TimeStamp format
 * Default TimeStamp format: `yyyy-mm-dd hh:mm:ss.zzz`
 
 ```delphi
@@ -493,7 +491,7 @@ TLoggerFormat.LOG_IP_LOCAL
 
 ## SetLevel
 
-t is possible to show only _logs_ from a defined _level_, based on ```TLoggerLevel```.
+It is possible to show only _logs_ from a defined _level_, based on ```TLoggerLevel```.
 
 SetLevel default value = ```TLoggerLevel.All```
 
