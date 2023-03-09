@@ -180,8 +180,6 @@ type
     function SetOnlyLevel(const ALevels: TLoggerLevels): TDataLogger;
     function SetLogException(const AException: TLoggerOnException): TDataLogger;
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
-    function SetInitialMessage(const AMessage: string): TDataLogger;
-    function SetFinalMessage(const AMessage: string): TDataLogger;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
     function SetLiveMode(const ALiveMode: Boolean): TDataLogger;
@@ -819,36 +817,6 @@ begin
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetMaxRetries(AMaxRetries);
 end;
 
-function TDataLogger.SetInitialMessage(const AMessage: string): TDataLogger;
-var
-  LProviders: TArray<TDataLoggerProviderBase>;
-  I: Integer;
-begin
-  Result := Self;
-
-  if not FHasProvider then
-    raise EDataLoggerException.Create('Not defined Provider!');
-
-  LProviders := GetProviders;
-  for I := Low(LProviders) to High(LProviders) do
-    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetInitialMessage(AMessage);
-end;
-
-function TDataLogger.SetFinalMessage(const AMessage: string): TDataLogger;
-var
-  LProviders: TArray<TDataLoggerProviderBase>;
-  I: Integer;
-begin
-  Result := Self;
-
-  if not FHasProvider then
-    raise EDataLoggerException.Create('Not defined Provider!');
-
-  LProviders := GetProviders;
-  for I := Low(LProviders) to High(LProviders) do
-    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFinalMessage(AMessage);
-end;
-
 function TDataLogger.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string; const AIncludeKey: Boolean; const AIncludeKeySeparator: string): TDataLogger;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
@@ -1165,11 +1133,11 @@ begin
     LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
     FLoggerItems.Add(LItem);
+
+    NotifyEvent(False);
   finally
     UnLock;
   end;
-
-  NotifyEvent;
 end;
 
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;

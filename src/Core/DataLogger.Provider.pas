@@ -69,9 +69,6 @@ type
     FTransactionAutoCommitLevel: TLoggerLevels;
     FTransactionAutoCommitType: TLoggerTransactionTypeCommit;
 
-    FInitialMessage: string;
-    FFinalMessage: string;
-
     FLiveMode: Boolean;
 
     FAppName: string;
@@ -115,8 +112,6 @@ type
     function SetOnlyLogLevel(const ALevels: TLoggerLevels): T; deprecated 'Use SetOnlyLevel instead - This function will be removed in future versions';
     function SetLogException(const AException: TLoggerOnException): T;
     function SetMaxRetries(const AMaxRetries: Integer): T;
-    function SetInitialMessage(const AMessage: string): T;
-    function SetFinalMessage(const AMessage: string): T;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
     function SetLiveMode(const ALiveMode: Boolean): T;
 
@@ -168,8 +163,6 @@ begin
   SetOnlyLevel([TLoggerLevel.All]);
   SetLogException(nil);
   SetMaxRetries(5);
-  SetInitialMessage('');
-  SetFinalMessage('');
   SetIgnoreLogFormat(False);
   SetLiveMode(IsLibrary or ModuleIsLib);
 
@@ -263,18 +256,6 @@ function TDataLoggerProvider<T>.SetMaxRetries(const AMaxRetries: Integer): T;
 begin
   Result := FOwner;
   FMaxRetries := AMaxRetries;
-end;
-
-function TDataLoggerProvider<T>.SetInitialMessage(const AMessage: string): T;
-begin
-  Result := FOwner;
-  FInitialMessage := AMessage;
-end;
-
-function TDataLoggerProvider<T>.SetFinalMessage(const AMessage: string): T;
-begin
-  Result := FOwner;
-  FFinalMessage := AMessage;
 end;
 
 function TDataLoggerProvider<T>.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
@@ -603,17 +584,6 @@ begin
               Continue;
         end;
 
-        LMessage := LItem.Message;
-        try
-          if not FInitialMessage.Trim.IsEmpty then
-            LMessage := FInitialMessage + LMessage;
-
-          if not FFinalMessage.Trim.IsEmpty then
-            LMessage := LMessage + FFinalMessage;
-        finally
-          LItem.Message := LMessage;
-        end;
-
         if not FUseTransactionModeMultThread then
           LItem.InternalItem.TransactionID := TLoggerConst.TRANSACTION_ID;
 
@@ -731,8 +701,6 @@ begin
   end;
 
   SetMaxRetries(LJOInternal.GetValue<Int64>('max_retries', FMaxRetries));
-  SetInitialMessage(LJOInternal.GetValue<string>('initial_message', FInitialMessage));
-  SetFinalMessage(LJOInternal.GetValue<string>('final_message', FFinalMessage));
   UseTransaction(LJOInternal.GetValue<Boolean>('use_transaction', FUseTransaction));
 
   // Auto Commit
@@ -796,8 +764,6 @@ begin
         LJAOnlyLevel.Add(TLoggerLevel(I).ToString);
 
   LJOInternal.AddPair('max_retries', TJSONNumber.Create(FMaxRetries));
-  LJOInternal.AddPair('initial_message', TJSONString.Create(FInitialMessage));
-  LJOInternal.AddPair('final_message', TJSONString.Create(FFinalMessage));
   LJOInternal.AddPair('use_transaction', TJSONBool.Create(FUseTransaction));
 
   // Auto Commit

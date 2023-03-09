@@ -61,8 +61,6 @@ Add the following folders to your project, under *Project > Options > Delphi Com
   * [Only Level](#only-Level)
   * [Log Exception](#log-exception)
   * [Max Retries](#max-retries)
-  * [InitialMessage](#initialmessage)
-  * [FinalMessage](#finalmessage)
   * [IgnoreLogFormat](#ignorelogformat)
   * [Name](#name)
   * [LiveMode](#livemode)
@@ -680,68 +678,6 @@ begin
   
   // Output: 
   // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR  
-
-  Readln;
-end.
-```
-
-## InitialMessage
-
-
-It is possible to define a fixed message at the beginning of a message.
-
-SetInitialMessage default value = ```''```
-
-```delphi
-uses
-  DataLogger,
-  DataLogger.Provider.Console;
-
-begin
-  Logger.AddProvider(TProviderConsole.Create);
-
-  // Set the format of the log
-  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
-
-  // Set the initial message
-  Logger.SetInitialMessage('DLIOCODE ');
-
-  // Create the log
-  Logger.Error('My log message of type ERROR');
-  
-  // Output: 
-  // DLIOCODE 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR  
-
-  Readln;
-end.
-```
-
-## FinalMessage
-
-
-It is possible to define a fixed message at the end of a message.
-
-SetFinalMessage default value = ```''```
-
-```delphi
-uses
-  DataLogger,
-  DataLogger.Provider.Console;
-
-begin
-  Logger.AddProvider(TProviderConsole.Create);
-
-  // Set the log format
-  Logger.SetLogFormat('${timestamp} [${level}] ${message}');
-
-  // Define a final message
-  Logger.SetFinalMessage(' DLIOCODE');
-
-  // Create the log
-  Logger.Error('My log message of type ERROR');
-  
-  // Output: 
-  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR DLIOCODE 
 
   Readln;
 end.
