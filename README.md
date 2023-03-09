@@ -92,6 +92,7 @@ Aqui temos uma lista com **56 _providers_** disponíveis:
  | ------ | ------ | --------- | 
  | [AWS CloudWatch](https://aws.amazon.com/cloudwatch) | DataLogger.Provider.AWS.CloudWatch | [AWS CloudWatch](https://github.com/dliocode/datalogger/tree/main/Samples/AWSCloudWatch) | 
  | [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) | 
+ | [CallMeBot](https://www.callmebot.com/) | DataLogger.Provider.CallMeBot.WhatsApp | [CallMeBot](https://github.com/dliocode/datalogger/tree/main/Samples/CallMeBot) | 
  | Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console)<br /> [Console Simple](https://github.com/dliocode/datalogger/tree/main/Samples/Console%20-%20Simple)| 
  | [Coralogix](https://coralogix.com/) | DataLogger.Provider.Coralogix | [Coralogix](https://github.com/dliocode/datalogger/tree/main/Samples/Coralogix) |  
  | CSV | DataLogger.Provider.CSV | [CSV](https://github.com/dliocode/datalogger/tree/main/Samples/CSV) |  
