@@ -181,7 +181,6 @@ begin
       Continue;
 
     LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
-    LLog := LLog.Replace(#$D#$A, '\n');
 
     LJO := TJSONObject.Create;
     try
@@ -189,6 +188,7 @@ begin
       LJO.AddPair('message', TJSONString.Create(LLog));
 
       LLog := LJO.ToString;
+      LLog := LLog.Replace(#$D#$A, '\n');
     finally
       LJO.Free;
     end;
