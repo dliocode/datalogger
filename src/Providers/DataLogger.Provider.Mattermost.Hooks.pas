@@ -192,7 +192,6 @@ var
         Continue;
 
       LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
-//      LLog := LLog.Replace(#$D#$A, '\\n');
 
       LJO := TJSONObject.Create;
       try

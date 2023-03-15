@@ -190,10 +190,12 @@ end;
 
 {$ELSE}
 
+
 begin
 end;
 
 {$ENDIF}
+
 
 procedure ForceReferenceToClass(C: TClass);
 begin

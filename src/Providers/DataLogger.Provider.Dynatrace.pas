@@ -170,10 +170,10 @@ var
   LLog: string;
   LLogItemREST: TLogItemREST;
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
+
+  LItemREST := [];
 
   LJA := TJSONArray.Create;
   try

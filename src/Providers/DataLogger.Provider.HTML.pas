@@ -288,6 +288,9 @@ var
   LRetriesCount: Integer;
   LFileExist: Boolean;
 begin
+  if (Length(ACache) = 0) then
+    Exit;
+
   LFileName := GetLogFileName(0);
   if FOldFileName.Trim.IsEmpty then
     FOldFileName := LFileName;

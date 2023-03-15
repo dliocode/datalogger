@@ -229,8 +229,8 @@ end;
 
 procedure TProviderAWSCloudWatch.Save(const ACache: TArray<TLoggerItem>);
 var
-  LNow: TDateTime;
   LItemREST: TArray<TLogItemREST>;
+  LNow: TDateTime;
   LItem: TLoggerItem;
   LLog: string;
   LAuthorization: string;
@@ -239,10 +239,10 @@ var
   LJOEvents: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
+
+  LItemREST := [];
 
   LNow := TTimeZone.Local.ToUniversalTime(Now);
 

@@ -183,10 +183,10 @@ var
   LJO: TJSONObject;
   LLogItemREST: TLogItemREST;
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
+
+  LItemREST := [];
 
   if FServerURL.Trim.IsEmpty then
     FServerURL := FHTTP.URL;

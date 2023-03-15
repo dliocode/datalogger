@@ -93,9 +93,6 @@ type
 
   { TProviderTelegram }
 
-const
-  TELEGRAM_API_UPDATE = 'https://api.telegram.org/bot%s/getUpdates'; // https://api.telegram.org/bot<TOKEN>/getUpdates
-
 constructor TProviderTelegram.Create;
 begin
   inherited Create;
@@ -251,10 +248,10 @@ var
   end;
 
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
+
+  LItemREST := [];
 
   for LItem in ACache do
   begin
@@ -297,12 +294,12 @@ end;
 function TProviderTelegramHelper.ToString: string;
 begin
   case Self of
-    TTelegramParseMode.tpNone:
-      Result := 'HTML';
     TTelegramParseMode.tpHTML:
       Result := 'HTML';
     TTelegramParseMode.tpMarkdown:
       Result := 'MarkdownV2';
+  else
+    Result := 'HTML';
   end;
 end;
 

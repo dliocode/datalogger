@@ -187,10 +187,10 @@ var
   LJAContent: TJSONArray;
   LLogItemREST: TLogItemREST;
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
+
+  LItemREST := [];
 
   for LItem in ACache do
   begin

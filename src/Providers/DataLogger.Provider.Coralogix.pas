@@ -105,7 +105,7 @@ end;
 function TProviderCoralogix.PrivateKey(const AValue: string): TProviderCoralogix;
 begin
   Result := Self;
-  FPrivateKey := Avalue;
+  FPrivateKey := AValue;
 end;
 
 procedure TProviderCoralogix.LoadFromJSON(const AJSON: string);
@@ -160,58 +160,64 @@ var
   LSeverity: Integer;
   LLogItemREST: TLogItemREST;
 begin
-  LItemREST := [];
-
   if (Length(ACache) = 0) then
     Exit;
 
-    LJO := TJSONObject.Create;
-    try
-      LJA := TJSONArray.Create;
+  LItemREST := [];
 
-      LJO
-        .AddPair('privateKey', TJSONString.Create(FPrivateKey))
-        .AddPair('applicationName', TJSONString.Create(ACache[0].AppName))
-        .AddPair('subsystemName', TJSONString.Create(ACache[0].OSVersion))
-        .AddPair('computerName', TJSONString.Create(ACache[0].ComputerName))
-        .AddPair('logEntries', LJA)
-        ;
+  LJO := TJSONObject.Create;
+  try
+    LJA := TJSONArray.Create;
 
-      for LItem in ACache do
-      begin
-        if LItem.InternalItem.IsSlinebreak then
-          Continue;
+    LJO
+      .AddPair('privateKey', TJSONString.Create(FPrivateKey))
+      .AddPair('applicationName', TJSONString.Create(ACache[0].AppName))
+      .AddPair('subsystemName', TJSONString.Create(ACache[0].OSVersion))
+      .AddPair('computerName', TJSONString.Create(ACache[0].ComputerName))
+      .AddPair('logEntries', LJA)
+      ;
 
-        LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    for LItem in ACache do
+    begin
+      if LItem.InternalItem.IsSlinebreak then
+        Continue;
 
-        LSeverity := 3;
-        case LItem.Level of
-          TLoggerLevel.Trace, TLoggerLevel.Debug: LSeverity := 1;
-          TLoggerLevel.Success, TLoggerLevel.Custom: LSeverity := 2;
-          TLoggerLevel.Info: LSeverity := 3;
-          TLoggerLevel.Warn: LSeverity := 4;
-          TLoggerLevel.Error: LSeverity := 5;
-          TLoggerLevel.Fatal: LSeverity := 6;
-        end;
+      LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
 
-        LJA.Add(
-          TJSONObject.Create
-            .AddPair('timestamp', TJSONNumber.Create(LItem.TimeStampUNIX * 1000))
-            .AddPair('severity', TJSONNumber.Create(LSeverity))
-            .AddPair('text', TJSONString.Create(LLog))
-        );
+      LSeverity := 3;
+      case LItem.Level of
+        TLoggerLevel.Trace, TLoggerLevel.Debug:
+          LSeverity := 1;
+        TLoggerLevel.Success, TLoggerLevel.Custom:
+          LSeverity := 2;
+        TLoggerLevel.Info:
+          LSeverity := 3;
+        TLoggerLevel.Warn:
+          LSeverity := 4;
+        TLoggerLevel.Error:
+          LSeverity := 5;
+        TLoggerLevel.Fatal:
+          LSeverity := 6;
       end;
 
-      LLog := LJO.ToString;
-    finally
-       LJO.Free;
+      LJA.Add(
+        TJSONObject.Create
+        .AddPair('timestamp', TJSONNumber.Create(LItem.TimeStampUNIX * 1000))
+        .AddPair('severity', TJSONNumber.Create(LSeverity))
+        .AddPair('text', TJSONString.Create(LLog))
+        );
     end;
 
-    LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
-    LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := 'https://api.coralogix.com/api/v1/logs';
+    LLog := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
 
-    LItemREST := Concat(LItemREST, [LLogItemREST]);
+  LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+  LLogItemREST.LogItem := LItem;
+  LLogItemREST.URL := 'https://api.coralogix.com/api/v1/logs';
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
 
   FHTTP
     .SetLogException(FLogException)

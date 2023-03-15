@@ -30,6 +30,7 @@
   ********************************************************************************
 }
 
+// https://www.rabbitmq.com/
 // https://github.com/danieleteti/delphistompclient
 
 unit DataLogger.Provider.RabbitMQ;
