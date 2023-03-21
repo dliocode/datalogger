@@ -86,6 +86,7 @@ type
     procedure Start;
   protected
     FLogFormat: string;
+    FLogFormatExclusive: Boolean;
     FFormatTimestamp: string;
     FLogException: TLoggerOnException;
     FMaxRetries: Integer;
@@ -102,14 +103,11 @@ type
     procedure UnLock;
     function Terminated: Boolean;
   public
-    function SetLogFormat(const ALogFormat: string): T;
+    function SetLogFormat(const ALogFormat: string; const AExcluisive: Boolean = True): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
     function SetLevel(const ALevel: TLoggerLevel): T;
     function SetDisableLevel(const ALevels: TLoggerLevels): T;
     function SetOnlyLevel(const ALevels: TLoggerLevels): T;
-    function SetLogLevel(const ALevel: TLoggerLevel): T; deprecated 'Use SetLevel instead - This function will be removed in future versions';
-    function SetDisableLogLevel(const ALevels: TLoggerLevels): T; deprecated 'Use SetDisableLevel instead - This function will be removed in future versions';
-    function SetOnlyLogLevel(const ALevels: TLoggerLevels): T; deprecated 'Use SetOnlyLevel instead - This function will be removed in future versions';
     function SetLogException(const AException: TLoggerOnException): T;
     function SetMaxRetries(const AMaxRetries: Integer): T;
     function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
@@ -156,7 +154,7 @@ begin
   FListLoggerBase := TDataLoggerListItem.Create;
   FListTransaction := TDataLoggerListTransaction.Create([doOwnsValues]);
 
-  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT);
+  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT, False);
   SetFormatTimestamp('yyyy-mm-dd hh:nn:ss.zzz');
   SetLevel(TLoggerLevel.All);
   SetDisableLevel([]);
@@ -168,6 +166,8 @@ begin
 
   UseTransaction(False);
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
+
+  FLogFormatExclusive := False;
 
   FThreadExecute := nil;
   FThreadTerminated := False;
@@ -201,10 +201,15 @@ begin
   inherited;
 end;
 
-function TDataLoggerProvider<T>.SetLogFormat(const ALogFormat: string): T;
+function TDataLoggerProvider<T>.SetLogFormat(const ALogFormat: string; const AExcluisive: Boolean = True): T;
 begin
   Result := FOwner;
-  FLogFormat := ALogFormat;
+
+  if AExcluisive or not FLogFormatExclusive then
+  begin
+    FLogFormat := ALogFormat;
+    FLogFormatExclusive := AExcluisive;
+  end;
 end;
 
 function TDataLoggerProvider<T>.SetFormatTimestamp(const AFormatTimestamp: string): T;
@@ -229,21 +234,6 @@ function TDataLoggerProvider<T>.SetOnlyLevel(const ALevels: TLoggerLevels): T;
 begin
   Result := FOwner;
   FOnlyLevel := ALevels;
-end;
-
-function TDataLoggerProvider<T>.SetLogLevel(const ALevel: TLoggerLevel): T;
-begin
-  Result := SetLevel(ALevel);
-end;
-
-function TDataLoggerProvider<T>.SetDisableLogLevel(const ALevels: TLoggerLevels): T;
-begin
-  Result := SetDisableLevel(ALevels);
-end;
-
-function TDataLoggerProvider<T>.SetOnlyLogLevel(const ALevels: TLoggerLevels): T;
-begin
-  Result := SetOnlyLevel(ALevels);
 end;
 
 function TDataLoggerProvider<T>.SetLogException(const AException: TLoggerOnException): T;
@@ -528,7 +518,6 @@ function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
   I: Integer;
   LItem: TLoggerItem;
-
   LMessage: string;
   LTransaction: TDataLoggerTransaction;
   LListLoggerItem: TDataLoggerListItem;
@@ -670,7 +659,7 @@ begin
   LValue := FLevel.ToString;
   FLevel.SetLevelName(LJOInternal.GetValue<string>('log_level', LValue));
 
-  // Disable Log Level
+  // Disable Level
   LJSONValue := LJOInternal.GetValue('disable_level');
   if Assigned(LJSONValue) then
   begin
@@ -685,7 +674,7 @@ begin
     end;
   end;
 
-  // Only Log Level
+  // Only Level
   LJSONValue := LJOInternal.GetValue('only_level');
   if Assigned(LJSONValue) then
   begin
@@ -701,9 +690,11 @@ begin
   end;
 
   SetMaxRetries(LJOInternal.GetValue<Int64>('max_retries', FMaxRetries));
+
+  // Transaction
   UseTransaction(LJOInternal.GetValue<Boolean>('use_transaction', FUseTransaction));
 
-  // Auto Commit
+  // Transaction - Auto Commit
   LJSONObjectValue := LJOInternal.GetValue<TJSONObject>('transaction_auto_commit');
   if Assigned(LJSONObjectValue) then
   begin
@@ -832,6 +823,11 @@ begin
       end;
     end);
 
+{$WARN SYMBOL_PLATFORM OFF}
+{$IF DEFINED(MSWINDOWS)}
+  FThreadExecute.Priority := TThreadPriority.tpNormal;
+{$ENDIF}
+{$WARN SYMBOL_PLATFORM ON}
   FThreadExecute.FreeOnTerminate := False;
   FThreadExecute.Start;
 end;

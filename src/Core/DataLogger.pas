@@ -67,8 +67,8 @@ type
     FTagNameIsRequired: Boolean;
     FGenerateLogWithoutProvider: Boolean;
     FSequence: UInt64;
-    FHasProvider: Boolean;
     FLiveMode: Boolean;
+    FHasProvider: Boolean;
 
     constructor Create;
 
@@ -81,6 +81,7 @@ type
     function GetProviders(const AUseLock: Boolean = True): TArray<TDataLoggerProviderBase>;
     procedure Start;
     procedure NotifyEvent(const AUseLock: Boolean = True);
+    function HasProvider(const AUseLock: Boolean = True): Boolean;
     procedure Lock;
     procedure UnLock;
 
@@ -172,7 +173,7 @@ type
     function RollbackTransaction: TDataLogger;
     function InTransaction: Boolean;
 
-    function SetLogFormat(const ALogFormat: string): TDataLogger; overload;
+    function SetLogFormat(const ALogFormat: string; const AForced: Boolean = False): TDataLogger; overload;
     function SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger; overload;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
     function SetLevel(const ALevel: TLoggerLevel): TDataLogger;
@@ -256,8 +257,8 @@ begin
   SetGenerateLogWithoutProvider(True);
   FLiveMode := IsLibrary or ModuleIsLib;
 
-  FSequence := 0;
   FHasProvider := False;
+  FSequence := 0;
 
   FThreadExecute := nil;
   FThreadTerminated := False;
@@ -324,8 +325,7 @@ begin
   try
     FProviders.Remove(AProvider);
     FProviders.TrimExcess;
-
-    FHasProvider := (FProviders.Count > 0);
+    FHasProvider := FProviders.Count > 0;
   finally
     UnLock;
   end;
@@ -341,6 +341,7 @@ begin
   try
     FProviders.Clear;
     FProviders.TrimExcess;
+    FHasProvider := FProviders.Count > 0;
   finally
     UnLock;
   end;
@@ -642,7 +643,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     Exit;
 
   SaveForced;
@@ -662,7 +663,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     Exit;
 
   SaveForced;
@@ -682,7 +683,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     Exit;
 
   SaveForced;
@@ -702,7 +703,7 @@ var
 begin
   Result := False;
 
-  if not FHasProvider then
+  if not HasProvider then
     Exit;
 
   LID := TThread.Current.ThreadID.ToString;
@@ -716,19 +717,19 @@ begin
   end;
 end;
 
-function TDataLogger.SetLogFormat(const ALogFormat: string): TDataLogger;
+function TDataLogger.SetLogFormat(const ALogFormat: string; const AForced: Boolean = False): TDataLogger;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
   I: Integer;
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
-    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat);
+    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat, AForced);
 end;
 
 function TDataLogger.SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger;
@@ -743,7 +744,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LProviders := GetProviders;
@@ -794,7 +795,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LProviders := GetProviders;
@@ -809,7 +810,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LProviders := GetProviders;
@@ -824,7 +825,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   LProviders := GetProviders;
@@ -851,7 +852,7 @@ var
 begin
   Result := Self;
 
-  if not FHasProvider then
+  if not HasProvider then
     raise EDataLoggerException.Create('Not defined Provider!');
 
   Lock;
@@ -1038,7 +1039,7 @@ var
   LProviders: TArray<TDataLoggerProviderBase>;
   LProvider: TDataLoggerProviderBase;
 begin
-  if not FHasProvider then
+  if not HasProvider then
     Exit('{}');
 
   Lock;
@@ -1091,7 +1092,7 @@ begin
 
   Lock;
   try
-    if not FHasProvider and not FGenerateLogWithoutProvider then
+    if not HasProvider(False) and not FGenerateLogWithoutProvider then
       Exit;
 
     if not AIsSlinebreak then
@@ -1191,7 +1192,7 @@ var
   LProviders: TArray<TDataLoggerProviderBase>;
   I: Integer;
 begin
-  if not FHasProvider then
+  if not HasProvider then
     Exit;
 
   LProviders := GetProviders;
@@ -1227,12 +1228,12 @@ begin
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
-        if not FHasProvider then
+        if not HasProvider then
           Continue;
 
         LCache := ExtractCache;
         if (Length(LCache) = 0) then
-          Exit;
+          Continue;
 
         LProviders := GetProviders;
         for I := Low(LProviders) to High(LProviders) do
@@ -1240,18 +1241,23 @@ begin
       end;
     end);
 
+{$WARN SYMBOL_PLATFORM OFF}
+{$IF DEFINED(MSWINDOWS)}
+  FThreadExecute.Priority := TThreadPriority.tpHighest;
+{$ENDIF}
+{$WARN SYMBOL_PLATFORM ON}
   FThreadExecute.FreeOnTerminate := False;
   FThreadExecute.Start;
 end;
 
 procedure TDataLogger.NotifyEvent(const AUseLock: Boolean = True);
 begin
-  if not FHasProvider then
-    Exit;
-
   if AUseLock then
     Lock;
   try
+    if not HasProvider(False) then
+      Exit;
+
     if FLiveMode then
       SaveForced(False)
     else
@@ -1261,6 +1267,18 @@ begin
 
       FEvent.SetEvent;
     end;
+  finally
+    if AUseLock then
+      UnLock;
+  end;
+end;
+
+function TDataLogger.HasProvider(const AUseLock: Boolean = True): Boolean;
+begin
+  if AUseLock then
+    Lock;
+  try
+    Result := FHasProvider;
   finally
     if AUseLock then
       UnLock;
