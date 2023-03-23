@@ -169,7 +169,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLogItemREST.Stream := TLoggerSerializeItem.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream;
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := Format('http://logs-01.loggly.com/inputs/%s/tag/http/', [FToken]);
 

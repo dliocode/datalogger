@@ -181,7 +181,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LJO := SerializeItem.LogItem(LItem).ToJSONObject;
     try
       LJO
         .AddPair('timestamp', TJSONNumber.Create(LItem.TimeStampUNIX))

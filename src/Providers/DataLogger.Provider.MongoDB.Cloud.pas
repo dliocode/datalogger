@@ -220,7 +220,7 @@ begin
       LJO.AddPair('dataSource', TJSONString.Create(FDataSource));
       LJO.AddPair('database', TJSONString.Create(FDataBase));
       LJO.AddPair('collection', TJSONString.Create(FCollection));
-      LJO.AddPair('document', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+      LJO.AddPair('document', SerializeItem.LogItem(LItem).ToJSONObject);
 
       LLog := LJO.ToString;
     finally

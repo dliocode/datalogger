@@ -443,7 +443,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       LLog := ''
     else
-      LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLog := SerializeItem.LogItem(LItem).ToString;
 
     while True do
       try

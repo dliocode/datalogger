@@ -205,7 +205,7 @@ begin
 
     LJA := TJSONArray.Create;
     try
-      LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+      LJO := SerializeItem.LogItem(LItem).ToJSONObject;
       LJO.AddPair('ddsource', TJSONString.Create(FSource));
       LJO.AddPair('ddtags', TJSONString.Create(LItem.Tag));
       LJO.AddPair('host', TJSONString.Create(LItem.ComputerName));

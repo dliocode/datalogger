@@ -286,7 +286,7 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
 
         if Assigned(AEventJSON) then
         begin
-          LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, AItem, FFormatTimestamp, FIgnoreLogFormat);
+          LJO := SerializeItem.LogItem(AItem).ToJSONObject;
           try
             AEventJSON(LJO);
           finally

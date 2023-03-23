@@ -166,7 +166,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLogItemREST.Stream := TLoggerSerializeItem.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream;
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := 'https://webhook.logentries.com/noformat/logs/' + FToken;
 

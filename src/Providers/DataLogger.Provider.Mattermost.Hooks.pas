@@ -191,7 +191,7 @@ var
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLog := SerializeItem.LogItem(LItem).ToString;
 
       LJO := TJSONObject.Create;
       try
@@ -231,7 +231,7 @@ var
           if LItem.InternalItem.IsSlinebreak then
             Continue;
 
-          LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+          LLog := SerializeItem.LogItem(LItem).ToString;
 
           LAppend.Append(LLog);
           LAppend.AppendLine;

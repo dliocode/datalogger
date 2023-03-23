@@ -185,7 +185,7 @@ begin
       LJOEvents
         .AddPair('Timestamp', TJSONString.Create(LItem.TimestampISO8601))
         .AddPair('Level', TJSONString.Create(LItem.LevelString))
-        .AddPair('Properties', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+        .AddPair('Properties', SerializeItem.LogItem(LItem).ToJSONObject);
 
       if not LItem.Message.Trim.IsEmpty then
         LJOEvents.AddPair('MessageTemplate', TJSONString.Create(LItem.Message))

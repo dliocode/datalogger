@@ -35,7 +35,7 @@ unit DataLogger.Provider;
 interface
 
 uses
-  DataLogger.Types, DataLogger.Transaction, DataLogger.Utils,
+  DataLogger.Types, DataLogger.Transaction, DataLogger.Utils, DataLogger.SerializeItem,
   System.SysUtils, System.Classes, System.SyncObjs, System.Generics.Collections, System.JSON, System.TypInfo, System.DateUtils;
 
 type
@@ -86,15 +86,17 @@ type
     procedure Start;
   protected
     FLogFormat: string;
-    FLogFormatExclusive: Boolean;
     FFormatTimestamp: string;
-    FLogException: TLoggerOnException;
-    FMaxRetries: Integer;
     FIgnoreLogFormat: Boolean;
     FIgnoreLogFormatSeparator: string;
     FIgnoreLogFormatIncludeKey: Boolean;
     FIgnoreLogFormatIncludeKeySeparator: string;
 
+    FLogFormatExclusive: Boolean;
+    FLogException: TLoggerOnException;
+    FMaxRetries: Integer;
+
+    function SerializeItem: ILoggerSerializeItem;
     procedure Save(const ACache: TArray<TLoggerItem>); virtual; abstract;
 
     procedure SetJSONInternal(const AJO: TJSONObject);
@@ -222,6 +224,18 @@ function TDataLoggerProvider<T>.SetLevel(const ALevel: TLoggerLevel): T;
 begin
   Result := FOwner;
   FLevel := ALevel;
+end;
+
+function TDataLoggerProvider<T>.SerializeItem: ILoggerSerializeItem;
+begin
+  Result :=
+    TLoggerSerializeItem.New
+    .LogFormat(FLogFormat)
+    .IgnoreLogFormat(FIgnoreLogFormat)
+    .IgnoreLogFormatSeparator(FIgnoreLogFormatSeparator)
+    .IgnoreLogFormatIncludeKey(FIgnoreLogFormatIncludeKey)
+    .IgnoreLogFormatIncludeKeySeparator(FIgnoreLogFormatIncludeKeySeparator)
+    .FormatTimestamp(FFormatTimestamp);
 end;
 
 function TDataLoggerProvider<T>.SetDisableLevel(const ALevels: TLoggerLevels): T;

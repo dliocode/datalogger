@@ -141,15 +141,18 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLog := SerializeItem.LogItem(LItem).ToString;
 
       case LItem.Level of
         TLoggerLevel.Info:
           LEventType := EVENTLOG_INFORMATION_TYPE;
+
         TLoggerLevel.Warn:
           LEventType := EVENTLOG_WARNING_TYPE;
+
         TLoggerLevel.Error:
           LEventType := EVENTLOG_ERROR_TYPE;
+
         TLoggerLevel.Success:
           LEventType := EVENTLOG_SUCCESS;
       else

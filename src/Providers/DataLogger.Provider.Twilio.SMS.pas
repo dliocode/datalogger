@@ -206,7 +206,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := SerializeItem.LogItem(LItem).ToString;
     LLog := LLog.Replace('.', ' '); // Twilio bug SMS - Failed to receive message with dots - 2022-08-01 yyyy-mm-dd
 
     LLogItemREST.Stream := nil;

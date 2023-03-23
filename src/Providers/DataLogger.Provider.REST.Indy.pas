@@ -347,9 +347,9 @@ begin
       Continue;
 
     if (Trim(LowerCase(FContentType)) = 'application/json') then
-      LLogItemREST.Stream := TLoggerSerializeItem.AsStreamJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)
+      LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream
     else
-      LLogItemREST.Stream := TLoggerSerializeItem.AsStream(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+      LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToStream;
 
     LLogItemREST.LogItem := LItem;
 

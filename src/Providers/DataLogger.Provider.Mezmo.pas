@@ -172,7 +172,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LLog := SerializeItem.LogItem(LItem).ToJSON;
 
     LJO := TJSONObject.Create;
     try

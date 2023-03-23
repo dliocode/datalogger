@@ -147,7 +147,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := SerializeItem.LogItem(LItem).ToString;
 
     LRetriesCount := 0;
 

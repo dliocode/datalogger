@@ -173,7 +173,7 @@ begin
     if FIncludeLevelInTitle then
       LName := LName + ' - ' + LItem.LevelString;
 
-    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := SerializeItem.LogItem(LItem).ToString;
 
     LRetriesCount := 0;
 

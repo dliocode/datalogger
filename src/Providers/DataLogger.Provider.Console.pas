@@ -250,7 +250,7 @@ begin
       Continue;
     end;
 
-    LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);
+    LLog := SerializeItem.LogItem(LItem).ToString;
 
     LRetriesCount := 0;
 
@@ -274,7 +274,7 @@ begin
             if not(LLevel = TLoggerLevel.All) then
               LTag := LTag + '_' + LLevel.ToString.ToLower;
 
-            LTags := TLoggerSerializeItem.ListTAG(LLog, [LTag], LItem, FFormatTimestamp);
+            LTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [Ltag]);
             try
               if (LTags.Count = 0) then
                 Continue;

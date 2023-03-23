@@ -35,7 +35,7 @@ unit DataLogger;
 interface
 
 uses
-  DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
+  DataLogger.Provider, DataLogger.Types, DataLogger.Utils, DataLogger.SerializeItem,
   System.Classes, System.SyncObjs, System.Generics.Collections, System.SysUtils, System.JSON, System.DateUtils;
 
 type
@@ -47,7 +47,7 @@ type
   TLoggerTransactionTypeCommit = DataLogger.Types.TLoggerTransactionTypeCommit;
   TLoggerOnException = DataLogger.Types.TLoggerOnException;
   TLoggerFormat = DataLogger.Types.TLoggerFormat;
-  TLoggerSerializeItem = DataLogger.Types.TLoggerSerializeItem;
+  TLoggerSerializeItem = DataLogger.SerializeItem.TLoggerSerializeItem;
 
   EDataLoggerException = DataLogger.Types.EDataLoggerException;
   Exception = System.SysUtils.Exception;
@@ -69,6 +69,7 @@ type
     FSequence: UInt64;
     FLiveMode: Boolean;
     FHasProvider: Boolean;
+    FLevelName: TDictionary<TLoggerLevel, string>;
 
     constructor Create;
 
@@ -186,6 +187,7 @@ type
     function SetLiveMode(const ALiveMode: Boolean): TDataLogger;
     function SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
     function SetGenerateLogWithoutProvider(const AGenerateLogWithoutProvider: Boolean): TDataLogger;
+    function SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
@@ -240,6 +242,8 @@ begin
 end;
 
 procedure TDataLogger.AfterConstruction;
+var
+  LLevel: TLoggerLevel;
 begin
   inherited;
 
@@ -262,6 +266,10 @@ begin
 
   FThreadExecute := nil;
   FThreadTerminated := False;
+
+  FLevelName := TDictionary<TLoggerLevel, string>.Create;
+  for LLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
+    FLevelName.Add(LLevel, LLevel.ToString);
 end;
 
 procedure TDataLogger.BeforeDestruction;
@@ -291,6 +299,7 @@ begin
     UnLock;
   end;
 
+  FLevelName.Free;
   FCriticalSection.Free;
 
   inherited;
@@ -894,6 +903,18 @@ begin
   end;
 end;
 
+function TDataLogger.SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FLevelName.Items[ALevel] := AName;
+  finally
+    UnLock;
+  end;
+end;
+
 function TDataLogger.Clear: TDataLogger;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
@@ -1124,7 +1145,7 @@ begin
 
     LItem.LevelString := ACustom;
     if LItem.LevelString.Trim.IsEmpty then
-      LItem.LevelString := ALevel.ToString;
+      LItem.LevelString := FLevelName.Items[ALevel];
 
     LItem.LevelValue := Ord(ALevel);
     LItem.Tag := ATagName;

@@ -169,7 +169,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LJO := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LJO := SerializeItem.LogItem(LItem).ToJSONObject;
     try
       if LItem.Message.Trim.IsEmpty then
         LJO.AddPair('message', TJSONString.Create(LItem.MessageJSON))

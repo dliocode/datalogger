@@ -182,7 +182,7 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+      LLog := SerializeItem.LogItem(LItem).ToJSON;
 
       LSeverity := 3;
       case LItem.Level of

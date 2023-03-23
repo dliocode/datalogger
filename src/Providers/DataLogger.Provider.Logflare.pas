@@ -187,7 +187,7 @@ begin
       else
         LJO.AddPair('message', TJSONString.Create(LItem.Message));
 
-      LJO.AddPair('metadata', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+      LJO.AddPair('metadata', SerializeItem.LogItem(LItem).ToJSONObject);
 
       LLog := LJO.ToString;
     finally

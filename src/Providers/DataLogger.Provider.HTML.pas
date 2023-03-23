@@ -341,7 +341,7 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      LLogs := TLoggerSerializeItem.AsValues(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+      LLogs := SerializeItem.LogItem(LItem).ToValues;
 
       LLog := '        <tr>' + sLineBreak;
       for I := Low(LLogs) to High(LLogs) do
@@ -672,7 +672,7 @@ begin
     '      <thead class="table-dark align-middle text-center">' + sLineBreak +
     '        <tr>' + sLineBreak;
 
-  LLogs := TLoggerSerializeItem.AsHeader(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+  LLogs := SerializeItem.LogItem(LItem).ToKeys;
 
   for I := Low(LLogs) to High(LLogs) do
   begin

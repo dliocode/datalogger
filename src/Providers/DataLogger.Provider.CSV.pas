@@ -318,13 +318,13 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsValues(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
+      InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToValues));
 
       if (FMaxFileSizeInKiloByte > 0) then
         if (FWriter.BaseStream.Size > (FMaxFileSizeInKiloByte * 1024)) then
         begin
           RotateLog;
-          InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsHeader(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
+          InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToKeys));
         end;
     end;
   finally
@@ -553,7 +553,7 @@ procedure TProviderCSV.MakeHeader;
 var
   LItem: TLoggerItem;
 begin
-  InternalWriteLog(String.Join(FSeparator, TLoggerSerializeItem.AsHeader(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat)));
+  InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToKeys));
 end;
 
 procedure ForceReferenceToClass(C: TClass);

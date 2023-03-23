@@ -218,7 +218,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LJOLog := TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LJOLog := SerializeItem.LogItem(LItem).ToJSONObject;
     try
       for I := Low(FEmailTo) to High(FEmailTo) do
       begin

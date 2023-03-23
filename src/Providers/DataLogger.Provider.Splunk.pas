@@ -183,7 +183,7 @@ begin
 
     LJO := TJSONObject.Create;
     try
-      LJO.AddPair('event', TLoggerSerializeItem.AsJsonObject(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat));
+      LJO.AddPair('event', SerializeItem.LogItem(LItem).ToJSONObject);
 
       LLog := LJO.ToString;
     finally

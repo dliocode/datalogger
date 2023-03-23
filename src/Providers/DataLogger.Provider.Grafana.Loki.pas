@@ -209,7 +209,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LLog := TLoggerSerializeItem.AsJsonObjectToString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat);
+    LLog := SerializeItem.LogItem(LItem).ToJSON;
     LDateUNIX := IntToStr(LItem.TimestampUNIX);
     LDateUNIX := SetZero(LDateUNIX, 19);
 
