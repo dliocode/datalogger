@@ -52,6 +52,9 @@ type
   private
     FOwner: T;
     FCriticalSection: TCriticalSection;
+    FSemaphore: TSemaphore;
+    FLocked: Boolean;
+
     FEvent: TEvent;
     FLastCheckInfo: TDateTime;
     FThreadExecute: TThread;
@@ -84,6 +87,8 @@ type
 
     function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
     procedure Start;
+    procedure LockCache;
+    procedure UnLockCache;
   protected
     FLogFormat: string;
     FFormatTimestamp: string;
@@ -150,6 +155,9 @@ begin
 
   FOwner := Self as T;
   FCriticalSection := TCriticalSection.Create;
+  FSemaphore := TSemaphore.Create(nil, 1, 1, '');
+  FLocked := False;
+
   FEvent := TEvent.Create;
   FLastCheckInfo := 0;
 
@@ -198,6 +206,7 @@ begin
     UnLock;
   end;
 
+  FSemaphore.Free;
   FCriticalSection.Free;
 
   inherited;
@@ -530,6 +539,7 @@ end;
 
 function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
+  LListUndoLastLine: TList<string>;
   I: Integer;
   LItem: TLoggerItem;
   LMessage: string;
@@ -538,9 +548,12 @@ var
 begin
   Result := FOwner;
 
+  LListUndoLastLine := TList<string>.Create;
+
+  LockCache;
   Lock;
   try
-    if (MinutesBetween(FLastCheckInfo, Now) > 2) then
+    if (MinutesBetween(FLastCheckInfo, Now) > 5) then
     begin
       FLastCheckInfo := Now;
 
@@ -560,6 +573,20 @@ begin
       for I := Low(AValues) to High(AValues) do
       begin
         LItem := AValues[I];
+
+        if LListUndoLastLine.Contains(LItem.InternalItem.TransactionID) then
+        begin
+          LListUndoLastLine.Remove(LItem.InternalItem.TransactionID);
+          Continue;
+        end;
+
+        if ((I + 1) <= High(AValues)) then
+          if AValues[I + 1].InternalItem.IsUndoLastLine then
+            if AValues[I + 1].InternalItem.TransactionID = LItem.InternalItem.TransactionID then
+            begin
+              LListUndoLastLine.Add(AValues[I + 1].InternalItem.TransactionID);
+              Continue;
+            end;
 
         LItem.TimeStampISO8601 := DateToISO8601(LItem.TimeStamp, False);
         LItem.TimeStampUNIX := DateTimeToUnix(LItem.TimeStamp, False);
@@ -617,6 +644,8 @@ begin
     end;
   finally
     UnLock;
+    UnLockCache;
+    LListUndoLastLine.Free;
   end;
 end;
 
@@ -796,6 +825,32 @@ begin
   FCriticalSection.Release;
 end;
 
+procedure TDataLoggerProvider<T>.LockCache;
+var
+  LCount: Int64;
+begin
+  LCount := CountLogInCache;
+
+  if LCount >= 100000 then
+  begin
+    FSemaphore.Acquire;
+    FLocked := True;
+  end;
+end;
+
+procedure TDataLoggerProvider<T>.UnLockCache;
+var
+  LCount: Int64;
+begin
+  LCount := CountLogInCache;
+
+  if (LCount < 100000) and (FLocked) then
+  begin
+    FSemaphore.Release;
+    FLocked := False;
+  end;
+end;
+
 function TDataLoggerProvider<T>.Terminated: Boolean;
 begin
   Result := FThreadTerminated;
@@ -826,12 +881,16 @@ begin
     begin
       while not FThreadTerminated do
       begin
+        UnLockCache;
+
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
         LCache := ExtractCache;
         if (Length(LCache) = 0) then
           Continue;
+
+        UnLockCache;
 
         Save(LCache);
       end;

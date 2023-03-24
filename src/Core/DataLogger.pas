@@ -55,6 +55,9 @@ type
   TDataLogger = class
   private
     FCriticalSection: TCriticalSection;
+    FSemaphore: TSemaphore;
+    FLocked: Boolean;
+
     FEvent: TEvent;
     FThreadExecute: TThread;
     FThreadTerminated: Boolean;
@@ -73,7 +76,7 @@ type
 
     constructor Create;
 
-    function AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger; overload;
+    function AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLastLine: Boolean): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
     function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
@@ -85,6 +88,8 @@ type
     function HasProvider(const AUseLock: Boolean = True): Boolean;
     procedure Lock;
     procedure UnLock;
+    procedure LockCache;
+    procedure UnLockCache;
 
     class constructor Create;
     class destructor Destroy;
@@ -168,6 +173,7 @@ type
     function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
     function SlineBreak: TDataLogger;
+    function UndoLastLine: TDataLogger;
 
     function StartTransaction: TDataLogger;
     function CommitTransaction: TDataLogger;
@@ -248,6 +254,8 @@ begin
   inherited;
 
   FCriticalSection := TCriticalSection.Create;
+  FSemaphore := TSemaphore.Create(nil, 1, 1, '');
+  FLocked := False;
 
   FEvent := TEvent.Create;
   FLoggerItems := TList<TLoggerItem>.Create;
@@ -266,7 +274,6 @@ begin
 
   FThreadExecute := nil;
   FThreadTerminated := False;
-
   FLevelName := TDictionary<TLoggerLevel, string>.Create;
   for LLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
     FLevelName.Add(LLevel, LLevel.ToString);
@@ -300,6 +307,8 @@ begin
   end;
 
   FLevelName.Free;
+
+  FSemaphore.Free;
   FCriticalSection.Free;
 
   inherited;
@@ -476,17 +485,17 @@ end;
 
 function TDataLogger.Custom(const ALevel: string; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, AMessage, '', ATagName, ALevel, False);
+  Result := AddCacheBase(TLoggerLevel.Custom, AMessage, '', ATagName, ALevel, False, False);
 end;
 
 function TDataLogger.Custom(const ALevel: string; const AMessage: string; const AArgs: array of const; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, Format(AMessage, AArgs), '', ATagName, ALevel, False);
+  Result := AddCacheBase(TLoggerLevel.Custom, Format(AMessage, AArgs), '', ATagName, ALevel, False, False);
 end;
 
 function TDataLogger.Custom(const ALevel: string; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.Custom, '', AMessage.ToString, ATagName, ALevel, False);
+  Result := AddCacheBase(TLoggerLevel.Custom, '', AMessage.ToString, ATagName, ALevel, False, False);
 end;
 
 function TDataLogger.Log(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
@@ -641,7 +650,12 @@ end;
 
 function TDataLogger.SlineBreak: TDataLogger;
 begin
-  Result := AddCache(TLoggerLevel.All, '', '', '', '', True);
+  Result := AddCacheBase(TLoggerLevel.All, '', '', '', '', True, False);
+end;
+
+function TDataLogger.UndoLastLine: TDataLogger;
+begin
+  Result := AddCacheBase(TLoggerLevel.All, '', '', '', '', False, True);
 end;
 
 function TDataLogger.StartTransaction: TDataLogger;
@@ -1090,7 +1104,7 @@ begin
   end;
 end;
 
-function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean): TDataLogger;
+function TDataLogger.AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLastLine: Boolean): TDataLogger;
 var
   LItem: TLoggerItem;
   LMessage: string;
@@ -1111,6 +1125,7 @@ begin
       raise EDataLoggerException.CreateFmt('Tag name is required in message "%s"!', [LMessage]);
     end;
 
+  LockCache;
   Lock;
   try
     if not HasProvider(False) and not FGenerateLogWithoutProvider then
@@ -1152,6 +1167,7 @@ begin
     LItem.Message := AMessageString;
     LItem.MessageJSON := AMessageJSON;
     LItem.InternalItem.IsSlinebreak := AIsSlinebreak;
+    LItem.InternalItem.IsUndoLastLine := AIsUndoLastLine;
     LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
     FLoggerItems.Add(LItem);
@@ -1159,17 +1175,18 @@ begin
     NotifyEvent(False);
   finally
     UnLock;
+    UnLockCache;
   end;
 end;
 
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, AMessage, '', ATagName, '', False);
+  Result := AddCacheBase(ALevel, AMessage, '', ATagName, '', False, False);
 end;
 
 function TDataLogger.AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger;
 begin
-  Result := AddCache(ALevel, '', AMessage.ToString, ATagName, '', False);
+  Result := AddCacheBase(ALevel, '', AMessage.ToString, ATagName, '', False, False);
 end;
 
 function TDataLogger.ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
@@ -1246,6 +1263,8 @@ begin
     begin
       while not FThreadTerminated do
       begin
+        UnLockCache;
+
         FEvent.WaitFor(INFINITE);
         FEvent.ResetEvent;
 
@@ -1255,6 +1274,8 @@ begin
         LCache := ExtractCache;
         if (Length(LCache) = 0) then
           Continue;
+
+        UnLockCache;
 
         LProviders := GetProviders;
         for I := Low(LProviders) to High(LProviders) do
@@ -1314,6 +1335,32 @@ end;
 procedure TDataLogger.UnLock;
 begin
   FCriticalSection.Release;
+end;
+
+procedure TDataLogger.LockCache;
+var
+  LCount: Int64;
+begin
+  LCount := CountLogInCache;
+
+  if LCount >= 500000 then
+  begin
+    FSemaphore.Acquire;
+    FLocked := True;
+  end;
+end;
+
+procedure TDataLogger.UnLockCache;
+var
+  LCount: Int64;
+begin
+  LCount := CountLogInCache;
+
+  if (LCount < 500000) and (FLocked) then
+  begin
+    FSemaphore.Release;
+    FLocked := False;
+  end;
 end;
 
 end.

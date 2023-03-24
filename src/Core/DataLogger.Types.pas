@@ -58,6 +58,7 @@ type
 
   TLoggerInternalItem = record
     IsSlinebreak: Boolean;
+    IsUndoLastLine: Boolean;
     TransactionID: string;
   end;
 
