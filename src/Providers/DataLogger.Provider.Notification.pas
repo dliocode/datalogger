@@ -36,6 +36,7 @@ interface
 
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
+
 uses
   DataLogger.Provider, DataLogger.Types, DataLogger.Utils,
   System.SysUtils, System.Notification, System.JSON, System.Classes;
@@ -51,6 +52,7 @@ type
     FTitle: string;
     FIncludeLevelInTitle: Boolean;
     FOnReceiveExecute: TProviderNotificationExecute;
+    FNotificationLastName: string;
 
     procedure OnReceiveLocalNotification(Sender: TObject; ANotification: TNotification);
   protected
@@ -83,6 +85,8 @@ begin
 
   Title('DataLogger - Notification');
   ExecuteOnClick(nil);
+
+  FNotificationLastName := '';
 end;
 
 destructor TProviderNotification.Destroy;
@@ -155,10 +159,10 @@ end;
 
 procedure TProviderNotification.Save(const ACache: TArray<TLoggerItem>);
 var
-  LName: string;
   LNotification: TNotification;
   LRetriesCount: Integer;
   LItem: TLoggerItem;
+  LTitle: string;
   LLog: string;
 begin
   if (Length(ACache) = 0) then
@@ -166,14 +170,30 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      if not FNotificationLastName.Trim.IsEmpty then
+        TThread.Synchronize(nil,
+          procedure
+          begin
+            try
+              FNotificationCenter.CancelNotification(FNotificationLastName);
+            except
+            end;
+          end);
+
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    LName := FTitle;
+    LTitle := FTitle;
     if FIncludeLevelInTitle then
-      LName := LName + ' - ' + LItem.LevelString;
+      LTitle := LTitle + ' - ' + LItem.LevelString;
 
     LLog := SerializeItem.LogItem(LItem).ToString;
+    FNotificationLastName := TGUID.NewGuid.ToString;
 
     LRetriesCount := 0;
 
@@ -181,8 +201,8 @@ begin
       try
         LNotification := FNotificationCenter.CreateNotification;
         try
-          LNotification.Name := LName;
-          LNotification.Title := LName;
+          LNotification.Name := FNotificationLastName;
+          LNotification.Title := LTitle;
           LNotification.AlertBody := LLog;
 
           TThread.Synchronize(nil,
