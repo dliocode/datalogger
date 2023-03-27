@@ -214,7 +214,7 @@ type
   TThreadExecute = class(TThread);
 
 const
-  C_MAX_LOG_IN_CACHE = 500000;
+  C_MAX_LOG_IN_CACHE = 200000;
 
 var
   FLoggerDefault: TDataLogger;
