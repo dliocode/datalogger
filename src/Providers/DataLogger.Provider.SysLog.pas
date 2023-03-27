@@ -130,7 +130,7 @@ begin
   try
     for LItem in ACache do
     begin
-      if LItem.InternalItem.IsSlinebreak then
+      if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLastLine then
         Continue;
 
       LLog := TLoggerSerializeItem.AsString(FLogFormat, LItem, FFormatTimestamp, FIgnoreLogFormat, FIgnoreLogFormatSeparator, FIgnoreLogFormatIncludeKey, FIgnoreLogFormatIncludeKeySeparator);

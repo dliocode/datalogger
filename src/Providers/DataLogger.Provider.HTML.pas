@@ -339,6 +339,9 @@ begin
 
     for LItem in ACache do
     begin
+      if LItem.InternalItem.IsSlinebreak then
+        Continue;
+
       if LItem.InternalItem.IsUndoLastLine then
       begin
         LLogs := SerializeItem.LogItem(LItem).ToValues;
@@ -346,9 +349,6 @@ begin
 
         Continue;
       end;
-
-      if LItem.InternalItem.IsSlinebreak then
-        Continue;
 
       LLogs := SerializeItem.LogItem(LItem).ToValues;
 

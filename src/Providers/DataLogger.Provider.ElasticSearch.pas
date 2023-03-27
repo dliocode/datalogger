@@ -215,14 +215,14 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsSlinebreak then
+      Continue;
+
     if LItem.InternalItem.IsUndoLastLine then
     begin
       UndoLastLine;
       Continue;
     end;
-
-    if LItem.InternalItem.IsSlinebreak then
-      Continue;
 
     LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream;
     LLogItemREST.LogItem := LItem;

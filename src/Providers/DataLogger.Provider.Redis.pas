@@ -175,6 +175,12 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     LLog := SerializeItem.LogItem(LItem).ToJSON;
 
     LRetriesCount := 0;
@@ -237,10 +243,10 @@ var
 begin
   LKey := FKeyPrefix + C_PREFIX;
 
-  LRedisClient := TRedisClient.Create(FHost, FPort);
-  LRedisClient.Connect;
-
   try
+    LRedisClient := TRedisClient.Create(FHost, FPort);
+    LRedisClient.Connect;
+
     LRedisClient.RPOP(LKey);
   except
   end;

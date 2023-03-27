@@ -170,6 +170,9 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsSlinebreak then
+      Continue;
+
     if LItem.InternalItem.IsUndoLastLine then
     begin
       if not FNotificationLastName.Trim.IsEmpty then
@@ -184,9 +187,6 @@ begin
 
       Continue;
     end;
-
-    if LItem.InternalItem.IsSlinebreak then
-      Continue;
 
     LTitle := FTitle;
     if FIncludeLevelInTitle then

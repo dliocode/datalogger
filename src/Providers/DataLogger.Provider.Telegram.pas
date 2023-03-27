@@ -261,14 +261,14 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsSlinebreak then
+      Continue;
+
     if LItem.InternalItem.IsUndoLastLine then
     begin
       UndoLastLine;
       Continue;
     end;
-
-    if LItem.InternalItem.IsSlinebreak then
-      Continue;
 
     LLog := SerializeItem.LogItem(LItem).ToString;
     LLog := LLog.Replace('\', '\\');
