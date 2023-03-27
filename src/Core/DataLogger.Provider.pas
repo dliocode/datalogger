@@ -142,6 +142,9 @@ type
 
 implementation
 
+const
+  C_MAX_LOG_IN_CACHE = 100000;
+
 { TDataLoggerProvider }
 
 constructor TDataLoggerProvider<T>.Create;
@@ -831,7 +834,7 @@ var
 begin
   LCount := CountLogInCache;
 
-  if LCount >= 100000 then
+  if LCount >= C_MAX_LOG_IN_CACHE then
   begin
     FSemaphore.Acquire;
     FLocked := True;
@@ -844,7 +847,7 @@ var
 begin
   LCount := CountLogInCache;
 
-  if (LCount < 100000) and (FLocked) then
+  if (LCount < C_MAX_LOG_IN_CACHE) and (FLocked) then
   begin
     FSemaphore.Release;
     FLocked := False;

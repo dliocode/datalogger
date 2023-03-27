@@ -213,6 +213,9 @@ implementation
 type
   TThreadExecute = class(TThread);
 
+const
+  C_MAX_LOG_IN_CACHE = 500000;
+
 var
   FLoggerDefault: TDataLogger;
 
@@ -1343,7 +1346,7 @@ var
 begin
   LCount := CountLogInCache;
 
-  if LCount >= 500000 then
+  if LCount >= C_MAX_LOG_IN_CACHE then
   begin
     FSemaphore.Acquire;
     FLocked := True;
@@ -1356,7 +1359,7 @@ var
 begin
   LCount := CountLogInCache;
 
-  if (LCount < 500000) and (FLocked) then
+  if (LCount < C_MAX_LOG_IN_CACHE) and (FLocked) then
   begin
     FSemaphore.Release;
     FLocked := False;
