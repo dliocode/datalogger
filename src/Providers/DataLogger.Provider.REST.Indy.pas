@@ -66,9 +66,9 @@ type
     FormData: TArray<TLogFormData>;
   end;
 
-  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
   TContentValidation = reference to function(const AContent: string; var AMessageException: string): Boolean;
-  TRESTMethod = (tlmGet, tlmPost);
+  TRESTMethod = (tlmGet, tlmPost, tlmDelete);
 
   TProviderRESTIndy = class(TDataLoggerProvider<TProviderRESTIndy>)
   private
@@ -396,8 +396,8 @@ var
   LURL: string;
   LHTTP: TIdHTTP;
   LSSL: TIdSSLIOHandlerSocketOpenSSL;
-  LResponseContent: string;
   I: Integer;
+  LResponseContent: string;
   LFormData: TIdMultiPartFormDataStream;
   LExceptionMessage: string;
 begin
@@ -475,6 +475,11 @@ begin
                 end;
               end;
             end;
+
+          tlmDelete:
+            LHTTP.Delete(LURL);
+        else
+          raise EDataLoggerException.CreateFmt('%s > Invalid method!', [Self.ClassName]);
         end;
 
         LResponseContent := LHTTP.Response.ResponseText;
@@ -509,13 +514,13 @@ begin
         end;
       end;
   finally
-    LHTTP.Free;
-
     if Assigned(AItemREST.Stream) then
       AItemREST.Stream.Free;
 
     if Assigned(FExecuteFinally) then
-      FExecuteFinally(AItemREST.LogItem, LResponseContent);
+      FExecuteFinally(AItemREST.LogItem, LResponseContent, LHTTP.Response.ResponseCode);
+
+    LHTTP.Free;
   end;
 end;
 

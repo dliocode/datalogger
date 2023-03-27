@@ -65,9 +65,9 @@ type
     FormData: TArray<TLogFormData>;
   end;
 
-  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
   TContentValidation = reference to function(const AContent: string; var AMessageException: string): Boolean;
-  TRESTMethod = (tlmGet, tlmPost);
+  TRESTMethod = (tlmGet, tlmPost, tlmDelete);
 
   TProviderRESTNetHTTPClient = class(TDataLoggerProvider<TProviderRESTNetHTTPClient>)
   private
@@ -466,6 +466,11 @@ begin
                 end;
               end;
             end;
+
+          tlmDelete:
+            LResponse := LHTTP.Delete(LURL);
+        else
+          raise EDataLoggerException.CreateFmt('%s > Invalid method!', [Self.ClassName]);
         end;
 
         try
@@ -510,7 +515,7 @@ begin
       AItemREST.Stream.Free;
 
     if Assigned(FExecuteFinally) then
-      FExecuteFinally(AItemREST.LogItem, LResponseContent);
+      FExecuteFinally(AItemREST.LogItem, LResponseContent, LResponse.StatusCode);
   end;
 end;
 
