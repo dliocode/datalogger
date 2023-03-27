@@ -69,6 +69,9 @@ type
     FBotToken: string;
     FChatId: string;
     FParseMode: TTelegramParseMode;
+    FLastMessageID: Integer;
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -99,10 +102,13 @@ begin
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
+  FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
   BotToken('');
   ChatId('');
   ParseMode(TTelegramParseMode.tpMarkdown);
+
+  FLastMessageID := 0;
 end;
 
 destructor TProviderTelegram.Destroy;
@@ -182,9 +188,9 @@ procedure TProviderTelegram.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
-  LLogItemREST: TLogItemREST;
   LLog: string;
   LJO: TJSONObject;
+  LLogItemREST: TLogItemREST;
 
   procedure SerializeMessageParseMode;
   const
@@ -255,6 +261,12 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
@@ -287,6 +299,70 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+procedure TProviderTelegram.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+var
+  LJO: TJSONObject;
+begin
+  FLastMessageID := 0;
+
+  if AStatusCode <> 200 then
+    Exit;
+
+  LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    if not Assigned(LJO.Get('result')) then
+      Exit;
+
+    if not(LJO.Get('result').JsonValue is TJSONObject) then
+      Exit;
+
+    if not Assigned(LJO.GetValue<TJSONObject>('result').Get('message_id')) then
+      Exit;
+
+    FLastMessageID := LJO.GetValue<TJSONObject>('result').GetValue<Integer>('message_id');
+  finally
+    LJO.Free;
+  end;
+end;
+
+procedure TProviderTelegram.UndoLastLine;
+var
+  LJO: TJSONObject;
+  LLog: string;
+  LLogItemREST: TLogItemREST;
+  LItemREST: TArray<TLogItemREST>;
+begin
+  if FLastMessageID = 0 then
+    Exit;
+
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('chat_id', TJSONString.Create(FChatId));
+    LJO.AddPair('message_id', TJSONNumber.Create(FLastMessageID));
+
+    LLog := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+
+  LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+  LLogItemREST.LogItem := Default (TLoggerItem);
+  LLogItemREST.URL := Format('https://api.telegram.org/bot%s/deleteMessage', [FBotToken]);
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
+
+  FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
+
+  FLastMessageID := 0;
 end;
 
 { TProviderTelegramHelper }

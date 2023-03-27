@@ -67,6 +67,9 @@ type
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
     FIndex: string;
+    FLastMessageID: string;
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -93,8 +96,11 @@ begin
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
   FHTTP.URL('https://localhost:9200');
+  FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
   Index('logger');
+
+  FLastMessageID := '';
 end;
 
 procedure TProviderElasticSearch.AfterConstruction;
@@ -209,6 +215,12 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
@@ -224,6 +236,52 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+procedure TProviderElasticSearch.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+var
+  LJO: TJSONObject;
+begin
+  FLastMessageID := '';
+
+  if AStatusCode <> 201 then
+    Exit;
+
+  LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    if not Assigned(LJO.Get('_id')) then
+      Exit;
+
+    FLastMessageID := LJO.GetValue<string>('_id');
+  finally
+    LJO.Free;
+  end;
+end;
+
+procedure TProviderElasticSearch.UndoLastLine;
+var
+  LLogItemREST: TLogItemREST;
+  LItemREST: TArray<TLogItemREST>;
+begin
+  if FLastMessageID.Trim.IsEmpty then
+    Exit;
+
+  LLogItemREST.Stream := nil;
+  LLogItemREST.LogItem := Default (TLoggerItem);
+  LLogItemREST.URL := Format('%s/%s/_doc/%s', [FHTTP.URL.Trim(['/']), FIndex.ToLower, FLastMessageID]);
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
+
+  FHTTP.InternalSaveSync(TRESTMethod.tlmDelete, LItemREST);
+
+  FLastMessageID := '';
 end;
 
 procedure ForceReferenceToClass(C: TClass);
