@@ -63,11 +63,13 @@ type
   private
     FHTTP: TProviderHTTP;
     FDataBase: string;
+    FAuth: string;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function URL(const AValue: string): TProviderRealtimeDatabase;
     function DataBase(const AValue: string): TProviderRealtimeDatabase;
+    function Auth(const AValue: string): TProviderRealtimeDatabase;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -89,6 +91,7 @@ begin
   FHTTP.ContentType('application/json');
 
   DataBase('datalogger');
+  Auth('');
 end;
 
 procedure TProviderRealtimeDatabase.AfterConstruction;
@@ -114,6 +117,12 @@ function TProviderRealtimeDatabase.DataBase(const AValue: string): TProviderReal
 begin
   Result := Self;
   FDataBase := AValue;
+end;
+
+function TProviderRealtimeDatabase.Auth(const AValue: string): TProviderRealtimeDatabase;
+begin
+  Result := Self;
+  FAuth := AValue;
 end;
 
 procedure TProviderRealtimeDatabase.LoadFromJSON(const AJSON: string);
@@ -179,6 +188,9 @@ begin
     LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream;
     LLogItemREST.LogItem := LItem;
     LLogItemREST.URL := Format('%s/%s.json', [FHTTP.URL.Trim(['/']), FDataBase]);
+
+    if not FAuth.Trim.IsEmpty then
+      LLogItemREST.URL := LLogItemREST.URL + '?auth=' + FAuth;
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
