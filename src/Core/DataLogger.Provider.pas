@@ -898,7 +898,7 @@ begin
 
 {$WARN SYMBOL_PLATFORM OFF}
 {$IF DEFINED(MSWINDOWS)}
-  FThreadExecute.Priority := TThreadPriority.tpNormal;
+  FThreadExecute.Priority := TThreadPriority.tpHigher;
 {$ENDIF}
 {$WARN SYMBOL_PLATFORM ON}
   FThreadExecute.FreeOnTerminate := False;

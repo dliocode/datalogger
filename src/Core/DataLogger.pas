@@ -1131,7 +1131,7 @@ begin
     if not HasProvider(False) and not FGenerateLogWithoutProvider then
       Exit;
 
-    if not AIsSlinebreak then
+    if (not AIsSlinebreak) and (not AIsUndoLastLine) then
     begin
       if (TLoggerLevel.All in FDisableLevel) or (ALevel in FDisableLevel) then
         Exit;
