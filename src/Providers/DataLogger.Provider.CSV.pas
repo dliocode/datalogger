@@ -70,7 +70,8 @@ type
     procedure RotateLog;
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
-    procedure MakeHeader;
+    procedure WriteHeader;
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -104,7 +105,7 @@ begin
 
   LogDir('.');
   PrefixFileName('');
-  Separator(',');
+  Separator(';');
   Extension('.csv');
   MaxFileSizeInKiloByte(0);
   MaxBackupFileCount(0);
@@ -123,7 +124,7 @@ procedure TProviderCSV.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreLogFormat(True, ';', False);
 end;
 
 destructor TProviderCSV.Destroy;
@@ -264,6 +265,7 @@ var
   LFileName: string;
   LRetriesCount: Integer;
   LFileExist: Boolean;
+  LLog: string;
 begin
   if (Length(ACache) = 0) then
     Exit;
@@ -311,14 +313,22 @@ begin
   CreateWriter;
   try
     if not LFileExist then
-      MakeHeader;
+      WriteHeader;
 
     for LItem in ACache do
     begin
+      if LItem.InternalItem.IsUndoLastLine then
+      begin
+        UndoLastLine;
+        Continue;
+      end;
+
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToValues));
+      LLog := SerializeItem.LogItem(LItem).IgnoreLogFormatSeparator(FSeparator).ToString;
+
+      InternalWriteLog(LLog);
 
       if (FMaxFileSizeInKiloByte > 0) then
         if (FWriter.BaseStream.Size > (FMaxFileSizeInKiloByte * 1024)) then
@@ -503,7 +513,7 @@ begin
   CreateWriter;
   InternalWriteLog('[START ROTATE ' + LRotateDateTime + ']');
   InternalWriteLog('');
-  MakeHeader;
+  WriteHeader;
 end;
 
 procedure TProviderCSV.ZipFile(const ADirFileName: string; const AFileName: string);
@@ -549,11 +559,73 @@ begin
   end;
 end;
 
-procedure TProviderCSV.MakeHeader;
+procedure TProviderCSV.WriteHeader;
 var
   LItem: TLoggerItem;
 begin
   InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToKeys));
+end;
+
+procedure TProviderCSV.UndoLastLine;
+var
+  LLogFileName: string;
+  LRetriesCount: Integer;
+  LFileStreamReader: TFileStream;
+  LStreamReader: TStreamReader;
+  LFileStreamWriter: TFileStream;
+  LStreamWriter: TStreamWriter;
+  LReadLine: string;
+begin
+  LLogFileName := GetLogFileName(0);
+
+  if not TFile.Exists(LLogFileName) then
+    Exit;
+
+  LRetriesCount := 0;
+
+  FreeWriter;
+
+  while True do
+    try
+      LFileStreamReader := TFileStream.Create(LLogFileName, fmOpenRead or fmShareDenyNone);
+      LFileStreamWriter := TFileStream.Create(LLogFileName + '.undo', fmCreate or fmShareDenyNone);
+
+      LStreamReader := TStreamReader.Create(LFileStreamReader, FEncoding, False, 4096);
+      LStreamWriter := TStreamWriter.Create(LFileStreamWriter, FEncoding, 128);
+      try
+        LStreamReader.OwnStream;
+        LStreamWriter.OwnStream;
+        LStreamWriter.AutoFlush := True;
+
+        while not LStreamReader.EndOfStream do
+        begin
+          LReadLine := LStreamReader.ReadLine;
+
+          if not LStreamReader.EndOfStream then
+            LStreamWriter.WriteLine(LReadLine);
+        end;
+      finally
+        LStreamWriter.Free;
+        LStreamReader.Free;
+      end;
+
+      TFile.Delete(LLogFileName);
+      MoveFile(LLogFileName + '.undo', LLogFileName);
+
+      CreateWriter;
+
+      Break;
+    except
+      on E: Exception do
+      begin
+        Inc(LRetriesCount);
+
+        Sleep(50);
+
+        if (LRetriesCount >= FMaxRetries) then
+          raise;
+      end;
+    end;
 end;
 
 procedure ForceReferenceToClass(C: TClass);

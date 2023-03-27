@@ -71,8 +71,9 @@ type
     procedure RotateLog;
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
-    procedure MakeHeader;
-    procedure MakeFooter;
+    procedure WriteHeader;
+    procedure WriteFooter;
+    procedure UndoLastLine(const ANumLines: Integer);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -139,7 +140,7 @@ begin
   if TFile.Exists(LFileName) then
   begin
     CreateWriter;
-    MakeFooter;
+    WriteFooter;
   end;
 
   FreeWriter;
@@ -334,10 +335,18 @@ begin
   CreateWriter;
   try
     if not LFileExist then
-      MakeHeader;
+      WriteHeader;
 
     for LItem in ACache do
     begin
+      if LItem.InternalItem.IsUndoLastLine then
+      begin
+        LLogs := SerializeItem.LogItem(LItem).ToValues;
+        UndoLastLine(Length(LLogs) + 2);
+
+        Continue;
+      end;
+
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
@@ -490,7 +499,7 @@ begin
   LNow := Now;
   LRotateDateTime := System.SysUtils.FormatDateTime('c.zzz', LNow);
 
-  MakeFooter;
+  WriteFooter;
   InternalWriteLog('');
   InternalWriteLog('<!-- [ROTATE ' + LRotateDateTime + '] -->');
   FreeWriter;
@@ -540,7 +549,7 @@ begin
   CreateWriter;
   InternalWriteLog('<!-- [START ROTATE ' + LRotateDateTime + '] -->');
   InternalWriteLog('');
-  MakeHeader;
+  WriteHeader;
 end;
 
 procedure TProviderHTML.ZipFile(const ADirFileName: string; const AFileName: string);
@@ -586,8 +595,7 @@ begin
   end;
 end;
 
-procedure TProviderHTML.MakeHeader;
-
+procedure TProviderHTML.WriteHeader;
 var
   LLog: string;
   LItem: TLoggerItem;
@@ -733,7 +741,7 @@ begin
   InternalWriteLog(LLog);
 end;
 
-procedure TProviderHTML.MakeFooter;
+procedure TProviderHTML.WriteFooter;
 var
   LLog: string;
 begin
@@ -745,6 +753,96 @@ begin
     '</html>';
 
   InternalWriteLog(LLog);
+end;
+
+procedure TProviderHTML.UndoLastLine(const ANumLines: Integer);
+var
+  LLogFileName: string;
+  LRetriesCount: Integer;
+  LFileStreamReader: TFileStream;
+  LStreamReader: TStreamReader;
+  LFileStreamWriter: TFileStream;
+  LStreamWriter: TStreamWriter;
+  LNumLines: Integer;
+  LCountLines: Integer;
+  LBOM: TBytes;
+  LReadLine: string;
+begin
+  LLogFileName := GetLogFileName(0);
+
+  if not TFile.Exists(LLogFileName) then
+    Exit;
+
+  LRetriesCount := 0;
+
+  FreeWriter;
+
+  while True do
+    try
+      LFileStreamReader := TFileStream.Create(LLogFileName, fmOpenRead or fmShareDenyNone);
+      LFileStreamWriter := TFileStream.Create(LLogFileName + '.undo', fmCreate or fmShareDenyNone);
+
+      LStreamReader := TStreamReader.Create(LFileStreamReader, FEncoding, True, 4096);
+      LStreamWriter := TStreamWriter.Create(LFileStreamWriter, FEncoding, 128);
+      try
+        LStreamReader.OwnStream;
+        LStreamWriter.OwnStream;
+        LStreamWriter.AutoFlush := True;
+
+        LNumLines := 0;
+        while not LStreamReader.EndOfStream do
+        begin
+          LStreamReader.ReadLine;
+          Inc(LNumLines)
+        end;
+
+        LNumLines := LNumLines - ANumLines;
+
+        LCountLines := 0;
+        LStreamReader.DiscardBufferedData;
+        LStreamReader.BaseStream.Seek(0, soBeginning);
+
+        SetLength(LBOM, 3);
+        LFileStreamReader.ReadBuffer(LBOM, 3);
+        if (LBOM[0] = $EF) and (LBOM[1] = $BB) and (LBOM[2] = $BF) then
+          LStreamReader.BaseStream.Seek(3, soBeginning)
+        else
+          LStreamReader.BaseStream.Seek(0, soBeginning);
+
+        while not LStreamReader.EndOfStream do
+        begin
+          Inc(LCountLines);
+
+          if (LCountLines = LNumLines) then
+            Break;
+
+          LReadLine := LStreamReader.ReadLine;
+
+          if not LStreamReader.EndOfStream then
+            LStreamWriter.WriteLine(LReadLine);
+        end;
+      finally
+        LStreamWriter.Free;
+        LStreamReader.Free;
+      end;
+
+      TFile.Delete(LLogFileName);
+      MoveFile(LLogFileName + '.undo', LLogFileName);
+
+      CreateWriter;
+
+      Break;
+    except
+      on E: Exception do
+      begin
+        Inc(LRetriesCount);
+
+        Sleep(50);
+
+        if (LRetriesCount >= FMaxRetries) then
+          raise;
+      end;
+    end;
 end;
 
 procedure ForceReferenceToClass(C: TClass);

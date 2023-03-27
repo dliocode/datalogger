@@ -49,6 +49,7 @@ type
     FPort: Integer;
     FKeyPrefix: string;
     FMaxSize: Int64;
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -64,6 +65,9 @@ type
   end;
 
 implementation
+
+const
+  C_PREFIX = '::DataLoggerRedis::';
 
 { TProviderRedis }
 
@@ -151,17 +155,17 @@ end;
 
 procedure TProviderRedis.Save(const ACache: TArray<TLoggerItem>);
 var
+  LKey: string;
   LRedisClient: IRedisClient;
   LConnected: Boolean;
-  LRetriesCount: Integer;
-  LKey: string;
   LItem: TLoggerItem;
   LLog: string;
+  LRetriesCount: Integer;
 begin
   if (Length(ACache) = 0) then
     Exit;
 
-  LKey := FKeyPrefix + '::DataLoggerRedis::';
+  LKey := FKeyPrefix + C_PREFIX;
 
   LRedisClient := TRedisClient.Create(FHost, FPort);
   LConnected := False;
@@ -222,6 +226,22 @@ begin
 
   try
     LRedisClient.LTRIM(LKey, -FMaxSize, -1);
+  except
+  end;
+end;
+
+procedure TProviderRedis.UndoLastLine;
+var
+  LKey: string;
+  LRedisClient: IRedisClient;
+begin
+  LKey := FKeyPrefix + C_PREFIX;
+
+  LRedisClient := TRedisClient.Create(FHost, FPort);
+  LRedisClient.Connect;
+
+  try
+    LRedisClient.RPOP(LKey);
   except
   end;
 end;

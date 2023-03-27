@@ -36,6 +36,7 @@ interface
 
 {$IF NOT DEFINED(DATALOGGER_FMX) AND NOT DEFINED(FRAMEWORK_FMX) AND DEFINED(MSWINDOWS)}
 
+
 uses
   DataLogger.Provider, DataLogger.Types,
   Winapi.Windows, Winapi.Messages,
@@ -82,6 +83,7 @@ type
     function AttributesLevel(const ALevel: TLoggerLevel): TAttributesRichEdit;
     procedure SetColor(const ALevel: TLoggerLevel);
     procedure SetFont(const ALevel: TLoggerLevel);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -105,7 +107,7 @@ implementation
 
 {$IF NOT DEFINED(DATALOGGER_FMX) AND NOT DEFINED(FRAMEWORK_FMX) AND DEFINED(MSWINDOWS)}
 
-  { TProviderRichEdit }
+{ TProviderRichEdit }
 
 constructor TProviderRichEdit.Create;
 begin
@@ -440,6 +442,12 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       LLog := ''
     else
@@ -447,6 +455,9 @@ begin
 
     while True do
       try
+        if (csDestroying in FRichEdit.ComponentState) then
+          Exit;
+
         try
           TThread.Synchronize(nil,
             procedure
@@ -624,6 +635,24 @@ begin
 
   if (LAttributes.FontStyle <> []) then
     FRichEdit.SelAttributes.Style := LAttributes.FontStyle;
+end;
+
+procedure TProviderRichEdit.UndoLastLine;
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if (csDestroying in FRichEdit.ComponentState) then
+        Exit;
+
+      case FModeInsert of
+        TRichEditModeInsert.tmFirst:
+          FRichEdit.Lines.Delete(0);
+
+        TRichEditModeInsert.tmLast:
+          FRichEdit.Lines.Delete(Pred(FRichEdit.Lines.Count));
+      end;
+    end);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

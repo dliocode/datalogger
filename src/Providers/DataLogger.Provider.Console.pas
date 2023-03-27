@@ -72,6 +72,7 @@ type
     FColorCustom: TColorConsole;
 
     procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -250,6 +251,12 @@ begin
       Continue;
     end;
 
+    if LItem.InternalItem.IsUndoLastLine then
+    begin  
+      UndoLastLine;
+      Continue;
+    end;
+
     LLog := SerializeItem.LogItem(LItem).ToString;
 
     LRetriesCount := 0;
@@ -274,7 +281,7 @@ begin
             if not(LLevel = TLoggerLevel.All) then
               LTag := LTag + '_' + LLevel.ToString.ToLower;
 
-            LTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [Ltag]);
+            LTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [LTag]);
             try
               if (LTags.Count = 0) then
                 Continue;
@@ -412,7 +419,7 @@ procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: st
     end;
   end;
 
-{$IF DEFINED(MSWINDOWS)}
+{$IF DEFINED(MSWINDOWS)}  
 
 var
   LHandleOutput: THandle;
@@ -420,8 +427,7 @@ var
 begin
   LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
   GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
-
-  SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _Color(_ColorLevel));
+  SetConsoleTextAttribute(LHandleOutput, _Color(_ColorLevel));
 
   if ASlinebreak then
     Writeln(ALog)
@@ -431,7 +437,7 @@ begin
   SetConsoleTextAttribute(LHandleOutput, LBufferInfo.wAttributes);
 end;
 
-{$ELSEIF DEFINED(LINUX)}
+{$ELSEIF DEFINED(LINUX)}               
 
 var
   LColor: Integer;
@@ -452,9 +458,42 @@ begin
 end;
 
 {$ELSE}
-
+                      
 begin
   Writeln(ALog);
+end;
+
+{$ENDIF}
+
+procedure TProviderConsole.UndoLastLine;
+{$IF DEFINED(MSWINDOWS)}
+var
+  LHandleOutput: THandle;
+  LBufferInfo: TConsoleScreenBufferInfo;
+  LCoord: TCoord;
+  LCount, LSize: DWord;  
+begin
+  LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
+  GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
+
+  LCoord.X := 0;
+  LCoord.Y := LBufferInfo.dwCursorPosition.Y - 1;
+
+  // Clear line                                               
+  LSize := LBufferInfo.dwSize.X;
+  FillConsoleOutputAttribute(LHandleOutput, LBufferInfo.wAttributes and $FF, LSize, LCoord, LCount);
+  FillConsoleOutputCharacter(LHandleOutput, ' ', LSize, LCoord, LCount);
+
+  // Set Position  
+  SetConsoleCursorPosition(LHandleOutput, LCoord);  
+end;
+
+{$ELSE}
+
+begin                            
+  Write(#27'[1F'); // Move Line Prior
+  Write(#27'[K'); // Move End Cursor
+  Write(#27'[2K'); // Clear Line    
 end;
 
 {$ENDIF}

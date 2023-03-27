@@ -36,6 +36,7 @@ interface
 
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
+
 uses
   DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
@@ -57,6 +58,7 @@ type
     FModeInsert: TListBoxModeInsert;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -186,6 +188,12 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       LLog := ''
     else
@@ -225,25 +233,17 @@ begin
                   Exit;
 
                 LLines := FListBox.Items.Count;
+                while (LLines > FMaxLogLines) do
+                begin
+                  case FModeInsert of
+                    TListBoxModeInsert.tmFirst:
+                      FListBox.Items.Delete(Pred(LLines));
 
-                case FModeInsert of
-                  TListBoxModeInsert.tmFirst:
-                    begin
-                      while (LLines > FMaxLogLines) do
-                      begin
-                        FListBox.Items.Delete(Pred(LLines));
-                        LLines := FListBox.Items.Count;
-                      end;
-                    end;
+                    TListBoxModeInsert.tmLast:
+                      FListBox.Items.Delete(0);
+                  end;
 
-                  TListBoxModeInsert.tmLast:
-                    begin
-                      while (LLines > FMaxLogLines) do
-                      begin
-                        FListBox.Items.Delete(0);
-                        LLines := FListBox.Items.Count;
-                      end;
-                    end;
+                  LLines := FListBox.Items.Count;
                 end;
               end);
           end;
@@ -291,6 +291,24 @@ begin
         end;
       end;
   end;
+end;
+
+procedure TProviderListBox.UndoLastLine;
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if (csDestroying in FListBox.ComponentState) then
+        Exit;
+
+      case FModeInsert of
+        TListBoxModeInsert.tmFirst:
+          FListBox.Items.Delete(0);
+
+        TListBoxModeInsert.tmLast:
+          FListBox.Items.Delete(Pred(FListBox.Items.Count));
+      end;
+    end);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

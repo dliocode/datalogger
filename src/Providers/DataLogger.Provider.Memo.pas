@@ -36,6 +36,7 @@ interface
 
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX) OR NOT(DEFINED(LINUX))}
 
+
 uses
   DataLogger.Provider, DataLogger.Types,
 {$IF DEFINED(DATALOGGER_FMX) OR DEFINED(FRAMEWORK_FMX)}
@@ -57,6 +58,7 @@ type
     FModeInsert: TMemoModeInsert;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -186,6 +188,12 @@ begin
 
   for LItem in ACache do
   begin
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
+
     if LItem.InternalItem.IsSlinebreak then
       LLog := ''
     else
@@ -195,6 +203,9 @@ begin
 
     while True do
       try
+        if (csDestroying in FMemo.ComponentState) then
+          Exit;
+
         try
           TThread.Synchronize(nil,
             procedure
@@ -287,6 +298,24 @@ begin
         end;
       end;
   end;
+end;
+
+procedure TProviderMemo.UndoLastLine;
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if (csDestroying in FMemo.ComponentState) then
+        Exit;
+
+      case FModeInsert of
+        TMemoModeInsert.tmFirst:
+          FMemo.Lines.Delete(0);
+
+        TMemoModeInsert.tmLast:
+          FMemo.Lines.Delete(Pred(FMemo.Lines.Count));
+      end;
+    end);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

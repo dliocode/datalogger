@@ -67,6 +67,7 @@ type
     procedure RotateLog;
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -290,6 +291,12 @@ begin
   try
     for LItem in ACache do
     begin
+      if LItem.InternalItem.IsUndoLastLine then
+      begin
+        UndoLastLine;
+        Continue;
+      end;
+
       if LItem.InternalItem.IsSlinebreak then
         LLog := ''
       else
@@ -335,9 +342,9 @@ end;
 procedure TProviderTextFile.CreateWriter;
 var
   LLogFileName: string;
-  LFileStream: TFileStream;
   LFileAccessMode: Word;
   LRetriesCount: Integer;
+  LFileStream: TFileStream;
 begin
   LLogFileName := GetLogFileName(0);
 
@@ -520,6 +527,68 @@ begin
     LZipFile.Close;
     LZipFile.Free;
   end;
+end;
+
+procedure TProviderTextFile.UndoLastLine;
+var
+  LLogFileName: string;
+  LRetriesCount: Integer;
+  LFileStreamReader: TFileStream;
+  LStreamReader: TStreamReader;
+  LFileStreamWriter: TFileStream;
+  LStreamWriter: TStreamWriter;
+  LReadLine: string;
+begin
+  LLogFileName := GetLogFileName(0);
+
+  if not TFile.Exists(LLogFileName) then
+    Exit;
+
+  LRetriesCount := 0;
+
+  FreeWriter;
+
+  while True do
+    try
+      LFileStreamReader := TFileStream.Create(LLogFileName, fmOpenRead or fmShareDenyNone);
+      LFileStreamWriter := TFileStream.Create(LLogFileName + '.undo', fmCreate or fmShareDenyNone);
+
+      LStreamReader := TStreamReader.Create(LFileStreamReader, FEncoding, False, 4096);
+      LStreamWriter := TStreamWriter.Create(LFileStreamWriter, FEncoding, 128);
+      try
+        LStreamReader.OwnStream;
+        LStreamWriter.OwnStream;
+        LStreamWriter.AutoFlush := True;
+
+        while not LStreamReader.EndOfStream do
+        begin
+          LReadLine := LStreamReader.ReadLine;
+
+          if not LStreamReader.EndOfStream then
+            LStreamWriter.WriteLine(LReadLine);
+        end;
+      finally
+        LStreamWriter.Free;
+        LStreamReader.Free;
+      end;
+
+      TFile.Delete(LLogFileName);
+      MoveFile(LLogFileName + '.undo', LLogFileName);
+
+      CreateWriter;
+
+      Break;
+    except
+      on E: Exception do
+      begin
+        Inc(LRetriesCount);
+
+        Sleep(50);
+
+        if (LRetriesCount >= FMaxRetries) then
+          raise;
+      end;
+    end;
 end;
 
 procedure ForceReferenceToClass(C: TClass);
