@@ -1155,6 +1155,7 @@ begin
     end;
 
     LItem := default (TLoggerItem);
+    LItem.Id := TGUID.NewGuid.ToString;
     LItem.Name := FName;
     LItem.Sequence := FSequence;
     LItem.TimeStamp := Now;
@@ -1169,9 +1170,10 @@ begin
     LItem.Tag := ATagName;
     LItem.Message := AMessageString;
     LItem.MessageJSON := AMessageJSON;
+
     LItem.InternalItem.IsSlinebreak := AIsSlinebreak;
     LItem.InternalItem.IsUndoLast := AIsUndoLast;
-    LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
+    LItem.InternalItem.TransactionID := LItem.ThreadID.ToString;
 
     FLoggerItems.Add(LItem);
 

@@ -63,6 +63,7 @@ type
   end;
 
   TLoggerItem = record
+    Id: string;
     Name: string;
     Sequence: Int64;
     TimeStamp: TDateTime;
@@ -98,6 +99,7 @@ type
 
   TLoggerFormat = record
   const
+    LOG_ID = '${id}';
     LOG_NAME = '${name}';
     LOG_SEQUENCE = '${sequence}';
     LOG_TIMESTAMP = '${timestamp}';
@@ -127,8 +129,8 @@ type
   TLoggerConst = record
   const
     TRANSACTION_ID = 'DATALOGGER_TRANSACTION';
-    BASE_FORMAT: array [0 .. 19] of string = ('timestamp', 'timestamp_iso8601', 'timestamp_unix', 'name', 'sequence', 'thread_id', 'level', 'level_value', 'tag', 'message', 'app_name', 'app_version', 'app_path', 'app_size', 'computer_name', 'username', 'os_version', 'process_id', 'ip_local', 'mac_address');
-    BASE_FORMAT_NAME: array [0 .. 19] of string = ('Timestamp', 'Timestamp ISO8601', 'Timestamp Unix', 'Name', 'Sequence', 'Thread ID', 'Level', 'Level Value', 'Tag', 'Message', 'App Name', 'App Version', 'App Path', 'App Size', 'Computer Name', 'Username', 'OS Version', 'Process ID', 'IP Local', 'Mac Address');
+    BASE_FORMAT: array [0 .. 20] of string = ('timestamp', 'timestamp_iso8601', 'timestamp_unix', 'id', 'name', 'sequence', 'thread_id', 'level', 'level_value', 'tag', 'message', 'app_name', 'app_version', 'app_path', 'app_size', 'computer_name', 'username', 'os_version', 'process_id', 'ip_local', 'mac_address');
+    BASE_FORMAT_NAME: array [0 .. 20] of string = ('Timestamp', 'Timestamp ISO8601', 'Timestamp Unix', 'ID', 'Name', 'Sequence', 'Thread ID', 'Level', 'Level Value', 'Tag', 'Message', 'App Name', 'App Version', 'App Path', 'App Size', 'Computer Name', 'Username', 'OS Version', 'Process ID', 'IP Local', 'Mac Address');
   end;
 
 implementation

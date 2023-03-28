@@ -210,6 +210,7 @@ begin
     _Add(TLoggerFormat.LOG_TIMESTAMP, True, TJSONString.Create(FormatDateTime(FFormatTimestamp, FLogItem.TimeStamp)));
     _Add(TLoggerFormat.LOG_TIMESTAMP_ISO8601, True, TJSONString.Create(FLogItem.TimeStampISO8601));
     _Add(TLoggerFormat.LOG_TIMESTAMP_UNIX, True, TJSONNumber.Create(FLogItem.TimeStampUNIX));
+    _Add(TLoggerFormat.LOG_ID, True, TJSONString.Create(FLogItem.Id));
     _Add(TLoggerFormat.LOG_NAME, True, TJSONString.Create(FLogItem.Name));
     _Add(TLoggerFormat.LOG_SEQUENCE, True, TJSONNumber.Create(FLogItem.Sequence));
     _Add(TLoggerFormat.LOG_THREADID, True, TJSONNumber.Create(FLogItem.ThreadID));
