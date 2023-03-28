@@ -70,9 +70,9 @@ type
     Content: string;
   end;
 
-  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
   TContentValidation = reference to function(const AContent: string; var AMessageException: string): Boolean;
   TRESTMethod = (tlmGet, tlmPost, tlmDelete);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
 
   TProviderRESTHTTPClient = class(TDataLoggerProvider<TProviderRESTHTTPClient>)
   private
@@ -519,7 +519,7 @@ begin
       AItemREST.Stream.Free;
 
     if Assigned(FExecuteFinally) then
-      FExecuteFinally(AItemREST.LogItem, LResponseContent, LResponse.StatusCode);
+      FExecuteFinally(AItemREST.LogItem, AMethod, LResponseContent, LResponse.StatusCode);
   end;
 end;
 

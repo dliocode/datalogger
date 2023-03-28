@@ -66,9 +66,9 @@ type
     FormData: TArray<TLogFormData>;
   end;
 
-  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
   TContentValidation = reference to function(const AContent: string; var AMessageException: string): Boolean;
   TRESTMethod = (tlmGet, tlmPost, tlmDelete);
+  TExecuteFinally = reference to procedure(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
 
   TProviderRESTIndy = class(TDataLoggerProvider<TProviderRESTIndy>)
   private
@@ -518,7 +518,7 @@ begin
       AItemREST.Stream.Free;
 
     if Assigned(FExecuteFinally) then
-      FExecuteFinally(AItemREST.LogItem, LResponseContent, LHTTP.Response.ResponseCode);
+      FExecuteFinally(AItemREST.LogItem, AMethod, LResponseContent, LHTTP.Response.ResponseCode);
 
     LHTTP.Free;
   end;
