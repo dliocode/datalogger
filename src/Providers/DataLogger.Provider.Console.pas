@@ -72,7 +72,7 @@ type
     FColorCustom: TColorConsole;
 
     procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -251,9 +251,9 @@ begin
       Continue;
     end;
 
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -465,7 +465,7 @@ end;
 
 {$ENDIF}
 
-procedure TProviderConsole.UndoLastLine;
+procedure TProviderConsole.UndoLast;
 {$IF DEFINED(MSWINDOWS)}
 var
   LHandleOutput: THandle;

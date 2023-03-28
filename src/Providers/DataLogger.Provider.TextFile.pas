@@ -67,7 +67,7 @@ type
     procedure RotateLog;
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -291,9 +291,9 @@ begin
   try
     for LItem in ACache do
     begin
-      if LItem.InternalItem.IsUndoLastLine then
+      if LItem.InternalItem.IsUndoLast then
       begin
-        UndoLastLine;
+        UndoLast;
         Continue;
       end;
 
@@ -529,7 +529,7 @@ begin
   end;
 end;
 
-procedure TProviderTextFile.UndoLastLine;
+procedure TProviderTextFile.UndoLast;
 var
   LLogFileName: string;
   LRetriesCount: Integer;

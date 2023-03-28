@@ -173,7 +173,7 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
       if not FNotificationLastName.Trim.IsEmpty then
         TThread.Synchronize(nil,

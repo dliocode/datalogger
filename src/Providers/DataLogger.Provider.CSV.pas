@@ -71,7 +71,7 @@ type
     procedure CreateZipFile(const ADirFileName: string; const AFileName: string);
     procedure ZipFile(const ADirFileName, AFileName: string);
     procedure WriteHeader;
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -320,9 +320,9 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      if LItem.InternalItem.IsUndoLastLine then
+      if LItem.InternalItem.IsUndoLast then
       begin
-        UndoLastLine;
+        UndoLast;
         Continue;
       end;
 
@@ -566,7 +566,7 @@ begin
   InternalWriteLog(String.Join(FSeparator, SerializeItem.LogItem(LItem).ToKeys));
 end;
 
-procedure TProviderCSV.UndoLastLine;
+procedure TProviderCSV.UndoLast;
 var
   LLogFileName: string;
   LRetriesCount: Integer;

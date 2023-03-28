@@ -49,7 +49,7 @@ type
     FPort: Integer;
     FKeyPrefix: string;
     FMaxSize: Int64;
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -175,9 +175,9 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -236,7 +236,7 @@ begin
   end;
 end;
 
-procedure TProviderRedis.UndoLastLine;
+procedure TProviderRedis.UndoLast;
 var
   LKey: string;
   LRedisClient: IRedisClient;

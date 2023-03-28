@@ -42,7 +42,7 @@ type
   TProviderMemory = class(TDataLoggerProvider<TProviderMemory>)
   private
     FStringList: TStringList;
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -146,9 +146,9 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -184,7 +184,7 @@ begin
   end;
 end;
 
-procedure TProviderMemory.UndoLastLine;
+procedure TProviderMemory.UndoLast;
 begin
   if FStringList.Count = 0 then
     Exit;

@@ -73,7 +73,7 @@ type
     procedure ZipFile(const ADirFileName, AFileName: string);
     procedure WriteHeader;
     procedure WriteFooter;
-    procedure UndoLastLine(const ANumLines: Integer);
+    procedure UndoLast(const ANumLines: Integer);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -342,10 +342,10 @@ begin
       if LItem.InternalItem.IsSlinebreak then
         Continue;
 
-      if LItem.InternalItem.IsUndoLastLine then
+      if LItem.InternalItem.IsUndoLast then
       begin
         LLogs := SerializeItem.LogItem(LItem).ToValues;
-        UndoLastLine(Length(LLogs) + 2);
+        UndoLast(Length(LLogs) + 2);
 
         Continue;
       end;
@@ -755,7 +755,7 @@ begin
   InternalWriteLog(LLog);
 end;
 
-procedure TProviderHTML.UndoLastLine(const ANumLines: Integer);
+procedure TProviderHTML.UndoLast(const ANumLines: Integer);
 var
   LLogFileName: string;
   LRetriesCount: Integer;

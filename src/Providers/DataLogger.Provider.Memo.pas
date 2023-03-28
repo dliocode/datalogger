@@ -58,7 +58,7 @@ type
     FModeInsert: TMemoModeInsert;
     FCleanOnStart: Boolean;
     FCleanOnRun: Boolean;
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -188,9 +188,9 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -300,7 +300,7 @@ begin
   end;
 end;
 
-procedure TProviderMemo.UndoLastLine;
+procedure TProviderMemo.UndoLast;
 begin
   TThread.Synchronize(nil,
     procedure

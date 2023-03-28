@@ -70,7 +70,7 @@ type
     FChatId: string;
     FParseMode: TTelegramParseMode;
     procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -261,9 +261,9 @@ begin
     if LItem.InternalItem.IsSlinebreak then
       Continue;
 
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -325,7 +325,7 @@ begin
   end;
 end;
 
-procedure TProviderTelegram.UndoLastLine;
+procedure TProviderTelegram.UndoLast;
 var
   LLastMessage: string;
   LJO: TJSONObject;

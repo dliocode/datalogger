@@ -174,7 +174,7 @@ begin
     try
       for LItem in ACache do
       begin
-        if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLastLine then
+        if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLast then
           Continue;
 
         LLog := SerializeItem.LogItem(LItem).ToString;

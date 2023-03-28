@@ -76,7 +76,7 @@ type
 
     constructor Create;
 
-    function AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLastLine: Boolean): TDataLogger; overload;
+    function AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLast: Boolean): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: string; const ATagName: string = ''): TDataLogger; overload;
     function AddCache(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
     function ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
@@ -173,7 +173,7 @@ type
     function L(const ALevel: TLoggerLevel; const AMessage: TJSONObject; const ATagName: string = ''): TDataLogger; overload;
 
     function SlineBreak: TDataLogger;
-    function UndoLastLine: TDataLogger;
+    function UndoLast: TDataLogger;
 
     function StartTransaction: TDataLogger;
     function CommitTransaction: TDataLogger;
@@ -656,7 +656,7 @@ begin
   Result := AddCacheBase(TLoggerLevel.All, '', '', '', '', True, False);
 end;
 
-function TDataLogger.UndoLastLine: TDataLogger;
+function TDataLogger.UndoLast: TDataLogger;
 begin
   Result := AddCacheBase(TLoggerLevel.All, '', '', '', '', False, True);
 end;
@@ -1107,7 +1107,7 @@ begin
   end;
 end;
 
-function TDataLogger.AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLastLine: Boolean): TDataLogger;
+function TDataLogger.AddCacheBase(const ALevel: TLoggerLevel; const AMessageString: string; const AMessageJSON: string; const ATagName: string; const ACustom: string; const AIsSlinebreak: Boolean; const AIsUndoLast: Boolean): TDataLogger;
 var
   LItem: TLoggerItem;
   LMessage: string;
@@ -1134,7 +1134,7 @@ begin
     if not HasProvider(False) and not FGenerateLogWithoutProvider then
       Exit;
 
-    if (not AIsSlinebreak) and (not AIsUndoLastLine) then
+    if (not AIsSlinebreak) and (not AIsUndoLast) then
     begin
       if (TLoggerLevel.All in FDisableLevel) or (ALevel in FDisableLevel) then
         Exit;
@@ -1170,7 +1170,7 @@ begin
     LItem.Message := AMessageString;
     LItem.MessageJSON := AMessageJSON;
     LItem.InternalItem.IsSlinebreak := AIsSlinebreak;
-    LItem.InternalItem.IsUndoLastLine := AIsUndoLastLine;
+    LItem.InternalItem.IsUndoLast := AIsUndoLast;
     LItem.InternalItem.TransactionID := TThread.Current.ThreadID.ToString;
 
     FLoggerItems.Add(LItem);

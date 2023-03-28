@@ -83,7 +83,7 @@ type
     function AttributesLevel(const ALevel: TLoggerLevel): TAttributesRichEdit;
     procedure SetColor(const ALevel: TLoggerLevel);
     procedure SetFont(const ALevel: TLoggerLevel);
-    procedure UndoLastLine;
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -442,9 +442,9 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsUndoLast then
     begin
-      UndoLastLine;
+      UndoLast;
       Continue;
     end;
 
@@ -637,7 +637,7 @@ begin
     FRichEdit.SelAttributes.Style := LAttributes.FontStyle;
 end;
 
-procedure TProviderRichEdit.UndoLastLine;
+procedure TProviderRichEdit.UndoLast;
 begin
   TThread.Synchronize(nil,
     procedure

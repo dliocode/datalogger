@@ -548,7 +548,7 @@ end;
 
 function TDataLoggerProvider<T>.AddCache(const AValues: TArray<TLoggerItem>): T;
 var
-  LListUndoLastLine: TList<string>;
+  LListUndoLast: TList<string>;
   I: Integer;
   LItem: TLoggerItem;
   LMessage: string;
@@ -557,7 +557,7 @@ var
 begin
   Result := FOwner;
 
-  LListUndoLastLine := TList<string>.Create;
+  LListUndoLast := TList<string>.Create;
 
   LockCache;
   Lock;
@@ -583,18 +583,18 @@ begin
       begin
         LItem := AValues[I];
 
-        if LListUndoLastLine.Contains(LItem.InternalItem.TransactionID) then
+        if LListUndoLast.Contains(LItem.InternalItem.TransactionID) then
         begin
-          LListUndoLastLine.Remove(LItem.InternalItem.TransactionID);
+          LListUndoLast.Remove(LItem.InternalItem.TransactionID);
           Continue;
         end;
 
-        if not AValues[I].InternalItem.IsUndoLastLine then
+        if not AValues[I].InternalItem.IsUndoLast then
           if ((I + 1) <= High(AValues)) then
-            if AValues[I + 1].InternalItem.IsUndoLastLine then
+            if AValues[I + 1].InternalItem.IsUndoLast then
               if AValues[I + 1].InternalItem.TransactionID = LItem.InternalItem.TransactionID then
               begin
-                LListUndoLastLine.Add(AValues[I + 1].InternalItem.TransactionID);
+                LListUndoLast.Add(AValues[I + 1].InternalItem.TransactionID);
                 Continue;
               end;
 
@@ -655,7 +655,7 @@ begin
   finally
     UnLock;
     UnLockCache;
-    LListUndoLastLine.Free;
+    LListUndoLast.Free;
   end;
 end;
 
