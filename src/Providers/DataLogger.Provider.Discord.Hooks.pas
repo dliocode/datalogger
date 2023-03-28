@@ -30,6 +30,7 @@
   ********************************************************************************
 }
 
+// https://discord.com
 // https://discord.com/developers/docs/resources/webhook
 
 unit DataLogger.Provider.Discord.Hooks;
@@ -64,6 +65,8 @@ type
     FHTTP: TProviderHTTP;
     FUsername: string;
     FAvatarURL: string;
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -91,6 +94,7 @@ begin
   FHTTP.URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>');
   FHTTP.ModeAsync(False);
   FHTTP.WaitTimeoutToSend(250);
+  FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
   Username('DataLogger');
   AvatarURL('');
@@ -181,8 +185,14 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLast then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
+
+    if LItem.InternalItem.IsUndoLast then
+    begin
+      UndoLast;
+      Continue;
+    end;
 
     LLog := SerializeItem.LogItem(LItem).ToString;
 
@@ -199,7 +209,7 @@ begin
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := FHTTP.URL;
+    LLogItemREST.URL := FHTTP.URL + '?wait=true';
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
@@ -209,6 +219,50 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+procedure TProviderDiscordHooks.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+var
+  LJO: TJSONObject;
+begin
+  if (AStatusCode <> 200) or (AMethod = TRESTMethod.tlmDelete) then
+    Exit;
+
+  LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    if not Assigned(LJO.Get('id')) then
+      Exit;
+
+    AddLastMessageId(LJO.GetValue<string>('id'));
+  finally
+    LJO.Free;
+  end;
+end;
+
+procedure TProviderDiscordHooks.UndoLast;
+var
+  LLastMessage: string;
+  LLogItemREST: TLogItemREST;
+  LItemREST: TArray<TLogItemREST>;
+begin
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
+    Exit;
+
+  LLogItemREST.Stream := nil;
+  LLogItemREST.LogItem := Default (TLoggerItem);
+  LLogItemREST.URL := FHTTP.URL + '/messages/' + LLastMessage;
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
+
+  FHTTP.InternalSaveSync(TRESTMethod.tlmDelete, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
