@@ -433,7 +433,7 @@ begin
     LHTTP.UserAgent := 'DataLogger.Provider.REST.HTTPClient';
     LHTTP.ContentType := FContentType;
     LHTTP.AcceptCharSet := 'utf-8';
-    LHTTP.AcceptEncoding := 'gzip, deflate, br';
+    LHTTP.AcceptEncoding := 'gzip, deflate';
     LHTTP.Accept := '*/*';
 
     if not FAuthorization.Trim.IsEmpty then

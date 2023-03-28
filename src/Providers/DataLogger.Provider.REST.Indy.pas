@@ -426,7 +426,7 @@ begin
     LHTTP.Request.UserAgent := 'DataLogger.Provider.REST.Indy';
     LHTTP.Request.ContentType := FContentType;
     LHTTP.Request.AcceptCharSet := 'utf-8';
-    LHTTP.Request.AcceptEncoding := 'gzip, deflate, br';
+    LHTTP.Request.AcceptEncoding := 'gzip, deflate';
     LHTTP.Request.Accept := '*/*';
     LHTTP.Request.Connection := 'Keep-Alive';
 
