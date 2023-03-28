@@ -147,7 +147,7 @@ const
   C_MAX_LOG_IN_CACHE = 100000;
   C_MAX_LOG_IN_MESSAGE_ID = 1000;
 
-{ TDataLoggerProvider }
+  { TDataLoggerProvider }
 
 constructor TDataLoggerProvider<T>.Create;
 begin

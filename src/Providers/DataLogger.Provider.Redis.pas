@@ -69,7 +69,7 @@ implementation
 const
   C_PREFIX = '::DataLoggerRedis::';
 
-{ TProviderRedis }
+  { TProviderRedis }
 
 constructor TProviderRedis.Create;
 begin

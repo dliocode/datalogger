@@ -252,7 +252,7 @@ begin
     end;
 
     if LItem.InternalItem.IsUndoLastLine then
-    begin  
+    begin
       UndoLastLine;
       Continue;
     end;
@@ -419,7 +419,7 @@ procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: st
     end;
   end;
 
-{$IF DEFINED(MSWINDOWS)}  
+{$IF DEFINED(MSWINDOWS)}
 
 var
   LHandleOutput: THandle;
@@ -437,7 +437,7 @@ begin
   SetConsoleTextAttribute(LHandleOutput, LBufferInfo.wAttributes);
 end;
 
-{$ELSEIF DEFINED(LINUX)}               
+{$ELSEIF DEFINED(LINUX)}
 
 var
   LColor: Integer;
@@ -458,7 +458,7 @@ begin
 end;
 
 {$ELSE}
-                      
+
 begin
   Writeln(ALog);
 end;
@@ -471,7 +471,7 @@ var
   LHandleOutput: THandle;
   LBufferInfo: TConsoleScreenBufferInfo;
   LCoord: TCoord;
-  LCount, LSize: DWord;  
+  LCount, LSize: DWord;
 begin
   LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
   GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
@@ -479,21 +479,21 @@ begin
   LCoord.X := 0;
   LCoord.Y := LBufferInfo.dwCursorPosition.Y - 1;
 
-  // Clear line                                               
+  // Clear line
   LSize := LBufferInfo.dwSize.X;
   FillConsoleOutputAttribute(LHandleOutput, LBufferInfo.wAttributes and $FF, LSize, LCoord, LCount);
   FillConsoleOutputCharacter(LHandleOutput, ' ', LSize, LCoord, LCount);
 
-  // Set Position  
-  SetConsoleCursorPosition(LHandleOutput, LCoord);  
+  // Set Position
+  SetConsoleCursorPosition(LHandleOutput, LCoord);
 end;
 
 {$ELSE}
 
-begin                            
+begin
   Write(#27'[1F'); // Move Line Prior
   Write(#27'[K'); // Move End Cursor
-  Write(#27'[2K'); // Clear Line    
+  Write(#27'[2K'); // Clear Line
 end;
 
 {$ENDIF}

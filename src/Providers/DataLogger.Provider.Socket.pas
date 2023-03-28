@@ -856,11 +856,20 @@ begin
     LReadByte := ReadByte;
 
     case LReadByte of
-      129: Result.OperationCode := TDataLoggerSocketMessageOperationCode.TEXT_FRAME;
-      130: Result.OperationCode := TDataLoggerSocketMessageOperationCode.BINARY_FRAME;
-      136: Result.OperationCode := TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE;
-      137: Result.OperationCode := TDataLoggerSocketMessageOperationCode.PING;
-      138: Result.OperationCode := TDataLoggerSocketMessageOperationCode.PONG;
+      129:
+        Result.OperationCode := TDataLoggerSocketMessageOperationCode.TEXT_FRAME;
+
+      130:
+        Result.OperationCode := TDataLoggerSocketMessageOperationCode.BINARY_FRAME;
+
+      136:
+        Result.OperationCode := TDataLoggerSocketMessageOperationCode.CONNECTION_CLOSE;
+
+      137:
+        Result.OperationCode := TDataLoggerSocketMessageOperationCode.PING;
+
+      138:
+        Result.OperationCode := TDataLoggerSocketMessageOperationCode.PONG;
     else
       Result.OperationCode := TDataLoggerSocketMessageOperationCode.CONTINUE;
     end;

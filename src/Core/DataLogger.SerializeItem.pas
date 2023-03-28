@@ -70,7 +70,7 @@ type
 const
   TLoggerLetterKeyString: array [TLoggerLetter] of string = ((''), ('_upper'), ('_lower'), ('_first_up'));
 
-{ TLoggerSerializeItem }
+  { TLoggerSerializeItem }
 
 class function TLoggerSerializeItem.New: ILoggerSerializeItem;
 begin
@@ -136,7 +136,6 @@ begin
   Result := Self;
   FPrefix := AValue;
 end;
-
 
 function TLoggerSerializeItem.ToJSONObject: TJSONObject;
   procedure _Add(const ALogKey: string; const AIncludePrefix: Boolean; const AJSONValue: TJSONValue);

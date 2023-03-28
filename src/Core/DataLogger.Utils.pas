@@ -127,6 +127,7 @@ end;
 
 {$ELSE}
 
+
 var
   LFileName: UTF8String;
   LStatBuf: _stat;
@@ -545,9 +546,8 @@ class function TLoggerUtils.MACAddress: string;
     FreeMem(LNCB);
     FreeMem(LEnum);
     FreeMem(LAdapter);
-  end;
-{$ELSEIF DEFINED(ANDROID)}
 
+{$ELSEIF DEFINED(ANDROID)}
   var
     LWifiInfo: JWifiInfo;
   begin
@@ -555,15 +555,11 @@ class function TLoggerUtils.MACAddress: string;
 
     LWifiInfo := TJWifiManager.Wrap((TAndroidHelper.Context.getSystemService(TJContext.JavaClass.WIFI_SERVICE) as ILocalObject).GetObjectID).getConnectionInfo;
     Result := [JStringToString(LWifiInfo.GetMACAddress)];
-  end;
-
 {$ELSE}
-
   begin
     Result := [];
-  end;
-
 {$ENDIF}
+  end;
 
 var
   LMAC: TArray<string>;
