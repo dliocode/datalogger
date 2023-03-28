@@ -36,26 +36,26 @@ begin
   Logger.SlineBreak;
   Logger.SlineBreak;
 
-  // System loading simulation - using UndoLastLine
-  Logger.Info('Test with the function: UndoLastLine');
+  // System loading simulation - using UndoLast
+  Logger.Info('Test with the function: UndoLast');
   Sleep(2000);
 
   Logger.SlineBreak;
   Logger.Warn('Load System - Kernel');
   Sleep(2000);
-  Logger.UndoLastLine;
+  Logger.UndoLast;
   Logger.Success('Load System - Kernel');
   Sleep(2000);
 
   Logger.Warn('Load System - DataBase');
   Sleep(2000);
-  Logger.UndoLastLine;
+  Logger.UndoLast;
   Logger.Error('Load System - DataBase - Erro connection in DataBase');
   Sleep(2000);
 
   Logger.Warn('Load System - Drivers');
   Sleep(2000);
-  Logger.UndoLastLine;
+  Logger.UndoLast;
   Logger.Fatal('Load System - Driver - System Failure');
 
   Readln;
