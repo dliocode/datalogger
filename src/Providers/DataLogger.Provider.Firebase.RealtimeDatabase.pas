@@ -31,6 +31,10 @@
 }
 
 // https://firebase.google.com/
+// https://firebase.google.com/docs/database/rest/start?authuser=0
+
+// Realtime Database
+// Rules -> {"rules": {"users": {"$uid":{".read": "$uid === auth.uid",".write": "$uid === auth.uid"}}}}
 
 unit DataLogger.Provider.Firebase.RealtimeDatabase;
 
@@ -64,6 +68,8 @@ type
     FHTTP: TProviderHTTP;
     FDataBase: string;
     FAuth: string;
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+    procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -89,6 +95,7 @@ begin
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
+  FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
   DataBase('datalogger');
   Auth('');
@@ -182,8 +189,14 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLastLine then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
+
+    if LItem.InternalItem.IsUndoLastLine then
+    begin
+      UndoLastLine;
+      Continue;
+    end;
 
     LLogItemREST.Stream := SerializeItem.LogItem(LItem).ToJSONStream;
     LLogItemREST.LogItem := LItem;
@@ -200,6 +213,53 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+procedure TProviderRealtimeDatabase.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+var
+  LJO: TJSONObject;
+begin
+  if (AStatusCode <> 200) or (AMethod = TRESTMethod.tlmDelete) then
+    Exit;
+
+  LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
+  if not Assigned(LJO) then
+    Exit;
+
+  try
+    if not Assigned(LJO.Get('name')) then
+      Exit;
+
+    AddLastMessageId(LJO.GetValue<string>('name'));
+  finally
+    LJO.Free;
+  end;
+end;
+
+procedure TProviderRealtimeDatabase.UndoLastLine;
+var
+  LLastMessage: string;
+  LLogItemREST: TLogItemREST;
+  LItemREST: TArray<TLogItemREST>;
+begin
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
+    Exit;
+
+  LLogItemREST.Stream := nil;
+  LLogItemREST.LogItem := Default (TLoggerItem);
+  LLogItemREST.URL := Format('%s/%s/%s.json', [FHTTP.URL.Trim(['/']), FDataBase, LLastMessage]);
+
+  if not FAuth.Trim.IsEmpty then
+    LLogItemREST.URL := LLogItemREST.URL + '?auth=' + FAuth;
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
+
+  FHTTP.InternalSaveSync(TRESTMethod.tlmDelete, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);

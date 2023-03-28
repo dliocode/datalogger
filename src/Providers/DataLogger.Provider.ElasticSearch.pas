@@ -67,8 +67,7 @@ type
     FBasicAuthUsername: string;
     FBasicAuthPassword: string;
     FIndex: string;
-    FLastMessageID: string;
-    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
     procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -99,8 +98,6 @@ begin
   FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
   Index('logger');
-
-  FLastMessageID := '';
 end;
 
 procedure TProviderElasticSearch.AfterConstruction;
@@ -238,13 +235,11 @@ begin
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
 end;
 
-procedure TProviderElasticSearch.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+procedure TProviderElasticSearch.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
 var
   LJO: TJSONObject;
 begin
-  FLastMessageID := '';
-
-  if AStatusCode <> 201 then
+  if (AStatusCode <> 201) or (AMethod = TRESTMethod.tlmDelete) then
     Exit;
 
   LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
@@ -255,7 +250,7 @@ begin
     if not Assigned(LJO.Get('_id')) then
       Exit;
 
-    FLastMessageID := LJO.GetValue<string>('_id');
+    AddLastMessageId(LJO.GetValue<string>('_id'));
   finally
     LJO.Free;
   end;
@@ -263,15 +258,17 @@ end;
 
 procedure TProviderElasticSearch.UndoLastLine;
 var
+  LLastMessage: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  if FLastMessageID.Trim.IsEmpty then
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
     Exit;
 
   LLogItemREST.Stream := nil;
   LLogItemREST.LogItem := Default (TLoggerItem);
-  LLogItemREST.URL := Format('%s/%s/_doc/%s', [FHTTP.URL.Trim(['/']), FIndex.ToLower, FLastMessageID]);
+  LLogItemREST.URL := Format('%s/%s/_doc/%s', [FHTTP.URL.Trim(['/']), FIndex.ToLower, LLastMessage]);
 
   LItemREST := Concat(LItemREST, [LLogItemREST]);
 
@@ -280,8 +277,6 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveSync(TRESTMethod.tlmDelete, LItemREST);
-
-  FLastMessageID := '';
 end;
 
 procedure ForceReferenceToClass(C: TClass);

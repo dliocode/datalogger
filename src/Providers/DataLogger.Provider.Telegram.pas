@@ -69,8 +69,7 @@ type
     FBotToken: string;
     FChatId: string;
     FParseMode: TTelegramParseMode;
-    FLastMessageID: Integer;
-    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
     procedure UndoLastLine;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -107,8 +106,6 @@ begin
   BotToken('');
   ChatId('');
   ParseMode(TTelegramParseMode.tpMarkdown);
-
-  FLastMessageID := 0;
 end;
 
 destructor TProviderTelegram.Destroy;
@@ -301,13 +298,11 @@ begin
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
 end;
 
-procedure TProviderTelegram.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AContent: string; const AStatusCode: Integer);
+procedure TProviderTelegram.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
 var
   LJO: TJSONObject;
 begin
-  FLastMessageID := 0;
-
-  if AStatusCode <> 200 then
+  if (AStatusCode <> 200) then
     Exit;
 
   LJO := TJSONObject.ParseJSONValue(AContent) as TJSONObject;
@@ -324,7 +319,7 @@ begin
     if not Assigned(LJO.GetValue<TJSONObject>('result').Get('message_id')) then
       Exit;
 
-    FLastMessageID := LJO.GetValue<TJSONObject>('result').GetValue<Integer>('message_id');
+    AddLastMessageId(LJO.GetValue<TJSONObject>('result').GetValue<string>('message_id'));
   finally
     LJO.Free;
   end;
@@ -332,18 +327,20 @@ end;
 
 procedure TProviderTelegram.UndoLastLine;
 var
+  LLastMessage: string;
   LJO: TJSONObject;
   LLog: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  if FLastMessageID = 0 then
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
     Exit;
 
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('chat_id', TJSONString.Create(FChatId));
-    LJO.AddPair('message_id', TJSONNumber.Create(FLastMessageID));
+    LJO.AddPair('message_id', TJSONNumber.Create(LLastMessage.ToInteger));
 
     LLog := LJO.ToString;
   finally
@@ -361,8 +358,6 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
-
-  FLastMessageID := 0;
 end;
 
 { TProviderTelegramHelper }
