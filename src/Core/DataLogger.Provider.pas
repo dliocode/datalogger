@@ -51,27 +51,25 @@ type
   TDataLoggerProvider<T: class> = class(TDataLoggerProviderBase)
   private
     FOwner: T;
+
     FCriticalSection: TCriticalSection;
     FSemaphore: TSemaphore;
     FLocked: Boolean;
-
     FEvent: TEvent;
     FLastCheckInfo: TDateTime;
     FThreadExecute: TThread;
     FThreadTerminated: Boolean;
-
     FListLoggerBase: TDataLoggerListItem;
     FListTransaction: TDataLoggerListTransaction;
+    FLastMessageID: TStack<string>;
 
     FLevel: TLoggerLevel;
     FDisableLevel: TLoggerLevels;
     FOnlyLevel: TLoggerLevels;
-
     FUseTransaction: Boolean;
     FUseTransactionModeMultThread: Boolean;
     FTransactionAutoCommitLevel: TLoggerLevels;
     FTransactionAutoCommitType: TLoggerTransactionTypeCommit;
-
     FLiveMode: Boolean;
 
     FAppName: string;
@@ -109,6 +107,9 @@ type
     procedure Lock;
     procedure UnLock;
     function Terminated: Boolean;
+
+    procedure AddLastMessageId(const AValue: string);
+    function GetLastMessageId: string;
   public
     function SetLogFormat(const ALogFormat: string; const AExcluisive: Boolean = True): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
@@ -144,6 +145,7 @@ implementation
 
 const
   C_MAX_LOG_IN_CACHE = 100000;
+  C_MAX_LOG_IN_MESSAGE_ID = 1000;
 
 { TDataLoggerProvider }
 
@@ -184,6 +186,8 @@ begin
 
   FThreadExecute := nil;
   FThreadTerminated := False;
+
+  FLastMessageID := TStack<string>.Create;
 end;
 
 procedure TDataLoggerProvider<T>.BeforeDestruction;
@@ -208,6 +212,8 @@ begin
   finally
     UnLock;
   end;
+
+  FLastMessageID.Free;
 
   FSemaphore.Free;
   FCriticalSection.Free;
@@ -583,13 +589,14 @@ begin
           Continue;
         end;
 
-        if ((I + 1) <= High(AValues)) then
-          if AValues[I + 1].InternalItem.IsUndoLastLine then
-            if AValues[I + 1].InternalItem.TransactionID = LItem.InternalItem.TransactionID then
-            begin
-              LListUndoLastLine.Add(AValues[I + 1].InternalItem.TransactionID);
-              Continue;
-            end;
+        if not AValues[I].InternalItem.IsUndoLastLine then
+          if ((I + 1) <= High(AValues)) then
+            if AValues[I + 1].InternalItem.IsUndoLastLine then
+              if AValues[I + 1].InternalItem.TransactionID = LItem.InternalItem.TransactionID then
+              begin
+                LListUndoLastLine.Add(AValues[I + 1].InternalItem.TransactionID);
+                Continue;
+              end;
 
         LItem.TimeStampISO8601 := DateToISO8601(LItem.TimeStamp, False);
         LItem.TimeStampUNIX := DateTimeToUnix(LItem.TimeStamp, False);
@@ -857,6 +864,46 @@ end;
 function TDataLoggerProvider<T>.Terminated: Boolean;
 begin
   Result := FThreadTerminated;
+end;
+
+procedure TDataLoggerProvider<T>.AddLastMessageId(const AValue: string);
+var
+  LLastMessageID: TArray<string>;
+  I: Integer;
+begin
+  Lock;
+  try
+    if (FLastMessageID.Count >= C_MAX_LOG_IN_MESSAGE_ID) then
+    begin
+      LLastMessageID := FLastMessageID.ToArray;
+      FLastMessageID.Clear;
+      FLastMessageID.TrimExcess;
+
+      for I := 1 to High(LLastMessageID) do
+        FLastMessageID.Push(LLastMessageID[I]);
+
+      LLastMessageID := [];
+    end;
+
+    FLastMessageID.Push(AValue);
+  finally
+    UnLock;
+  end;
+end;
+
+function TDataLoggerProvider<T>.GetLastMessageId: string;
+begin
+  Result := '';
+
+  Lock;
+  try
+    if (FLastMessageID.Count = 0) then
+      Exit;
+
+    Result := FLastMessageID.Pop;
+  finally
+    UnLock;
+  end;
 end;
 
 function TDataLoggerProvider<T>.ExtractCache(const AUseLock: Boolean = True): TArray<TLoggerItem>;
