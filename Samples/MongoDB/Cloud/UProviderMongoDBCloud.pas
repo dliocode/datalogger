@@ -73,17 +73,11 @@ begin
 
   Logger.AddProvider(
     TProviderMongoDBCloud.Create
-     .AppServiceID('data-vsurk')
-     .ApiKey('XD7FdttY8ohGIHAnpdODZNLsdRBEr3IAL9R3nLfy1GpJdCelWbbpV3ZPC4AANQli')
-     .DataSource('AtlasCluster')
-     .DataBase('db_datalogger')
-     .Collection('log')
-
-//     .URLDataApi('{URLDataApi}')
-//     .ApiKey('{ApiKey}')
-//     .DataSource('{DataSource')
-//     .DataBase('{DataBase}')
-//     .Collection('{Collection}')
+     .URLEndpoint('{URLEndpoint}')
+     .ApiKey('{ApiKey}')
+     .DataSource('{DataSource')
+     .DataBase('{DataBase}')
+     .Collection('{Collection}')
     );
 
   // Log Format
