@@ -63,15 +63,16 @@ type
 
   private
     FHTTP: TProviderHTTP;
-    FAppServiceID: string;
     FApiKey: string;
     FDataSource: string;
     FDataBase: string;
     FCollection: string;
+    procedure HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+    procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function AppServiceID(const AValue: string): TProviderMongoDBCloud;
+    function URLEndpoint(const AValue: string): TProviderMongoDBCloud;
     function ApiKey(const AValue: string): TProviderMongoDBCloud;
     function DataSource(const AValue: string): TProviderMongoDBCloud;
     function DataBase(const AValue: string): TProviderMongoDBCloud;
@@ -95,9 +96,10 @@ begin
 
   FHTTP := TProviderHTTP.Create;
   FHTTP.ContentType('application/json');
+  FHTTP.ExecuteFinally(HTTPExecuteFinally);
 
-  AppServiceID('');
-  DataSource('AtlasCluster');
+  URLEndpoint('https://sa-east-1.aws.data.mongodb-api.com/app/<APP-ID>/endpoint/data/v1');
+  DataSource('Cluster0');
   DataBase('db_datalogger');
   Collection('logger');
 end;
@@ -115,10 +117,10 @@ begin
   inherited;
 end;
 
-function TProviderMongoDBCloud.AppServiceID(const AValue: string): TProviderMongoDBCloud;
+function TProviderMongoDBCloud.URLEndpoint(const AValue: string): TProviderMongoDBCloud;
 begin
   Result := Self;
-  FAppServiceID := AValue;
+  FHTTP.URL(AValue);
 end;
 
 function TProviderMongoDBCloud.ApiKey(const AValue: string): TProviderMongoDBCloud;
@@ -165,7 +167,7 @@ begin
     Exit;
 
   try
-    AppServiceID(LJO.GetValue<string>('app_service_id', FAppServiceID));
+    URLEndpoint(LJO.GetValue<string>('url_endpoint', FHTTP.URL));
     ApiKey(LJO.GetValue<string>('api_key', FApiKey));
     DataSource(LJO.GetValue<string>('data_source', FDataSource));
     DataBase(LJO.GetValue<string>('data_base', FDataBase));
@@ -183,7 +185,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('app_service_id', TJSONString.Create(FAppServiceID));
+    LJO.AddPair('url_endpoint', TJSONString.Create(FHTTP.URL));
     LJO.AddPair('api_key', TJSONString.Create(FApiKey));
     LJO.AddPair('data_source', TJSONString.Create(FDataSource));
     LJO.AddPair('data_base', TJSONString.Create(FDataBase));
@@ -212,8 +214,14 @@ begin
 
   for LItem in ACache do
   begin
-    if LItem.InternalItem.IsSlinebreak or LItem.InternalItem.IsUndoLast then
+    if LItem.InternalItem.IsSlinebreak then
       Continue;
+
+    if LItem.InternalItem.IsUndoLast then
+    begin
+      UndoLast;
+      Continue;
+    end;
 
     LJO := TJSONObject.Create;
     try
@@ -229,7 +237,7 @@ begin
 
     LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
     LLogItemREST.LogItem := LItem;
-    LLogItemREST.URL := Format('https://data.mongodb-api.com/app/%s/endpoint/data/v1/action/insertOne', [FAppServiceID]);
+    LLogItemREST.URL := FHTTP.URL + '/action/insertOne';
 
     LItemREST := Concat(LItemREST, [LLogItemREST]);
   end;
@@ -239,6 +247,51 @@ begin
     .SetMaxRetries(FMaxRetries);
 
   FHTTP.InternalSaveAsync(TRESTMethod.tlmPost, LItemREST);
+end;
+
+procedure TProviderMongoDBCloud.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+begin
+  if (AStatusCode <> 201) then
+    Exit;
+
+  AddLastMessageId(ALogItem.Id);
+end;
+
+procedure TProviderMongoDBCloud.UndoLast;
+var
+  LLastMessage: string;
+  LJO: TJSONObject;
+  LLog: string;
+  LLogItemREST: TLogItemREST;
+  LItemREST: TArray<TLogItemREST>;
+begin
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
+    Exit;
+
+  LJO := TJSONObject.Create;
+  try
+    LJO.AddPair('dataSource', TJSONString.Create(FDataSource));
+    LJO.AddPair('database', TJSONString.Create(FDataBase));
+    LJO.AddPair('collection', TJSONString.Create(FCollection));
+    LJO.AddPair('filter', TJSONObject.Create.AddPair('log_id', TJSONString.Create(LLastMessage)));
+
+    LLog := LJO.ToString;
+  finally
+    LJO.Free;
+  end;
+
+  LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
+  LLogItemREST.LogItem := Default (TLoggerItem);
+  LLogItemREST.URL := FHTTP.URL + '/action/deleteOne';
+
+  LItemREST := Concat(LItemREST, [LLogItemREST]);
+
+  FHTTP
+    .SetLogException(FLogException)
+    .SetMaxRetries(FMaxRetries);
+
+  FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
 end;
 
 procedure ForceReferenceToClass(C: TClass);
