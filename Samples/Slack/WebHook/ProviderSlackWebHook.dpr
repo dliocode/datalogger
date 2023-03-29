@@ -1,8 +1,8 @@
-program ProviderSlack;
+program ProviderSlackWebHook;
 
 uses
   Vcl.Forms,
-  UProviderSlack in 'UProviderSlack.pas' {Form2};
+  UProviderSlackWebHook in 'UProviderSlackWebHook.pas' {Form2};
 
 {$R *.res}
 

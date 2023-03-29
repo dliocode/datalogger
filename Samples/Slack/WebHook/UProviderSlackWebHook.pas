@@ -1,4 +1,4 @@
-unit UProviderMattermostHook;
+unit UProviderSlackWebHook;
 
 interface
 
@@ -9,12 +9,12 @@ uses
 
 type
   TForm2 = class(TForm)
-    pnlInfo: TPanel;
     Panel1: TPanel;
     btnMakeLog: TButton;
+    pnlInfo: TPanel;
     procedure btnMakeLogClick(Sender: TObject);
-    procedure pnlInfoClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure pnlInfoClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -28,8 +28,9 @@ implementation
 
 {$R *.dfm}
 
+
 uses
-  DataLogger, DataLogger.Provider.Mattermost.Hooks;
+  DataLogger, DataLogger.Provider.Slack.WebHook;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -50,11 +51,9 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderMattermostHooks.Create
-    .URL('http://{your-mattermost-site}/hooks/{CODE}')
-    .ChannelName('aaaaaaa000000')
-    .Username('my_username')
-    .ModePropsCard(False)
+    TProviderSlackWebHook.Create
+//    .URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX') // Add url webhook slack
+    .URL('https://hooks.slack.com/services/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') // Add url webhook slack
     );
 
   // Log Format

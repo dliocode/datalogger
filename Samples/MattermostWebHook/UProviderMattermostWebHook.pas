@@ -1,4 +1,4 @@
-unit UProviderDiscordHook;
+unit UProviderMattermostWebHook;
 
 interface
 
@@ -9,12 +9,12 @@ uses
 
 type
   TForm2 = class(TForm)
+    pnlInfo: TPanel;
     Panel1: TPanel;
     btnMakeLog: TButton;
-    pnlInfo: TPanel;
     procedure btnMakeLogClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure pnlInfoClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -26,10 +26,10 @@ var
 
 implementation
 
-uses
-  DataLogger, DataLogger.Provider.Discord.Hooks;
-
 {$R *.dfm}
+
+uses
+  DataLogger, DataLogger.Provider.Mattermost.WebHooks;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -41,7 +41,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')
+    .Custom('Custom Level', 'My Custom')    
     ;
 end;
 
@@ -50,10 +50,11 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderDiscordHooks.Create
-    .URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>') // Add url webhook discord
-    .Username('DataLogger')
-    .AvatarURL('')
+    TProviderMattermostWebHooks.Create
+    .URL('http://{your-mattermost-site}/hooks/{CODE}')
+    .ChannelName('aaaaaaa000000')
+    .Username('my_username')
+    .ModePropsCard(False)
     );
 
   // Log Format
