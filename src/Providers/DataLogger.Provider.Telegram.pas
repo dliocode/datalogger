@@ -327,20 +327,20 @@ end;
 
 procedure TProviderTelegram.UndoLast;
 var
-  LLastMessage: string;
+  LLastMessageID: string;
   LJO: TJSONObject;
   LLog: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  LLastMessage := GetLastMessageId;
-  if LLastMessage.Trim.IsEmpty then
+  LLastMessageID := GetLastMessageId;
+  if LLastMessageID.Trim.IsEmpty then
     Exit;
 
   LJO := TJSONObject.Create;
   try
     LJO.AddPair('chat_id', TJSONString.Create(FChatId));
-    LJO.AddPair('message_id', TJSONNumber.Create(LLastMessage.ToInteger));
+    LJO.AddPair('message_id', TJSONNumber.Create(LLastMessageID.ToInteger));
 
     LLog := LJO.ToString;
   finally

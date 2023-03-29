@@ -238,17 +238,17 @@ end;
 
 procedure TProviderRealtimeDatabase.UndoLast;
 var
-  LLastMessage: string;
+  LLastMessageID: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  LLastMessage := GetLastMessageId;
-  if LLastMessage.Trim.IsEmpty then
+  LLastMessageID := GetLastMessageId;
+  if LLastMessageID.Trim.IsEmpty then
     Exit;
 
   LLogItemREST.Stream := nil;
   LLogItemREST.LogItem := Default (TLoggerItem);
-  LLogItemREST.URL := Format('%s/%s/%s.json', [FHTTP.URL.Trim(['/']), FDataBase, LLastMessage]);
+  LLogItemREST.URL := Format('%s/%s/%s.json', [FHTTP.URL.Trim(['/']), FDataBase, LLastMessageID]);
 
   if not FAuth.Trim.IsEmpty then
     LLogItemREST.URL := LLogItemREST.URL + '?auth=' + FAuth;

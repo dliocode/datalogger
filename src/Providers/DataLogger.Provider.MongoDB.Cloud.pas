@@ -259,14 +259,14 @@ end;
 
 procedure TProviderMongoDBCloud.UndoLast;
 var
-  LLastMessage: string;
+  LLastMessageID: string;
   LJO: TJSONObject;
   LLog: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  LLastMessage := GetLastMessageId;
-  if LLastMessage.Trim.IsEmpty then
+  LLastMessageID := GetLastMessageId;
+  if LLastMessageID.Trim.IsEmpty then
     Exit;
 
   LJO := TJSONObject.Create;
@@ -274,7 +274,7 @@ begin
     LJO.AddPair('dataSource', TJSONString.Create(FDataSource));
     LJO.AddPair('database', TJSONString.Create(FDataBase));
     LJO.AddPair('collection', TJSONString.Create(FCollection));
-    LJO.AddPair('filter', TJSONObject.Create.AddPair('log_id', TJSONString.Create(LLastMessage)));
+    LJO.AddPair('filter', TJSONObject.Create.AddPair('log_id', TJSONString.Create(LLastMessageID)));
 
     LLog := LJO.ToString;
   finally

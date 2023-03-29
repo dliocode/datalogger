@@ -258,17 +258,17 @@ end;
 
 procedure TProviderElasticSearch.UndoLast;
 var
-  LLastMessage: string;
+  LLastMessageID: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  LLastMessage := GetLastMessageId;
-  if LLastMessage.Trim.IsEmpty then
+  LLastMessageID := GetLastMessageId;
+  if LLastMessageID.Trim.IsEmpty then
     Exit;
 
   LLogItemREST.Stream := nil;
   LLogItemREST.LogItem := Default (TLoggerItem);
-  LLogItemREST.URL := Format('%s/%s/_doc/%s', [FHTTP.URL.Trim(['/']), FIndex.ToLower, LLastMessage]);
+  LLogItemREST.URL := Format('%s/%s/_doc/%s', [FHTTP.URL.Trim(['/']), FIndex.ToLower, LLastMessageID]);
 
   LItemREST := Concat(LItemREST, [LLogItemREST]);
 
