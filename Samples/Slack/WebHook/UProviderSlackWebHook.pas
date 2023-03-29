@@ -52,8 +52,7 @@ begin
 
   Logger.AddProvider(
     TProviderSlackWebHook.Create
-//    .URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX') // Add url webhook slack
-    .URL('https://hooks.slack.com/services/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') // Add url webhook slack
+    .URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX') // Add url webhook slack
     );
 
   // Log Format
