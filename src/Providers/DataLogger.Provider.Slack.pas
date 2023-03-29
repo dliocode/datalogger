@@ -30,20 +30,17 @@
   ********************************************************************************
 }
 
-// https://slack.com
-// https://api.slack.com
-// https://api.slack.com/apps
 // https://api.slack.com/messaging/webhooks
 
-unit DataLogger.Provider.Slack.WebHook;
+unit DataLogger.Provider.Slack;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_SLACK_WEBHOOK_USE_INDY)}
+{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_SLACK_WEBHOOK_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -51,13 +48,13 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderSlackWebHook = class(TDataLoggerProvider<TProviderSlackWebHook>)
+  TProviderSlack = class(TDataLoggerProvider<TProviderSlack>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_SLACK_WEBHOOK_USE_INDY)}
+{$IF DEFINED(DATALOGGER_SLACK_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_SLACK_WEBHOOK_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_SLACK_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
@@ -68,7 +65,7 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderSlackWebHook;
+    function URL(const AValue: string): TProviderSlack;
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
 
@@ -78,9 +75,9 @@ type
 
 implementation
 
-{ TProviderSlackWebHook }
+{ TProviderSlack }
 
-constructor TProviderSlackWebHook.Create;
+constructor TProviderSlack.Create;
 begin
   inherited Create;
 
@@ -89,19 +86,19 @@ begin
   FHTTP.URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
 end;
 
-destructor TProviderSlackWebHook.Destroy;
+destructor TProviderSlack.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderSlackWebHook.URL(const AValue: string): TProviderSlackWebHook;
+function TProviderSlack.URL(const AValue: string): TProviderSlack;
 begin
   Result := Self;
   FHTTP.URL(AValue);
 end;
 
-procedure TProviderSlackWebHook.LoadFromJSON(const AJSON: string);
+procedure TProviderSlack.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -127,7 +124,7 @@ begin
   end;
 end;
 
-function TProviderSlackWebHook.ToJSON(const AFormat: Boolean): string;
+function TProviderSlack.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -143,7 +140,7 @@ begin
   end;
 end;
 
-procedure TProviderSlackWebHook.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderSlack.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
@@ -192,6 +189,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderSlackWebHook);
+ForceReferenceToClass(TProviderSlack);
 
 end.

@@ -32,15 +32,15 @@
 
 // https://api.mattermost.com/
 
-unit DataLogger.Provider.Mattermost.WebHooks;
+unit DataLogger.Provider.Mattermost.Hooks;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_MATTERMOST_WEB_HOOKS_USE_INDY)}
+{$IF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_WEB_HOOKS_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -48,13 +48,13 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderMattermostWebHooks = class(TDataLoggerProvider<TProviderMattermostWebHooks>)
+  TProviderMattermostHooks = class(TDataLoggerProvider<TProviderMattermostHooks>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_MATTERMOST_WEB_HOOKS_USE_INDY)}
+{$IF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_WEB_HOOKS_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_MATTERMOST_HOOKS_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
@@ -68,10 +68,10 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderMattermostWebHooks;
-    function ChannelName(const AValue: string): TProviderMattermostWebHooks;
-    function Username(const AValue: string): TProviderMattermostWebHooks;
-    function ModePropsCard(const AValue: Boolean): TProviderMattermostWebHooks;
+    function URL(const AValue: string): TProviderMattermostHooks;
+    function ChannelName(const AValue: string): TProviderMattermostHooks;
+    function Username(const AValue: string): TProviderMattermostHooks;
+    function ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -82,9 +82,9 @@ type
 
 implementation
 
-{ TProviderMattermostWebHooks }
+{ TProviderMattermostHooks }
 
-constructor TProviderMattermostWebHooks.Create;
+constructor TProviderMattermostHooks.Create;
 begin
   inherited Create;
 
@@ -97,37 +97,37 @@ begin
   ModePropsCard(False);
 end;
 
-destructor TProviderMattermostWebHooks.Destroy;
+destructor TProviderMattermostHooks.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderMattermostWebHooks.URL(const AValue: string): TProviderMattermostWebHooks;
+function TProviderMattermostHooks.URL(const AValue: string): TProviderMattermostHooks;
 begin
   Result := Self;
   FHTTP.URL(AValue);
 end;
 
-function TProviderMattermostWebHooks.ChannelName(const AValue: string): TProviderMattermostWebHooks;
+function TProviderMattermostHooks.ChannelName(const AValue: string): TProviderMattermostHooks;
 begin
   Result := Self;
   FChannelName := AValue;
 end;
 
-function TProviderMattermostWebHooks.Username(const AValue: string): TProviderMattermostWebHooks;
+function TProviderMattermostHooks.Username(const AValue: string): TProviderMattermostHooks;
 begin
   Result := Self;
   FUsername := AValue;
 end;
 
-function TProviderMattermostWebHooks.ModePropsCard(const AValue: Boolean): TProviderMattermostWebHooks;
+function TProviderMattermostHooks.ModePropsCard(const AValue: Boolean): TProviderMattermostHooks;
 begin
   Result := Self;
   FModePropsCard := AValue;
 end;
 
-procedure TProviderMattermostWebHooks.LoadFromJSON(const AJSON: string);
+procedure TProviderMattermostHooks.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -156,7 +156,7 @@ begin
   end;
 end;
 
-function TProviderMattermostWebHooks.ToJSON(const AFormat: Boolean): string;
+function TProviderMattermostHooks.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -175,7 +175,7 @@ begin
   end;
 end;
 
-procedure TProviderMattermostWebHooks.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderMattermostHooks.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LJO: TJSONObject;
@@ -281,6 +281,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderMattermostWebHooks);
+ForceReferenceToClass(TProviderMattermostHooks);
 
 end.

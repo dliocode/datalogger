@@ -1,4 +1,4 @@
-unit UProviderDiscordWebHook;
+unit UProviderSlack;
 
 interface
 
@@ -26,10 +26,11 @@ var
 
 implementation
 
-uses
-  DataLogger, DataLogger.Provider.Discord.WebHooks;
-
 {$R *.dfm}
+
+
+uses
+  DataLogger, DataLogger.Provider.Slack;
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
@@ -41,7 +42,7 @@ begin
     .Error('My Error')
     .Success('My Success')
     .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')
+    .Custom('Custom Level', 'My Custom')    
     ;
 end;
 
@@ -50,10 +51,8 @@ begin
   ReportMemoryLeaksOnShutdown := True;
 
   Logger.AddProvider(
-    TProviderDiscordWebHooks.Create
-    .URL('https://discord.com/api/webhooks/<ID_WEBHOOK>/<HASH>') // Add url webhook discord
-    .Username('DataLogger')
-    .AvatarURL('')
+    TProviderSlack.Create
+    .URL('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX') // Add url webhook slack
     );
 
   // Log Format

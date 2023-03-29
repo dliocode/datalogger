@@ -33,15 +33,15 @@
 // https://discord.com
 // https://discord.com/developers/docs/resources/webhook
 
-unit DataLogger.Provider.Discord.WebHooks;
+unit DataLogger.Provider.Discord.Hooks;
 
 interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
-{$IF DEFINED(DATALOGGER_DISCORD_WEB_HOOKS_USE_INDY)}
+{$IF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_INDY)}
   DataLogger.Provider.REST.Indy,
-{$ELSEIF DEFINED(DATALOGGER_DISCORD_WEB_HOOKS_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_NETHTTPCLIENT)}
   DataLogger.Provider.REST.NetHTTPClient,
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
@@ -49,13 +49,13 @@ uses
   System.SysUtils, System.Classes, System.JSON;
 
 type
-  TProviderDiscordWebHooks = class(TDataLoggerProvider<TProviderDiscordWebHooks>)
+  TProviderDiscordHooks = class(TDataLoggerProvider<TProviderDiscordHooks>)
   private
     type
     TProviderHTTP = class(
-{$IF DEFINED(DATALOGGER_DISCORD_WEB_HOOKS_USE_INDY)}
+{$IF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_INDY)}
       TProviderRESTIndy
-{$ELSEIF DEFINED(DATALOGGER_DISCORD_WEB_HOOKS_USE_NETHTTPCLIENT)}
+{$ELSEIF DEFINED(DATALOGGER_DISCORD_HOOKS_USE_NETHTTPCLIENT)}
       TProviderRESTNetHTTPClient
 {$ELSE}
       TProviderRESTHTTPClient
@@ -70,9 +70,9 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function URL(const AValue: string): TProviderDiscordWebHooks;
-    function Username(const AValue: string): TProviderDiscordWebHooks;
-    function AvatarURL(const AValue: string): TProviderDiscordWebHooks;
+    function URL(const AValue: string): TProviderDiscordHooks;
+    function Username(const AValue: string): TProviderDiscordHooks;
+    function AvatarURL(const AValue: string): TProviderDiscordHooks;
 
     procedure LoadFromJSON(const AJSON: string); override;
     function ToJSON(const AFormat: Boolean = False): string; override;
@@ -83,9 +83,9 @@ type
 
 implementation
 
-{ TProviderDiscordWebHooks }
+{ TProviderDiscordHooks }
 
-constructor TProviderDiscordWebHooks.Create;
+constructor TProviderDiscordHooks.Create;
 begin
   inherited Create;
 
@@ -100,31 +100,31 @@ begin
   AvatarURL('');
 end;
 
-destructor TProviderDiscordWebHooks.Destroy;
+destructor TProviderDiscordHooks.Destroy;
 begin
   FHTTP.Free;
   inherited;
 end;
 
-function TProviderDiscordWebHooks.URL(const AValue: string): TProviderDiscordWebHooks;
+function TProviderDiscordHooks.URL(const AValue: string): TProviderDiscordHooks;
 begin
   Result := Self;
   FHTTP.URL(AValue);
 end;
 
-function TProviderDiscordWebHooks.Username(const AValue: string): TProviderDiscordWebHooks;
+function TProviderDiscordHooks.Username(const AValue: string): TProviderDiscordHooks;
 begin
   Result := Self;
   FUsername := AValue;
 end;
 
-function TProviderDiscordWebHooks.AvatarURL(const AValue: string): TProviderDiscordWebHooks;
+function TProviderDiscordHooks.AvatarURL(const AValue: string): TProviderDiscordHooks;
 begin
   Result := Self;
   FAvatarURL := AValue;
 end;
 
-procedure TProviderDiscordWebHooks.LoadFromJSON(const AJSON: string);
+procedure TProviderDiscordHooks.LoadFromJSON(const AJSON: string);
 var
   LJO: TJSONObject;
 begin
@@ -152,7 +152,7 @@ begin
   end;
 end;
 
-function TProviderDiscordWebHooks.ToJSON(const AFormat: Boolean): string;
+function TProviderDiscordHooks.ToJSON(const AFormat: Boolean): string;
 var
   LJO: TJSONObject;
 begin
@@ -170,7 +170,7 @@ begin
   end;
 end;
 
-procedure TProviderDiscordWebHooks.Save(const ACache: TArray<TLoggerItem>);
+procedure TProviderDiscordHooks.Save(const ACache: TArray<TLoggerItem>);
 var
   LItemREST: TArray<TLogItemREST>;
   LItem: TLoggerItem;
@@ -221,7 +221,7 @@ begin
   FHTTP.InternalSaveSync(TRESTMethod.tlmPost, LItemREST);
 end;
 
-procedure TProviderDiscordWebHooks.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
+procedure TProviderDiscordHooks.HTTPExecuteFinally(const ALogItem: TLoggerItem; const AMethod: TRESTMethod; const AContent: string; const AStatusCode: Integer);
 var
   LJO: TJSONObject;
 begin
@@ -242,19 +242,19 @@ begin
   end;
 end;
 
-procedure TProviderDiscordWebHooks.UndoLast;
+procedure TProviderDiscordHooks.UndoLast;
 var
-  LLastMessageID: string;
+  LLastMessage: string;
   LLogItemREST: TLogItemREST;
   LItemREST: TArray<TLogItemREST>;
 begin
-  LLastMessageID := GetLastMessageId;
-  if LLastMessageID.Trim.IsEmpty then
+  LLastMessage := GetLastMessageId;
+  if LLastMessage.Trim.IsEmpty then
     Exit;
 
   LLogItemREST.Stream := nil;
   LLogItemREST.LogItem := Default (TLoggerItem);
-  LLogItemREST.URL := FHTTP.URL + '/messages/' + LLastMessageID;
+  LLogItemREST.URL := FHTTP.URL + '/messages/' + LLastMessage;
 
   LItemREST := Concat(LItemREST, [LLogItemREST]);
 
@@ -271,6 +271,6 @@ end;
 
 initialization
 
-ForceReferenceToClass(TProviderDiscordWebHooks);
+ForceReferenceToClass(TProviderDiscordHooks);
 
 end.

@@ -1,8 +1,8 @@
-program ProviderMattermostWebHook;
+program ProviderDiscordHook;
 
 uses
   Vcl.Forms,
-  UProviderMattermostWebHook in 'UProviderMattermostWebHook.pas' {Form2};
+  UProviderDiscordHook in 'UProviderDiscordHook.pas' {Form2};
 
 {$R *.res}
 
