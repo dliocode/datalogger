@@ -3,9 +3,15 @@
         <ProjectGuid>{A4E15C0A-8FE3-4E57-8F2C-34CFBEC8BEFF}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
+        <Projects Include="AWSCloudWatch\ProviderAWSCloudWatch.dproj">
+            <Dependencies/>
+        </Projects>	
         <Projects Include="Axiom\ProviderAxiom.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="CallMeBot\WhatsApp\ProviderCallMeBotWhatsApp.dproj">
+            <Dependencies/>
+        </Projects>		
         <Projects Include="Console\ProviderConsole.dproj">
             <Dependencies/>
         </Projects>
@@ -13,9 +19,6 @@
             <Dependencies/>
         </Projects>
         <Projects Include="Datalust\ProviderDatalust.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="DiscordHook\ProviderDiscordHook.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="ElasticSearch\ProviderElasticSearch.dproj">
@@ -75,9 +78,6 @@
         <Projects Include="Mattermost\ProviderMattermost.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="MattermostHook\ProviderMattermostHook.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="Memo\VCL\ProviderMemo.dproj">
             <Dependencies/>
         </Projects>
@@ -132,9 +132,6 @@
         <Projects Include="SendGrid-WebApi\ProviderSendGridWebApi.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Slack\ProviderSlack.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="Socket\ProviderSocket.dproj">
             <Dependencies/>
         </Projects>
@@ -180,9 +177,6 @@
         <Projects Include="HTML\ProviderHTML.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="AWSCloudWatch\ProviderAWSCloudWatch.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="SumoLogic\ProviderSumoLogic.dproj">
             <Dependencies/>
         </Projects>
@@ -207,10 +201,19 @@
         <Projects Include="Elmah\ProviderElmah.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="CallMeBot\WhatsApp\ProviderCallMeBotWhatsApp.dproj">
+        <Projects Include="Console - Model Linux\ProviderConsoleModelLinux.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Console - Model Linux\ProviderConsoleModelLinux.dproj">
+        <Projects Include="MattermostWebHook\ProviderMattermostWebHook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Slack\WebAPI\ProviderSlackWebApi.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Slack\WebHook\ProviderSlackWebHook.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="DiscordWebHook\ProviderDiscordWebHook.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -221,6 +224,15 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="ProviderAWSCloudWatch">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj"/>
+    </Target>
+    <Target Name="ProviderAWSCloudWatch:Clean">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderAWSCloudWatch:Make">
+        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Make"/>
+    </Target>	
     <Target Name="ProviderAxiom">
         <MSBuild Projects="Axiom\ProviderAxiom.dproj"/>
     </Target>
@@ -256,15 +268,6 @@
     </Target>
     <Target Name="ProviderDatalust:Make">
         <MSBuild Projects="Datalust\ProviderDatalust.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="ProviderDiscordHook">
-        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj"/>
-    </Target>
-    <Target Name="ProviderDiscordHook:Clean">
-        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ProviderDiscordHook:Make">
-        <MSBuild Projects="DiscordHook\ProviderDiscordHook.dproj" Targets="Make"/>
     </Target>
     <Target Name="ProviderElasticSearch">
         <MSBuild Projects="ElasticSearch\ProviderElasticSearch.dproj"/>
@@ -437,15 +440,6 @@
     <Target Name="ProviderMattermost:Make">
         <MSBuild Projects="Mattermost\ProviderMattermost.dproj" Targets="Make"/>
     </Target>
-    <Target Name="ProviderMattermostHook">
-        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj"/>
-    </Target>
-    <Target Name="ProviderMattermostHook:Clean">
-        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ProviderMattermostHook:Make">
-        <MSBuild Projects="MattermostHook\ProviderMattermostHook.dproj" Targets="Make"/>
-    </Target>
     <Target Name="ProviderMemo">
         <MSBuild Projects="Memo\VCL\ProviderMemo.dproj"/>
     </Target>
@@ -608,15 +602,6 @@
     <Target Name="ProviderSendGridWebApi:Make">
         <MSBuild Projects="SendGrid-WebApi\ProviderSendGridWebApi.dproj" Targets="Make"/>
     </Target>
-    <Target Name="ProviderSlack">
-        <MSBuild Projects="Slack\ProviderSlack.dproj"/>
-    </Target>
-    <Target Name="ProviderSlack:Clean">
-        <MSBuild Projects="Slack\ProviderSlack.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ProviderSlack:Make">
-        <MSBuild Projects="Slack\ProviderSlack.dproj" Targets="Make"/>
-    </Target>
     <Target Name="ProviderSocket">
         <MSBuild Projects="Socket\ProviderSocket.dproj"/>
     </Target>
@@ -752,15 +737,6 @@
     <Target Name="ProviderHTML:Make">
         <MSBuild Projects="HTML\ProviderHTML.dproj" Targets="Make"/>
     </Target>
-    <Target Name="ProviderAWSCloudWatch">
-        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj"/>
-    </Target>
-    <Target Name="ProviderAWSCloudWatch:Clean">
-        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="ProviderAWSCloudWatch:Make">
-        <MSBuild Projects="AWSCloudWatch\ProviderAWSCloudWatch.dproj" Targets="Make"/>
-    </Target>
     <Target Name="ProviderSumoLogic">
         <MSBuild Projects="SumoLogic\ProviderSumoLogic.dproj"/>
     </Target>
@@ -851,14 +827,50 @@
     <Target Name="ProviderConsoleModelLinux:Make">
         <MSBuild Projects="Console - Model Linux\ProviderConsoleModelLinux.dproj" Targets="Make"/>
     </Target>
+    <Target Name="ProviderMattermostWebHook">
+        <MSBuild Projects="MattermostWebHook\ProviderMattermostWebHook.dproj"/>
+    </Target>
+    <Target Name="ProviderMattermostWebHook:Clean">
+        <MSBuild Projects="MattermostWebHook\ProviderMattermostWebHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderMattermostWebHook:Make">
+        <MSBuild Projects="MattermostWebHook\ProviderMattermostWebHook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSlackWebApi">
+        <MSBuild Projects="Slack\WebAPI\ProviderSlackWebApi.dproj"/>
+    </Target>
+    <Target Name="ProviderSlackWebApi:Clean">
+        <MSBuild Projects="Slack\WebAPI\ProviderSlackWebApi.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSlackWebApi:Make">
+        <MSBuild Projects="Slack\WebAPI\ProviderSlackWebApi.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderSlackWebHook">
+        <MSBuild Projects="Slack\WebHook\ProviderSlackWebHook.dproj"/>
+    </Target>
+    <Target Name="ProviderSlackWebHook:Clean">
+        <MSBuild Projects="Slack\WebHook\ProviderSlackWebHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderSlackWebHook:Make">
+        <MSBuild Projects="Slack\WebHook\ProviderSlackWebHook.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ProviderDiscordWebHook">
+        <MSBuild Projects="DiscordWebHook\ProviderDiscordWebHook.dproj"/>
+    </Target>
+    <Target Name="ProviderDiscordWebHook:Clean">
+        <MSBuild Projects="DiscordWebHook\ProviderDiscordWebHook.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ProviderDiscordWebHook:Make">
+        <MSBuild Projects="DiscordWebHook\ProviderDiscordWebHook.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="ProviderAxiom;ProviderConsole;ProviderDatadog;ProviderDatalust;ProviderDiscordHook;ProviderElasticSearch;ProviderEmail;ProviderEventLog;ProviderEvents;ProviderEventsWithDataSet;ProviderEventsWithSQLLite;ProviderFirebaseRealtimeDatabase;ProviderGrafanaLoki;ProviderGrafanaOnCallWebHook;ProviderGraphJSON;ProviderListBox;ProviderListView;ProviderLogflare;ProviderLoggly;ProviderLogtail;ProviderLogz;ProviderMailgunApi;ProviderMailjetApi;ProviderMattermost;ProviderMattermostHook;ProviderMemo;ProviderMemoOnlyError;ProviderMemoTextFile;ProviderMemory;ProviderMongoDBCloud;ProviderNewRelic;ProviderNotification;ProviderNovu;ProviderOutputDebugString;ProviderPaperTrail;ProviderPostmarkApi;ProviderRabbitMQ;ProviderRedis;ProviderREST;ProviderRichEdit;ProviderSematextLogs;ProviderSendEmail;ProviderSendGridWebApi;ProviderSlack;ProviderSocket;ProviderSplunk;ProviderSysLog;ProviderTelegram;ProviderTextFile;DataLoggerTransaction;DataLoggerTransactionAninhada;ProviderTwilioSMS;ProviderTwilioWhatsApp;ProviderCSV;ProviderConsoleSimple;ProviderMezmo;ProviderNtfy;ProviderZAPIWhatsApp;ProviderHTML;ProviderAWSCloudWatch;ProviderSumoLogic;ProviderLogentries;ProviderGraylog;ProviderLogstash;ProviderDynatrace;ProviderCoralogix;ProviderSysLogIndy;ProviderElmah;ProviderCallMeBotWhatsApp;ProviderConsoleModelLinux"/>
+        <CallTarget Targets="ProviderAxiom;ProviderConsole;ProviderDatadog;ProviderDatalust;ProviderElasticSearch;ProviderEmail;ProviderEventLog;ProviderEvents;ProviderEventsWithDataSet;ProviderEventsWithSQLLite;ProviderFirebaseRealtimeDatabase;ProviderGrafanaLoki;ProviderGrafanaOnCallWebHook;ProviderGraphJSON;ProviderListBox;ProviderListView;ProviderLogflare;ProviderLoggly;ProviderLogtail;ProviderLogz;ProviderMailgunApi;ProviderMailjetApi;ProviderMattermost;ProviderMemo;ProviderMemoOnlyError;ProviderMemoTextFile;ProviderMemory;ProviderMongoDBCloud;ProviderNewRelic;ProviderNotification;ProviderNovu;ProviderOutputDebugString;ProviderPaperTrail;ProviderPostmarkApi;ProviderRabbitMQ;ProviderRedis;ProviderREST;ProviderRichEdit;ProviderSematextLogs;ProviderSendEmail;ProviderSendGridWebApi;ProviderSocket;ProviderSplunk;ProviderSysLog;ProviderTelegram;ProviderTextFile;DataLoggerTransaction;DataLoggerTransactionAninhada;ProviderTwilioSMS;ProviderTwilioWhatsApp;ProviderCSV;ProviderConsoleSimple;ProviderMezmo;ProviderNtfy;ProviderZAPIWhatsApp;ProviderHTML;ProviderAWSCloudWatch;ProviderSumoLogic;ProviderLogentries;ProviderGraylog;ProviderLogstash;ProviderDynatrace;ProviderCoralogix;ProviderSysLogIndy;ProviderElmah;ProviderCallMeBotWhatsApp;ProviderConsoleModelLinux;ProviderMattermostWebHook;ProviderSlackWebApi;ProviderSlackWebHook;ProviderDiscordWebHook"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="ProviderAxiom:Clean;ProviderConsole:Clean;ProviderDatadog:Clean;ProviderDatalust:Clean;ProviderDiscordHook:Clean;ProviderElasticSearch:Clean;ProviderEmail:Clean;ProviderEventLog:Clean;ProviderEvents:Clean;ProviderEventsWithDataSet:Clean;ProviderEventsWithSQLLite:Clean;ProviderFirebaseRealtimeDatabase:Clean;ProviderGrafanaLoki:Clean;ProviderGrafanaOnCallWebHook:Clean;ProviderGraphJSON:Clean;ProviderListBox:Clean;ProviderListView:Clean;ProviderLogflare:Clean;ProviderLoggly:Clean;ProviderLogtail:Clean;ProviderLogz:Clean;ProviderMailgunApi:Clean;ProviderMailjetApi:Clean;ProviderMattermost:Clean;ProviderMattermostHook:Clean;ProviderMemo:Clean;ProviderMemoOnlyError:Clean;ProviderMemoTextFile:Clean;ProviderMemory:Clean;ProviderMongoDBCloud:Clean;ProviderNewRelic:Clean;ProviderNotification:Clean;ProviderNovu:Clean;ProviderOutputDebugString:Clean;ProviderPaperTrail:Clean;ProviderPostmarkApi:Clean;ProviderRabbitMQ:Clean;ProviderRedis:Clean;ProviderREST:Clean;ProviderRichEdit:Clean;ProviderSematextLogs:Clean;ProviderSendEmail:Clean;ProviderSendGridWebApi:Clean;ProviderSlack:Clean;ProviderSocket:Clean;ProviderSplunk:Clean;ProviderSysLog:Clean;ProviderTelegram:Clean;ProviderTextFile:Clean;DataLoggerTransaction:Clean;DataLoggerTransactionAninhada:Clean;ProviderTwilioSMS:Clean;ProviderTwilioWhatsApp:Clean;ProviderCSV:Clean;ProviderConsoleSimple:Clean;ProviderMezmo:Clean;ProviderNtfy:Clean;ProviderZAPIWhatsApp:Clean;ProviderHTML:Clean;ProviderAWSCloudWatch:Clean;ProviderSumoLogic:Clean;ProviderLogentries:Clean;ProviderGraylog:Clean;ProviderLogstash:Clean;ProviderDynatrace:Clean;ProviderCoralogix:Clean;ProviderSysLogIndy:Clean;ProviderElmah:Clean;ProviderCallMeBotWhatsApp:Clean;ProviderConsoleModelLinux:Clean"/>
+        <CallTarget Targets="ProviderAxiom:Clean;ProviderConsole:Clean;ProviderDatadog:Clean;ProviderDatalust:Clean;ProviderElasticSearch:Clean;ProviderEmail:Clean;ProviderEventLog:Clean;ProviderEvents:Clean;ProviderEventsWithDataSet:Clean;ProviderEventsWithSQLLite:Clean;ProviderFirebaseRealtimeDatabase:Clean;ProviderGrafanaLoki:Clean;ProviderGrafanaOnCallWebHook:Clean;ProviderGraphJSON:Clean;ProviderListBox:Clean;ProviderListView:Clean;ProviderLogflare:Clean;ProviderLoggly:Clean;ProviderLogtail:Clean;ProviderLogz:Clean;ProviderMailgunApi:Clean;ProviderMailjetApi:Clean;ProviderMattermost:Clean;ProviderMemo:Clean;ProviderMemoOnlyError:Clean;ProviderMemoTextFile:Clean;ProviderMemory:Clean;ProviderMongoDBCloud:Clean;ProviderNewRelic:Clean;ProviderNotification:Clean;ProviderNovu:Clean;ProviderOutputDebugString:Clean;ProviderPaperTrail:Clean;ProviderPostmarkApi:Clean;ProviderRabbitMQ:Clean;ProviderRedis:Clean;ProviderREST:Clean;ProviderRichEdit:Clean;ProviderSematextLogs:Clean;ProviderSendEmail:Clean;ProviderSendGridWebApi:Clean;ProviderSocket:Clean;ProviderSplunk:Clean;ProviderSysLog:Clean;ProviderTelegram:Clean;ProviderTextFile:Clean;DataLoggerTransaction:Clean;DataLoggerTransactionAninhada:Clean;ProviderTwilioSMS:Clean;ProviderTwilioWhatsApp:Clean;ProviderCSV:Clean;ProviderConsoleSimple:Clean;ProviderMezmo:Clean;ProviderNtfy:Clean;ProviderZAPIWhatsApp:Clean;ProviderHTML:Clean;ProviderAWSCloudWatch:Clean;ProviderSumoLogic:Clean;ProviderLogentries:Clean;ProviderGraylog:Clean;ProviderLogstash:Clean;ProviderDynatrace:Clean;ProviderCoralogix:Clean;ProviderSysLogIndy:Clean;ProviderElmah:Clean;ProviderCallMeBotWhatsApp:Clean;ProviderConsoleModelLinux:Clean;ProviderMattermostWebHook:Clean;ProviderSlackWebApi:Clean;ProviderSlackWebHook:Clean;ProviderDiscordWebHook:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="ProviderAxiom:Make;ProviderConsole:Make;ProviderDatadog:Make;ProviderDatalust:Make;ProviderDiscordHook:Make;ProviderElasticSearch:Make;ProviderEmail:Make;ProviderEventLog:Make;ProviderEvents:Make;ProviderEventsWithDataSet:Make;ProviderEventsWithSQLLite:Make;ProviderFirebaseRealtimeDatabase:Make;ProviderGrafanaLoki:Make;ProviderGrafanaOnCallWebHook:Make;ProviderGraphJSON:Make;ProviderListBox:Make;ProviderListView:Make;ProviderLogflare:Make;ProviderLoggly:Make;ProviderLogtail:Make;ProviderLogz:Make;ProviderMailgunApi:Make;ProviderMailjetApi:Make;ProviderMattermost:Make;ProviderMattermostHook:Make;ProviderMemo:Make;ProviderMemoOnlyError:Make;ProviderMemoTextFile:Make;ProviderMemory:Make;ProviderMongoDBCloud:Make;ProviderNewRelic:Make;ProviderNotification:Make;ProviderNovu:Make;ProviderOutputDebugString:Make;ProviderPaperTrail:Make;ProviderPostmarkApi:Make;ProviderRabbitMQ:Make;ProviderRedis:Make;ProviderREST:Make;ProviderRichEdit:Make;ProviderSematextLogs:Make;ProviderSendEmail:Make;ProviderSendGridWebApi:Make;ProviderSlack:Make;ProviderSocket:Make;ProviderSplunk:Make;ProviderSysLog:Make;ProviderTelegram:Make;ProviderTextFile:Make;DataLoggerTransaction:Make;DataLoggerTransactionAninhada:Make;ProviderTwilioSMS:Make;ProviderTwilioWhatsApp:Make;ProviderCSV:Make;ProviderConsoleSimple:Make;ProviderMezmo:Make;ProviderNtfy:Make;ProviderZAPIWhatsApp:Make;ProviderHTML:Make;ProviderAWSCloudWatch:Make;ProviderSumoLogic:Make;ProviderLogentries:Make;ProviderGraylog:Make;ProviderLogstash:Make;ProviderDynatrace:Make;ProviderCoralogix:Make;ProviderSysLogIndy:Make;ProviderElmah:Make;ProviderCallMeBotWhatsApp:Make;ProviderConsoleModelLinux:Make"/>
+        <CallTarget Targets="ProviderAxiom:Make;ProviderConsole:Make;ProviderDatadog:Make;ProviderDatalust:Make;ProviderElasticSearch:Make;ProviderEmail:Make;ProviderEventLog:Make;ProviderEvents:Make;ProviderEventsWithDataSet:Make;ProviderEventsWithSQLLite:Make;ProviderFirebaseRealtimeDatabase:Make;ProviderGrafanaLoki:Make;ProviderGrafanaOnCallWebHook:Make;ProviderGraphJSON:Make;ProviderListBox:Make;ProviderListView:Make;ProviderLogflare:Make;ProviderLoggly:Make;ProviderLogtail:Make;ProviderLogz:Make;ProviderMailgunApi:Make;ProviderMailjetApi:Make;ProviderMattermost:Make;ProviderMemo:Make;ProviderMemoOnlyError:Make;ProviderMemoTextFile:Make;ProviderMemory:Make;ProviderMongoDBCloud:Make;ProviderNewRelic:Make;ProviderNotification:Make;ProviderNovu:Make;ProviderOutputDebugString:Make;ProviderPaperTrail:Make;ProviderPostmarkApi:Make;ProviderRabbitMQ:Make;ProviderRedis:Make;ProviderREST:Make;ProviderRichEdit:Make;ProviderSematextLogs:Make;ProviderSendEmail:Make;ProviderSendGridWebApi:Make;ProviderSocket:Make;ProviderSplunk:Make;ProviderSysLog:Make;ProviderTelegram:Make;ProviderTextFile:Make;DataLoggerTransaction:Make;DataLoggerTransactionAninhada:Make;ProviderTwilioSMS:Make;ProviderTwilioWhatsApp:Make;ProviderCSV:Make;ProviderConsoleSimple:Make;ProviderMezmo:Make;ProviderNtfy:Make;ProviderZAPIWhatsApp:Make;ProviderHTML:Make;ProviderAWSCloudWatch:Make;ProviderSumoLogic:Make;ProviderLogentries:Make;ProviderGraylog:Make;ProviderLogstash:Make;ProviderDynatrace:Make;ProviderCoralogix:Make;ProviderSysLogIndy:Make;ProviderElmah:Make;ProviderCallMeBotWhatsApp:Make;ProviderConsoleModelLinux:Make;ProviderMattermostWebHook:Make;ProviderSlackWebApi:Make;ProviderSlackWebHook:Make;ProviderDiscordWebHook:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
