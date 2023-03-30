@@ -34,6 +34,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Linux64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Linux64)'!=''">
+        <Cfg_2_Linux64>true</Cfg_2_Linux64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
         <Cfg_2_Win32>true</Cfg_2_Win32>
         <CfgParent>Cfg_2</CfgParent>
@@ -56,7 +62,7 @@
         <DCC_UnitSearchPath>modules\.dcp;modules\.dcu;modules;modules\delphiredisclient\samples\02JobQueue;modules\delphiredisclient\samples\03PubSub;modules\delphiredisclient\samples\04Streams;modules\delphiredisclient\samples\10CacheForClientServerSystems;modules\delphiredisclient\samples\99FireMonkeySample;modules\delphiredisclient\samples\Commons;modules\delphiredisclient\sources;modules\delphiredisclient\tests;modules\delphistompclient;modules\delphistompclient\examples\Chat\ChatClient;modules\delphistompclient\examples\Chat\ChatClientD2007;modules\delphistompclient\examples\Chat\ChatClientLazarus;modules\delphistompclient\examples\Multiple;modules\delphistompclient\examples\QueueAck\Receiver;modules\delphistompclient\examples\QueueAck\SendMessage;modules\delphistompclient\packages\lazarus;modules\delphistompclient\test;modules\delphistompclient\testLazarus;modules\delphistompclient\unittest;modules\sendemail\samples\Model 1;modules\sendemail\src;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1046</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <RuntimeOnlyPackage>true</RuntimeOnlyPackage>
+        <DCC_OutputNeverBuildDcps>true</DCC_OutputNeverBuildDcps>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -84,6 +90,10 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Linux64)'!=''">
+        <Debugger_Launcher>/usr/bin/gnome-terminal -- &quot;%debuggee%&quot;</Debugger_Launcher>
+        <DCC_Description>DataLogger</DCC_Description>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -97,14 +107,9 @@
         <DCCReference Include="IndySystem.dcp"/>
         <DCCReference Include="IndyProtocols.dcp"/>
         <DCCReference Include="IndyCore.dcp"/>
-        <DCCReference Include="RESTComponents.dcp"/>
+        <DCCReference Include="fmx.dcp"/>
         <DCCReference Include="vcl.dcp"/>
-        <DCCReference Include="src\Core\DataLogger.pas"/>
-        <DCCReference Include="src\Core\DataLogger.Provider.pas"/>
-        <DCCReference Include="src\Core\DataLogger.Simple.pas"/>
-        <DCCReference Include="src\Core\DataLogger.Transaction.pas"/>
-        <DCCReference Include="src\Core\DataLogger.Types.pas"/>
-        <DCCReference Include="src\Core\DataLogger.Utils.pas"/>
+        <DCCReference Include="RESTComponents.dcp"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.AWS.CloudWatch.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Axiom.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.CallMeBot.WhatsApp.pas"/>
@@ -113,7 +118,7 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.CSV.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Datadog.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Datalust.pas"/>
-        <DCCReference Include="src\Providers\DataLogger.Provider.Discord.Hooks.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Discord.WebHooks.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Dynatrace.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.ElasticSearch.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Elmah.pas"/>
@@ -136,8 +141,8 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.Logz.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Mailgun.Api.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Mailjet.Api.pas"/>
-        <DCCReference Include="src\Providers\DataLogger.Provider.Mattermost.Hooks.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Mattermost.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Mattermost.WebHooks.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Memo.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Memory.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Mezmo.pas"/>
@@ -156,9 +161,12 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.REST.NetHTTPClient.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.RichEdit.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Sematext.Logs.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.SendChamp.SMS.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.SendChamp.WhatsApp.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SendEmail.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SendGrid.WebApi.pas"/>
-        <DCCReference Include="src\Providers\DataLogger.Provider.Slack.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Slack.WebApi.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.Slack.WebHook.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Socket.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Splunk.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.SumoLogic.pas"/>
@@ -168,7 +176,15 @@
         <DCCReference Include="src\Providers\DataLogger.Provider.TextFile.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Twilio.SMS.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.Twilio.WhatsApp.pas"/>
+        <DCCReference Include="src\Providers\DataLogger.Provider.UltraMSG.WhatsApp.pas"/>
         <DCCReference Include="src\Providers\DataLogger.Provider.ZAPI.WhatsApp.pas"/>
+        <DCCReference Include="src\Core\DataLogger.pas"/>
+        <DCCReference Include="src\Core\DataLogger.Provider.pas"/>
+        <DCCReference Include="src\Core\DataLogger.SerializeItem.pas"/>
+        <DCCReference Include="src\Core\DataLogger.Simple.pas"/>
+        <DCCReference Include="src\Core\DataLogger.Transaction.pas"/>
+        <DCCReference Include="src\Core\DataLogger.Types.pas"/>
+        <DCCReference Include="src\Core\DataLogger.Utils.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -190,6 +206,8 @@
                     <Source Name="MainSource">DataLogger.dpk</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k280.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp280.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>

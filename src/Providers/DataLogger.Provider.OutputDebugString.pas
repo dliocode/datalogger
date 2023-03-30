@@ -36,7 +36,9 @@ interface
 
 uses
   DataLogger.Provider, DataLogger.Types,
+{$IF NOT DEFINED(LINUX)}
   FMX.Types,
+{$ENDIF}
 {$IF DEFINED(ANDROID)}
   Androidapi.Log,
 {$ELSEIF DEFINED(IOS)}
@@ -185,37 +187,39 @@ var
   M: TMarshaller;
 {$ENDIF}
 begin
-{$IF DEFINED(ANDROID)}
-  if FTag.Trim.IsEmpty then
-    FTag := 'DataLogger';
+{$IF NOT DEFINED(LINUX)}
+  {$IF DEFINED(ANDROID)}
+    if FTag.Trim.IsEmpty then
+      FTag := 'DataLogger';
 
-  LTag := M.AsUtf8(FTag).ToPointer;
-  LMessage := M.AsUtf8(ALog).ToPointer;
+    LTag := M.AsUtf8(FTag).ToPointer;
+    LMessage := M.AsUtf8(ALog).ToPointer;
 
-  case ALevel of
-    TLoggerLevel.Trace:
-      __android_log_write(ANDROID_LOG_VERBOSE, LTag, LMessage);
+    case ALevel of
+      TLoggerLevel.Trace:
+        __android_log_write(ANDROID_LOG_VERBOSE, LTag, LMessage);
 
-    TLoggerLevel.Debug:
-      __android_log_write(ANDROID_LOG_DEBUG, LTag, LMessage);
+      TLoggerLevel.Debug:
+        __android_log_write(ANDROID_LOG_DEBUG, LTag, LMessage);
 
-    TLoggerLevel.Info, TLoggerLevel.Success, TLoggerLevel.Custom:
-      __android_log_write(ANDROID_LOG_INFO, LTag, LMessage);
+      TLoggerLevel.Info, TLoggerLevel.Success, TLoggerLevel.Custom:
+        __android_log_write(ANDROID_LOG_INFO, LTag, LMessage);
 
-    TLoggerLevel.Warn:
-      __android_log_write(ANDROID_LOG_WARN, LTag, LMessage);
+      TLoggerLevel.Warn:
+        __android_log_write(ANDROID_LOG_WARN, LTag, LMessage);
 
-    TLoggerLevel.Error:
-      __android_log_write(ANDROID_LOG_ERROR, LTag, LMessage);
+      TLoggerLevel.Error:
+        __android_log_write(ANDROID_LOG_ERROR, LTag, LMessage);
 
-    TLoggerLevel.Fatal:
-      __android_log_write(ANDROID_LOG_FATAL, LTag, LMessage);
-  end;
-{$ELSE}
-  if FTag.Trim.IsEmpty then
-    Log.d(ALog)
-  else
-    Log.d(Format('%s: %s', [FTag, ALog]));
+      TLoggerLevel.Fatal:
+        __android_log_write(ANDROID_LOG_FATAL, LTag, LMessage);
+    end;
+  {$ELSE}
+    if FTag.Trim.IsEmpty then
+      Log.d(ALog)
+    else
+      Log.d(Format('%s: %s', [FTag, ALog]));
+  {$ENDIF}
 {$ENDIF}
 end;
 
