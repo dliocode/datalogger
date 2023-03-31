@@ -922,10 +922,10 @@ A ativação do uso da _Transaction_ deve ser feita por _Provider_ com a funçã
 Ex:
 
 ```delphi
-  	Logger.AddProvider(
-      TProviderConsole.Create
-      .UseTransaction(True) // Ativa a transaction somente neste provider
-    );
+Logger.AddProvider(
+  TProviderConsole.Create
+  .UseTransaction(True) // Enable transaction only on this provider
+);
 ```
 
 ### StartTransaction
