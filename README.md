@@ -16,8 +16,7 @@
   <p align="center">
     |
     <a href="https://github.com/dliocode/datalogger/blob/v3/README.md">Português Brasileiro</a> |  
-    <a href="https://github.com/dliocode/datalogger/blob/v3/README.en-US.md">English</a> |
-    <a href="https://github.com/dliocode/datalogger/blob/v3/README.es-ES.md">Español</a> 
+    <a href="https://github.com/dliocode/datalogger/blob/v3/README.en-US.md">English</a> 
     |
   </p>
 
