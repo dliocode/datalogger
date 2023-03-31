@@ -12,13 +12,20 @@
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=red&category=lines">
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=green&category=code">
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=yellow&category=files">
+ 
+  <p align="center">
+    |
+    <a href="https://github.com/dliocode/datalogger/blob/v3/README.md">Português Brasileiro</a> |  
+    <a href="https://github.com/dliocode/datalogger/blob/v3/README.en-US.md">English</a> |
+    <a href="https://github.com/dliocode/datalogger/blob/v3/README.es-ES.md">Español</a> 
+    |
+  </p>
+
 </p>
 
 # DataLogger
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
-
-To see this read-me file in English, please click here: [README](https://github.com/dliocode/datalogger/blob/main/README_eng.md)
 
 Support: developer.dlio@gmail.com
 
