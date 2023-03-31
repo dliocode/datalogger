@@ -16,47 +16,47 @@
 
 # DataLogger
 
-DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
+DataLogger was designed to be a simple logging library with support for multiple _providers_.
 
-To see this read-me file in English, please click here: [README](https://github.com/dliocode/datalogger/blob/main/README_eng.md)
+Para ver este arquivo leia-me em português, por favor clique aqui: [README](https://github.com/dliocode/datalogger/blob/main/README.md)
 
 Support: developer.dlio@gmail.com
 
-## ⚙️ Instalação
+## ⚙️ Installation
 
-### Para instalar em seu projeto usando [boss](https://github.com/HashLoad/boss):
+### To install into your project using [boss](https://github.com/HashLoad/boss):
 
 ```sh
 $ boss install github.com/dliocode/datalogger
 ```
 
-### Instalação Manual
+### Manual Installation
 
-Adicione as seguintes pastas ao seu projeto, em _Project > Options > Delphi Compiler > Search path_
+Add the following folders to your project, under _Project > Options > Delphi Compiler > Search path_
 
 ```
-../src/Core
+../src/core
 ../src/Providers
 ```
 
-## 📌 Índice
+## 📌 Index
 
-- [Como usar](#como-usar)
+- [How to use](#how-to-use)
 - [Providers](#providers)
-- [Dependências](#dependências)
-- [Informações Extras](#informações-extras)
-- [Exemplos](#exemplos)
-  - [Uso Padrão](#uso-padrão)
-  - [Criar uma nova instância do DataLogger](#criar-uma-nova-instância-do-datalogger)
+- [Dependencies](#dependencies)
+- [Extra Information](#extra-information)
+- [Examples](#examples)
+  - [Default Usage](#Default Usage)
+  - [Create a new instance of DataLogger](#create-a-new-instance-of-datalogger)
   - [DataLogger Simple](#datalogger-simple)
   - [Custom](#custom)
-  - [Chamadas Especiais](#chamadas-especiais)
+  - [Special](#special)
     - [SlineBreak](#slinebreak)
     - [UndoLast](#undolast)
-  - [Template (Formato do Log)](#template-formato-do-log)
-    - [Template Constantes](#template-constantes)
+  - [Template (Log Format)](#template-log-format)
+    - [Template Constants](#template-constants)
   - [SetTemplate](#settemplate)
-    - [Como definir um template em providers específicos](#como-definir-um-template-em-providers-específicos)
+    - [How to define a template in specific providers](#how-to-define-a-template-in-specific-providers)
   - [SetFormatTimestamp](#setformattimestamp)
   - [Level](#level)
   - [SetLevelName](#setlevelname)
@@ -70,29 +70,29 @@ Adicione as seguintes pastas ao seu projeto, em _Project > Options > Delphi Comp
   - [SetLiveMode](#setlivemode)
   - [Transaction](#transaction)
 
-## Como usar
+## How to use
 
-Existem duas maneiras diferentes de usar o DataLogger:
-Diretamente pelo `Logger` ou instanciando seu próprio `TDataLogger`.
+There are two different ways to use DataLogger:
+Directly through `Logger` or instantiating your own `TDataLogger`.
 
 [Samples](https://github.com/dliocode/datalogger/tree/main/Samples)
 
-O primeiro destina-se apenas a ser um log compartilhado conveniente para ser usado em todo o seu aplicativo, se você escolher.
+The first is just intended to be a convenient shared log to use across your application if you choose.
 
-- **Uses necessária**:
+- **Uses required**:
 
 ```
-uses DataLogger;
+use DataLogger;
 ```
 
-## Providers
+## providers
 
-Um **_provider_** serve essencialmente para armazenar seus logs.
-Cada instância de um TDataLogger pode ter vários **_providers_** configurados.
+A **_provider_** is essentially for storing your logs.
+Each instance of a TDataLogger can have several **_providers_** configured.
 
-Aqui temos uma lista com **60 _providers_** disponíveis:
+Here is a list of **60 _providers_** available:
 
-| Nome                                                             | Uses                                                                                                               | Samples                                                                                                                                                                                                                                                                                                         |
+| Name                                                             | Uses                                                                                                               | Samples                                                                                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [AWS CloudWatch](https://aws.amazon.com/cloudwatch)              | DataLogger.Provider.AWS.CloudWatch                                                                                 | [AWS CloudWatch](https://github.com/dliocode/datalogger/tree/main/Samples/AWSCloudWatch)                                                                                                                                                                                                                        |
 | [Axiom](https://axiom.co/)                                       | DataLogger.Provider.Axiom                                                                                          | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom)                                                                                                                                                                                                                                         |
@@ -155,9 +155,9 @@ Aqui temos uma lista com **60 _providers_** disponíveis:
 | [Twilio](https://www.twilio.com/)                                | DataLogger.Provider.Twilio.SMS<br />DataLogger.Provider.Twilio.WhatsApp                                            | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio)                                                                                                                                                                                                                                       |
 | [Z-API](https://z-api.io/)                                       | DataLogger.Provider.ZAPI.WhatsApp                                                                                  | [ZAP-API](https://github.com/dliocode/datalogger/tree/main/Samples/ZAPI)                                                                                                                                                                                                                                        |
 
-## Dependências
+## Dependencies
 
-Essas dependências se dá quando utilizado alguns _providers_
+These dependencies occur when using some _providers_
 
 | Provider                      | Dependence                                                   |
 | ----------------------------- | ------------------------------------------------------------ |
@@ -165,25 +165,25 @@ Essas dependências se dá quando utilizado alguns _providers_
 | DataLogger.Provider.Redis     | [Redis](https://github.com/danieleteti/delphiredisclient)    |
 | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/sendemail)           |
 
-## Informações Extras
+## Extra Information
 
-### Plataforma Android:
+### Android Platform:
 
-É necessário a permissão **ACCESS_WIFI_STATE**: Utilizado para capturar o MAC Address do dispositivo.
+**ACCESS_WIFI_STATE** permission is required: Used to capture the MAC Address of the device.
 
-## Exemplos
+## Examples
 
-### Uso Padrão
+### Default Usage
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  Logger
+  logger
     .Trace('My Trace')
     .Debug('My Debug')
     .Info('My Info')
@@ -196,7 +196,7 @@ begin
 
   // or
 
-  Logger
+  logger
     .T('My Trace')
     .D('My Debug')
     .I('My Info')
@@ -212,10 +212,10 @@ begin
 end.
 ```
 
-### Criar uma nova instância do DataLogger
+### Create a new DataLogger instance
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
@@ -241,19 +241,19 @@ end.
 ### DataLogger Simple
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Simple,
   DataLogger.Provider.Console;
 
 begin
-  // Defini o provider
+  // Define the provider
   Logger.AddProvider(TProviderConsole.Create);
 
-  //Defini no DataloggerSimple a instância do log a ser utilizado
+  //Define in DataloggerSimple the log instance to be used
   TDataLoggerSimple.SetDataLogger(Logger);
 
-  // Só usar o modo simples;
+  // Only use simple mode;
   Trace('My message Trace');
   Debug('My message debug');
   Info('My message info');
@@ -270,10 +270,10 @@ end.
 
 ## Custom
 
-O _Custom_ é a forma de definir um nome para o seu próprio _level_.
+_Custom_ is the way to define a name for your own _level_.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
@@ -289,41 +289,41 @@ begin
 end.
 ```
 
-## Especiais
+## Special
 
-Funções que operam em alguns providers.
+functions that operate in some providers.
 
 ```delphi
-  // Pula uma linha
+  // Skip a line
   Logger.SlineBreak;
 
-  // Desfaz o último log registrado
+  // Undo the last recorded log
   Logger.UndoLast;
 ```
 
 ### SlineBreak
 
-A função `SlineBreak` utilizando para fazer a quebra de linha.
+The `SlineBreak` function used to break a line.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
   Logger.SlineBreak;
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message in the Log type ERROR');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05.500 [INFO] My log message of type INFO
   // Output:
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -331,185 +331,185 @@ end.
 
 ### UndoLast
 
-A função `UndoLast` utilizando para desfazer o último registro realizado.
+The `UndoLast` function used to undo the last record made.
 
-- Alguns _Providers_ não possuem algum recurso que permite desfazer o último registro enviado.
+- Some _Providers_ do not have some feature that allows you to undo the last record sent.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05.500 [INFO] My log message of type INFO
 
   Sleep(4000);
   Logger.UndoLast;
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message in the Log type ERROR');
 
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
 ```
 
-## Template (Formato do Log)
+## Template (Log Format)
 
-O template é o formato que será gerado o log.
+The template is the format in which the log will be generated.
 
-template padrão:
+default template:
 
 ```delphi
 ${timestamp} [TID ${thread_id}] [PID ${process_id}] [SEQ ${sequence}] [${level}] [${tag}] ${message}
 ```
 
-### Template Constantes
+### Template Constants
 
-Existem algumas constantes que podem ser utilizadas para facilitar a criação do template.
+There are some constants that can be used to facilitate the creation of the template.
 
-- Comum
+- Common
 
 ```delphi
-// Exibe o id que foi gerado o log, no formato GUID
+// Displays the id that generated the log, in GUID format
 TLoggerTemplate.LOG_ID = '${id}';
 
-// Exibe o nome do log. ex: Logger.SetName('SERVICE_REMOTE')
+// Displays the name of the log. ex: Logger.SetName('SERVICE_REMOTE')
 TLoggerTemplate.LOG_NAME = '${name}';
 
-// Exibe a sequencia que o log foi gerado.
+// Displays the sequence that the log was generated.
 TLoggerTemplate.LOG_SEQUENCE = '${sequence}';
 
-// Exibe a data e hora que foi gerado, usado o SetFormatTimestamp
+// Displays the generated date and time, using SetFormatTimestamp
 TLoggerTemplate.LOG_TIMESTAMP = '${timestamp}';
 
-// Exibe a data e hora que foi gerado, no formato ISO8601.
+// Displays the date and time it was generated, in ISO8601 format.
 TLoggerTemplate.LOG_TIMESTAMP_ISO8601 = '${timestamp_iso8601}';
 
-// Exibe a data e hora que foi gerado, no formato UNIX.
+// Displays the date and time it was generated, in UNIX format.
 TLoggerTemplate.LOG_TIMESTAMP_UNIX = '${timestamp_unix}';
 
-// Exibe o Id da thread que foi gerado o log.
+// Displays the ID of the thread that generated the log.
 TLoggerTemplate.LOG_THREADID = '${thread_id}';
 
-// Exibe o id do processo do app.
+// Displays the process id of the app.
 TLoggerTemplate.LOG_PROCESSID = '${process_id}';
 
-// Exibe o level do log, sendo eles: TRACE / DEBUG / INFO / SUCCESS / WARN / ERROR / FATAL
+// Displays the log level, namely: TRACE / DEBUG / INFO / SUCCESS / WARN / ERROR / FATAL
 TLoggerTemplate.LOG_LEVEL = '${level}';
 
-// Exibe o level do log no formato numérico, sendo eles: 1=TRACE / 2=DEBUG / 3=INFO / 4=SUCCESS / 5=WARN / 6=ERROR / 7=FATAL / 8=CUSTOM
+// Displays the log level in numerical format, as follows: 1=TRACE / 2=DEBUG / 3=INFO / 4=SUCCESS / 5=WARN / 6=ERROR / 7=FATAL / 8=CUSTOM
 TLoggerTemplate.LOG_LEVEL_VALUE = '${level_value}';
 
-// Exibe a tag do log, essa informação é preenchida a após a mensagem; Ex: Logger.Debug('Minha mensagem','Minha Tag');
+// Displays the log tag, this information is filled in after the message; Ex: Logger.Debug('My Message','My Tag');
 TLoggerTemplate.LOG_TAG = '${tag}';
 
-// Exibe a mensagem do log, sem essa tag a mensagem não é exibida. Ex: Logger.Debug('Minha mensagem');
+// Displays the log message, without this tag the message is not displayed. Ex: Logger.Debug('My message');
 TLoggerTemplate.LOG_MESSAGE = '${message}';
 ```
 
-- Especiais:
+- Specials:
 
 ```delphi
-// Exibe o nome do app.
+// Displays the name of the app.
 TLoggerTemplate.LOG_APPNAME = '${app_name}';
 
-// Exibe o diretório do app.
+// Displays the app's directory.
 TLoggerTemplate.LOG_APPPATH = '${app_path}';
 
-// Exibe a versão do app.
+// Displays the version of the app.
 TLoggerTemplate.LOG_APPVERSION = '${app_version}';
 
-// Exibe o tamanho do app em MB.
+// Displays app size in MB.
 TLoggerTemplate.LOG_APPSIZE = '${app_size}';
 
-// Exibe o nome do computador.
+// Displays the computer name.
 TLoggerTemplate.LOG_COMPUTERNAME = '${computer_name}';
 
-// Exibe o nome do usuário do Sistema Operacional.
+// Displays the Operating System username.
 TLoggerTemplate.LOG_USERNAME = '${username}';
 
-// Exibe as informações do Sistema Operacional.
+// Displays Operating System information.
 TLoggerTemplate.LOG_OSVERSION = '${os_version}';
 
-// Exibe o IP Local.
+// Display the Local IP.
 TLoggerTemplate.LOG_IP_LOCAL = '${ip_local}';
 
-// Exibe o MAC Address.
+// Displays the MAC Address.
 TLoggerTemplate.LOG_MAC_ADDRESS = '${mac_address}';
 
 ```
 
 ## SetTemplate
 
-Define o formato que será registrado o log
+Defines the format in which the log will be recorded
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o template com constante
+  // Defining the template with constant
   Logger.SetTemplate(Format('%s [%s] %s', [TLoggerTemplate.LOG_TIMESTAMP, TLoggerTemplate.LOG_LEVEL, LoggerTemplate.LOG_MESSAGE]));
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
+  Logger.Error('My message in the Log type ERROR');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.500 [INFO] My log message of type INFO
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
 ```
 
-### Como definir um template em _providers_ específicos
+### How to define a template on specific _providers_
 
-- É possível definir várias configurações específicas em cada _provider_ separado.
+- It is possible to define several specific settings in each separate _provider_.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console,
   DataLogger.Provider.TextFile;
 
 begin
-  // Formato do console '${timestamp} [${level}] ${message}'
+  // Console format '${timestamp} [${level}] ${message}'
   Logger.AddProvider(
     TProviderConsole.Create
     .SetTemplate('${timestamp} [${level}] ${message}')
   );
 
-  // Formato do text file '${timestamp} - ${message}'
+  // Format of text file '${timestamp} - ${message}'
   Logger.AddProvider(
     TProviderTextFile.Create
     .SetTemplate('${timestamp} - ${message}')
   );
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
+  Logger.Error('My message in the Log type ERROR');
 
   // Output Console:
-  // 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 [INFO] My log message of type INFO
+  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   // Output TextFile:
-  // 2022-12-01 09:00:05.500 - Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 - My message in the Log of type INFO
+  // 2022-12-01 09:00:05.600 - My message in the Log of type ERROR
 
   Readln;
 end.
@@ -517,33 +517,33 @@ end.
 
 ## SetFormatTimestamp
 
-Muda o formato do TimeStamp.
+Changes the format of the TimeStamp.
 
-- Formato de TimeStamp padrão: `yyyy-mm-dd hh:mm:ss.zzz`
+- Default TimeStamp format: `yyyy-mm-dd hh:mm:ss.zzz`
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o formato do Timestamp
+  // Defining the timestamp format
   Logger.SetFormatTimestamp('dd/mm/yyyy hh:mm:ss')
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o template com constante
+  // Defining the template with constant
   Logger.SetTemplate(Format('%s [%s] %s', [TLoggerTemplate.LOG_TIMESTAMP, TLoggerTemplate.LOG_LEVEL, LoggerTemplate.LOG_MESSAGE]));
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
+  Logger.Error('My message in the Log type ERROR');
 
-  // Output: 01/12/2022 09:00:05 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 01/12/2022 09:00:05 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 12/01/2022 09:00:05 [INFO] My log message of type INFO
+  // Output: 12/01/2022 09:00:05 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -551,7 +551,7 @@ end.
 
 ## Level
 
-O DataLogger possui estes levels para gerar os _logs_:
+DataLogger has these levels to generate _logs_:
 
 ```delphi
   Logger.Trace('');
@@ -563,7 +563,7 @@ O DataLogger possui estes levels para gerar os _logs_:
   Logger.Fatal('');
   Logger.Custom('');
 
-  // Modo simplificado
+  // simplified mode
   Logger.T(''); // TRACE
   Logger.D(''); // DEBUG
   Logger.I(''); // INFO
@@ -576,29 +576,29 @@ O DataLogger possui estes levels para gerar os _logs_:
 
 ## SetLevelName
 
-É possível mudar a descrição do level para outra descrição.
+It is possible to change the level description to another description.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o Level
+  // Defining the Level
   Logger.SetLevelName(TLoggerLevel.Info, 'INFORMATION');
-  Logger.SetLevelName(TLoggerLevel.Warn, '  WARNING  ');
+  Logger.SetLevelName(TLoggerLevel.Warn, ' WARNING ');
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
+  Logger.Warn('My log message type WARN');
 
-  // Output: 2022-12-01 09:00:05.600 [INFORMATION] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05.600 [  WARNING  ] Minha mensagem no Log do tipo WARN
+  // Output: 2022-12-01 09:00:05.600 [INFORMATION] My log message of type INFO
+  // Output: 2022-12-01 09:00:05.600 [ WARNING ] My log message of type WARN
 
   Readln;
 end.
@@ -606,17 +606,17 @@ end.
 
 ## SetLevel
 
-É possível mostrar somente os _logs_ a partir de um _level_ definido, com base no `TLoggerLevel`.
+It is possible to show only _logs_ from a defined _level_, based on `TLoggerLevel`.
 
-SetLevel valor padrão = `TLoggerLevel.All`
+SetLevel default value = `TLoggerLevel.All`
 
 ### TLoggerLevel
 
-- Quando definido um level, será exibido somente a opção escolhida e seus tipos superiores.
-- Ex: `Logger.SetLevel(TLoggerLevel.Warn);` - Será registrado somente os _logs_ com o tipo `Warn / Error / Fatal / Custom`.
+- When defining a level, only the chosen option and its superior types will be displayed.
+- Ex: `Logger.SetLevel(TLoggerLevel.Warn);` - Only _logs_ with type `Warn / Error / Fatal / Custom` will be registered.
 
 ```delphi
-  TLoggerLevel.All = 'Utilizado para operações internas'
+  TLoggerLevel.All = 'Used for internal operations'
   TLoggerLevel.Trace = 'Level 1'
   TLoggerLevel.Debug = 'Level 2'
   TLoggerLevel.Info = 'Level 3'
@@ -628,24 +628,24 @@ SetLevel valor padrão = `TLoggerLevel.All`
 ```
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o Level
+  // Defining the Level
   Logger.SetLevel(TLoggerLevel.Warn);
 
-  // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Info('My log message of type INFO');
+  Logger.Error('My message in the Log type ERROR');
 
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -653,36 +653,36 @@ end.
 
 ## SetDisableLevel
 
-É possível desabilitar alguns _levels_ do log, com base no `TLoggerLevel`.
+It is possible to disable some _levels_ of logging, based on `TLoggerLevel`.
 
-SetDisableLevel valor padrão = `[]`
+SetDisableLevel default value = `[]`
 
-- Quando desabilitado será exibido somente as opções que não estão desabilitadas.
-- Ex: `Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);` - Será registrado somente os _logs_ com o tipo `Tracer / Debug / Success / Error / Fatal / Custom`.
+- When disabled, only the options that are not disabled will be displayed.
+- Ex: `Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);` - Only _logs_ with type `Tracer / Debug / Success / Error / Fatal / Custom` will be registered.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o DisableLevel
+  // Setting the DisableLevel
   Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);
 
-  // Gerando os logs
-  Logger.Debug('Minha mensagem no Log do tipo DEBUG');
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Debug('My log message of type DEBUG');
+  Logger.Info('My log message of type INFO');
+  Logger.Warn('My log message type WARN');
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.500 [DEBUG] Minha mensagem no Log do tipo DEBUG
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 [DEBUG] My log message of type DEBUG
+  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -690,35 +690,35 @@ end.
 
 ## SetOnlyLevel
 
-É possível mostrar somente alguns _levels_ do log, com base no `TLoggerLevel`.
+It is possible to show only certain _levels_ of the log, based on `TLoggerLevel`.
 
-SetOnlyLevel valor padrão = `[TLoggerLevel.All]`
+SetOnlyLevel default value = `[TLoggerLevel.All]`
 
-- Quando definido será exibido somente as opções registradas.
-- Ex: `Logger.SetOnlyLevel([TLoggerLevel.Error]);` - Será registrado somente os _logs_ com o tipo `Error`.
+- When defined, only registered options will be displayed.
+- Ex: `Logger.SetOnlyLevel([TLoggerLevel.Error]);` - Only _logs_ with type `Error` will be registered.
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o OnlyLevel
+  // Setting the OnlyLevel
   Logger.SetOnlyLevel([TLoggerLevel.Error]);
 
-  // Gerando os logs
-  Logger.Debug('Minha mensagem no Log do tipo DEBUG');
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the logs
+  Logger.Debug('My log message of type DEBUG');
+  Logger.Info('My log message of type INFO');
+  Logger.Warn('My log message type WARN');
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -726,41 +726,41 @@ end.
 
 ## SetLogException
 
-É possível capturar exceções geradas pelos _providers_
+Is it possible to catch exceptions thrown by _providers_
 
-SetLogException valor padrão = `nil`
+SetLogException default value = `nil`
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o LogException
+  // Defining the LogException
   Logger.SetLogException(
     procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer)
     begin
-      // Sender - Provider que gerou a exceção, para visualizar - Sender.ClassName
+      // Sender - Provider that threw the exception, to view - Sender.ClassName
 
-      // LogItem - Contém todas as informações do log
+      // LogItem - Contains all log information
 
-      // E - Contém as informações da exceção
+      // E - Contains the exception information
 
-      // RetriesCount - Contém o número da tentativa realizada
-      // Caso seja alterado o valor para -1, o processo é interrompido
+      // RetriesCount - Contains the number of attempts made
+      // If the value is changed to -1, the process is interrupted
     end
   );
 
-  // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the log
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -768,29 +768,29 @@ end.
 
 ## SetMaxRetries
 
-É possível definir o número de tentativas que o _Provider_ deve tentar ao salvar o log.
+It is possible to set the number of attempts that _Provider_ should try when saving the log.
 
-SetMaxRetries valor padrão = `5`
+SetMaxRetries default value = `5`
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Definindo o máximo de tentativas
+  // Setting the maximum attempts
   Logger.SetMaxRetries(5);
 
-  // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the log
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -798,46 +798,46 @@ end.
 
 ## SetIgnoreTemplate
 
-É possível ignorar o Template e salvar todos os dados gerados pelo DataLogger;
+It is possible to ignore the Template and save all data generated by DataLogger;
 
 ```delphi
   SetIgnoreTemplate({1}, {2}, {3}, {4});
 
-  Parâmetros:
-    {1} = (Boolean) = Defini se deve ignorar o Template.
-    {2} = (string) = Defini qual texto vai fazer a separação das informações, semelhante ao CSV.
-    {3} = (Boolean) = Defini se deve mostrar as palavras chaves de cada valor.
-    {4} = (string) = Defini qual texto deve separar a palavra chave do valor.
+  Parameters:
+    {1} = (Boolean) = Define whether to ignore the Template.
+    {2} = (string) = Define which text will separate the information, similar to CSV.
+    {3} = (Boolean) = Define whether to show the keywords of each value.
+    {4} = (string) = Define which text should separate the keyword from the value.
 
   Logger.SetIgnoreTemplate(True, '|', True, ' -> ');
 
-  {palavra_chave}           = "timestamp"
-  {palavra_chave_separador} = " -> "
-  {valor}                   = "2022-09-15T14:39:38.896-03:00"
-  {separator}               = " | "
+  {keyword} = "timestamp"
+  {separator_keyword} = " -> "
+  {value} = "2022-09-15T14:39:38.896-03:00"
+  {separator} = " | "
 
   // output timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896
 ```
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Ignorando o log format
+  // Ignoring log format
   Logger.SetIgnoreTemplate(True, '|', True, ' -> ');
 
-  // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the log
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name ->  | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag ->  | message -> My Trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
+  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name -> | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag -> | message -> My Trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13.24 MB | computer_name -> DESKTOP-7RP1H3K | username -> daniel | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
 
   Readln;
 end.
@@ -845,29 +845,29 @@ end.
 
 ## SetName
 
-É possível definir um nome para o _DataLogger_ que pode ser exibido no registro do log. Esse nome pode ser utilizado para diferenciar o _DataLogger_ quando a mais de uma instância.
+You can define a name for the _DataLogger_ which can be displayed in the log record. This name can be used to differentiate _DataLogger_ when there are more than one instance.
 
-SetName valor padrão = `EmptyStr`
+SetName default value = `EmptyStr`
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${name} ${timestamp} [${level}] ${message}');
 
-  // Definindo o name
+  // Defining the name
   Logger.SetName('MyLogger');
 
-  // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the log
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -875,31 +875,31 @@ end.
 
 ## SetLiveMode
 
-É possível salvar os logs em tempo real, de forma que a próxima instrução do seu código só vai continuar depois que o log for salvo!
+It is possible to save the logs in real time, so the next statement of your code will only continue after the log is saved!
 
-Atualmente os logs são registrados em memória e depois ele é salvo sem travar a aplicação.
+Currently, the logs are recorded in memory and then saved without crashing the application.
 
-SetLiveMode valor padrão = `false`
+SetLiveMode default value = `false`
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create);
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${name} ${timestamp} [${level}] ${message}');
 
-  // Definindo o LiveMode
+  // Defining the LiveMode
   Logger.SetLiveMode(True);
 
-  // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  // Generating the log
+  Logger.Error('My message in the Log type ERROR');
 
   // Output:
-  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] My log message of type ERROR
 
   Readln;
 end.
@@ -907,123 +907,123 @@ end.
 
 ## Transaction
 
-É possível trabalhar com _Transaction_, da mesma forma que é usado em outros componentes com conexão de banco de dados.
+It is possible to work with _Transaction_, in the same way it is used in other components with database connection.
 
-A utilização deste procedimento pode ser aplicado a seguinte situação;
+The use of this procedure can be applied to the following situation;
 
-Vamos contar uma pequena história:
+Let's tell a little story:
 
-> Temos uma _procedure_ que está fazendo uma execução, em cada etapa é gerado várias informações de log, por costume sempre salvamos essas informações, isso faz com que o nosso arquivo de texto por exemplo fique muito grande demais. <br /> Agora imagina poder salvar os dados somente se houve algum erro durante a execução ou quando necessário realmente salvar os dados.
+> We have a _procedure_ that is executing, in each step a lot of log information is generated, by custom we always save this information, this makes our text file, for example, too big. <br /> Now imagine being able to save the data only if there was an error during execution or when it was really necessary to save the data.
 
-### Como habilitar
+### How to enable
 
-A ativação do uso da _Transaction_ deve ser feita por _Provider_ com a função `UseTransaction(True)`.
+Activating the use of _Transaction_ must be done by _Provider_ with the `UseTransaction(True)` function.
 
 Ex:
 
 ```delphi
   	Logger.AddProvider(
       TProviderConsole.Create
-      .UseTransaction(True) // Ativa a transaction somente neste provider
+      .UseTransaction(True) // Enable transaction only on this provider
     );
 ```
 
 ### StartTransaction
 
-Inicia uma nova transação.
+Starts a new transaction.
 
 ### CommitTransaction
 
-Confirma o registra de todos os logs na transação.
+Commits the recording of all logs in the transaction.
 
 ### RollbackTransaction
 
-Cancela todos os logs gerados na transação.
+Cancels all logs generated in the transaction.
 
-### Exemplo com Transação Simples
+### Example with Simple Transaction
 
-[Sample com Transaction](https://github.com/dliocode/datalogger/tree/main/Samples/Transaction)
+[Sample with Transaction](https://github.com/dliocode/datalogger/tree/main/Samples/Transaction)
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create.UseTransaction(True));
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Iniciando a transaction
+  // Starting the transaction
   Logger.StartTransaction;
 
-  Writeln('Iniciou a transaction');
+  Writeln('Started the transaction');
 
-  // Gerando o log
-  Logger.Info('Minha mensagem no Log do tipo INFO 1 ');
-  Logger.Info('Minha mensagem no Log do tipo INFO 2');
-  Logger.Info('Minha mensagem no Log do tipo INFO 3');
-  Logger.Info('Minha mensagem no Log do tipo INFO 4');
-  Logger.Info('Minha mensagem no Log do tipo INFO 5');
-  Logger.Info('Minha mensagem no Log do tipo INFO 6');
-  Logger.Info('Minha mensagem no Log do tipo INFO 7');
-  Logger.Info('Minha mensagem no Log do tipo INFO 8');
-  Logger.Info('Minha mensagem no Log do tipo INFO 9');
+  // Generating the log
+  Logger.Info('My log message type INFO 1 ');
+  Logger.Info('My log message type INFO 2');
+  Logger.Info('My log message type INFO 3');
+  Logger.Info('My log message type INFO 4');
+  Logger.Info('My log message of type INFO 5');
+  Logger.Info('My log message type INFO 6');
+  Logger.Info('My log message type INFO 7');
+  Logger.Info('My log message type INFO 8');
+  Logger.Info('My log message type INFO 9');
 
-  Writeln('Terminou os Logs');
+  Writeln('Finished Logging');
 
-  // Fazendo o commit
+  // Making the commit
   Logger.CommitTransaction;
-  Writeln('Fez os commits');
+  Writeln('You made the commits');
 
   Readln;
 end.
 ```
 
-### Exemplo com _Transation_ Aninhada
+### Example with _Transation_ Nested
 
-[Sample com Transaction Aninhada](https://github.com/dliocode/datalogger/tree/main/Samples/Transaction%20Aninhada)
+[Sample with Nested Transaction](https://github.com/dliocode/datalogger/tree/main/Samples/Transaction%20Nested)
 
-As _transactions_ aninhadas dá a possibilidade de um gerenciamento maior na hora de salvar as informações.
+Nested _transactions_ give the possibility of greater management when saving information.
 
-- Apenas uma observação deve ser lembrada, só será salvo o registro final se houve _commit_ da transação pai, ou seja, da transação que iniciou todo processo; <br /> Caso a transação pai, tenha feito rollback, as transações filhas que foram feitas _commit_ serão ignoradas!
+- Only one observation should be remembered, the final record will only be saved if there was a _commit_ of the parent transaction, that is, the transaction that started the whole process; <br /> If the parent transaction has been rolled back, the child transactions that were _committed_ will be ignored!
 
 ```delphi
-uses
+use
   DataLogger,
   DataLogger.Provider.Console;
 
 begin
   Logger.AddProvider(TProviderConsole.Create.UseTransaction(True));
 
-  // Definindo o template
+  // Defining the template
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
-  // Iniciando a transaction
+  // Starting the transaction
   Logger.StartTransaction;
   try
-    // Gerando o log
-    Logger.Info('Minha mensagem no Log do tipo INFO 1 ');
-    Logger.Info('Minha mensagem no Log do tipo INFO 2');
-    Logger.Info('Minha mensagem no Log do tipo INFO 3');
-    Logger.Info('Minha mensagem no Log do tipo INFO 4');
+    // Generating the log
+    Logger.Info('My log message type INFO 1 ');
+    Logger.Info('My log message type INFO 2');
+    Logger.Info('My log message type INFO 3');
+    Logger.Info('My log message type INFO 4');
 
-    // Iniciando 2 transaction
+    // Starting 2 transaction
     Logger.StartTransaction;
     try
-      Logger.Info('Minha mensagem no Log do tipo INFO 5');
-      Logger.Info('Minha mensagem no Log do tipo INFO 6');
+      Logger.Info('My log message of type INFO 5');
+      Logger.Info('My log message type INFO 6');
     finally
-      // fazendo Rollback da segunda transaction
+      // Rolling back the second transaction
       Logger.RollbackTransaction;
     end;
 
-    Logger.Info('Minha mensagem no Log do tipo INFO 7');
-    Logger.Info('Minha mensagem no Log do tipo INFO 8');
-    Logger.Info('Minha mensagem no Log do tipo INFO 9');
+    Logger.Info('My log message type INFO 7');
+    Logger.Info('My log message type INFO 8');
+    Logger.Info('My log message type INFO 9');
   finally
-    // Fazendo o commit
+    // Making the commit
     Logger.CommitTransaction;
   end;
 
