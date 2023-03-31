@@ -21,7 +21,7 @@ begin
   Logger.SetLevelName(TLoggerLevel.Info,    '   INFO   ');
 
   // Defining the format
-  Logger.SetLogFormat(Format(' [%s] %s: %s', [TLoggerFormat.LOG_LEVEL, TLoggerFormat.LOG_TIMESTAMP, TLoggerFormat.LOG_MESSAGE]));
+  Logger.SetTemplate(Format(' [%s] %s: %s', [TLoggerTemplate.LOG_LEVEL, TLoggerTemplate.LOG_TIMESTAMP, TLoggerTemplate.LOG_MESSAGE]));
 
   // Generating the logs
   Logger.Info('Test with the function: SetLevelName');

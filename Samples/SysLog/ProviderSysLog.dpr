@@ -14,7 +14,7 @@ begin
   Logger.AddProvider(TProviderSysLog.Create);
 
   // Log Format
-  Logger.SetLogFormat('[' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetTemplate('[' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);
 
   Logger
     .T('My Trace')

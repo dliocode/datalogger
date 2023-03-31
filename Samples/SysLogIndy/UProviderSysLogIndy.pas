@@ -56,7 +56,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat('[' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetTemplate('[' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);
 end;
 
 procedure TForm2.pnlInfoClick(Sender: TObject);

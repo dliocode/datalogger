@@ -12,8 +12,8 @@ uses
 begin
   Logger.AddProvider(
     TProviderConsole.Create
-    .UseColorInConsole(True)
-    // .UseColorInConsoleByLogFormat(True)
+    .UseColor(True)
+    .UseColorCustomTemplate(True)
 
     // .ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta)
     // .ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan)
@@ -26,10 +26,10 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - [' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);
 
   // if (UseColorInConsole = False) and (UseColorInConsoleByLogFormat = True) - use this logformat
-  // Logger.SetLogFormat('${timestamp_color} - [${level_color_warn}]: ${message_color}');
+  // Logger.SetTemplate('${timestamp_color} - [${level_color_warn}]: ${message_color}');
 
   Logger
     .Trace('My Trace')

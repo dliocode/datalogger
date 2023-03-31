@@ -13,7 +13,7 @@ begin
   Logger.AddProvider(TProviderConsole.Create.UseTransaction(True));
 
   // Definindo o formato do log
-  Logger.SetLogFormat('${timestamp} [${type}] ${message}');
+  Logger.SetTemplate('${timestamp} [${type}] ${message}');
 
   // Iniciando a transaction
   Logger.StartTransaction;

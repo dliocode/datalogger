@@ -60,7 +60,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - ' + TLoggerTemplate.LOG_MESSAGE);
 
   // Show only info and custom
  Logger.SetOnlyLevel([TLoggerLevel.Info, TLoggerLevel.Custom]);

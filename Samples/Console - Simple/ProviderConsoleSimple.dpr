@@ -28,7 +28,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - [' + TLoggerFormat.LOG_LEVEL + ']: ' + TLoggerFormat.LOG_MESSAGE);
+  Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - [' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);
 
   TDataLoggerSimple.SetDataLogger(Logger);
 
