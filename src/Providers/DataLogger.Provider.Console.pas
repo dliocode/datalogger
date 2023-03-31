@@ -59,8 +59,8 @@ type
     end;
 
   private
-    FUseColorInConsole: Boolean;
-    FUseColorInConsoleByLogFormat: Boolean;
+    FUseColor: Boolean;
+    FUseColorCustomTemplate: Boolean;
 
     FColorTrace: TColorConsole;
     FColorDebug: TColorConsole;
@@ -76,8 +76,8 @@ type
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
-    function UseColorInConsole(const AValue: Boolean): TProviderConsole;
-    function UseColorInConsoleByLogFormat(const AValue: Boolean): TProviderConsole;
+    function UseColor(const AValue: Boolean): TProviderConsole;
+    function UseColorCustomTemplate(const AValue: Boolean): TProviderConsole;
     function ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
 
     procedure LoadFromJSON(const AJSON: string); override;
@@ -94,8 +94,8 @@ constructor TProviderConsole.Create;
 begin
   inherited Create;
 
-  UseColorInConsole(True);
-  UseColorInConsoleByLogFormat(False);
+  UseColor(True);
+  UseColorCustomTemplate(False);
 
   ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta);
   ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan);
@@ -107,16 +107,16 @@ begin
   ChangeColor(TLoggerLevel.Custom, TColor.Black, TColor.White);
 end;
 
-function TProviderConsole.UseColorInConsole(const AValue: Boolean): TProviderConsole;
+function TProviderConsole.UseColor(const AValue: Boolean): TProviderConsole;
 begin
   Result := Self;
-  FUseColorInConsole := AValue;
+  FUseColor := AValue;
 end;
 
-function TProviderConsole.UseColorInConsoleByLogFormat(const AValue: Boolean): TProviderConsole;
+function TProviderConsole.UseColorCustomTemplate(const AValue: Boolean): TProviderConsole;
 begin
   Result := Self;
-  FUseColorInConsoleByLogFormat := AValue;
+  FUseColorCustomTemplate := AValue;
 end;
 
 function TProviderConsole.ChangeColor(const ALevel: TLoggerLevel; const AColorBackground: TColor; const AColorForeground: TColor): TProviderConsole;
@@ -192,8 +192,8 @@ begin
     Exit;
 
   try
-    UseColorInConsole(LJO.GetValue<Boolean>('use_color_in_console', FUseColorInConsole));
-    UseColorInConsoleByLogFormat(LJO.GetValue<Boolean>('use_color_in_console_by_logformat', FUseColorInConsoleByLogFormat));
+    UseColor(LJO.GetValue<Boolean>('use_color_in_console', FUseColor));
+    UseColorCustomTemplate(LJO.GetValue<Boolean>('use_color_in_console_by_Template', FUseColorCustomTemplate));
 
     SetJSONInternal(LJO);
   finally
@@ -207,8 +207,8 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColorInConsole));
-    LJO.AddPair('use_color_in_console_by_logformat', TJSONBool.Create(FUseColorInConsoleByLogFormat));
+    LJO.AddPair('use_color_in_console', TJSONBool.Create(FUseColor));
+    LJO.AddPair('use_color_in_console_by_Template', TJSONBool.Create(FUseColorCustomTemplate));
 
     ToJSONInternal(LJO);
 
@@ -235,7 +235,7 @@ var
   LLogMessage: string;
   I: Integer;
   J: Integer;
-  LLogFormatBase: TArray<string>;
+  LTemplateBase: TArray<string>;
 begin
   if not IsConsole then
     Exit;
@@ -263,13 +263,13 @@ begin
 
     while True do
       try
-        if FUseColorInConsole and not FUseColorInConsoleByLogFormat then
+        if FUseColor and not FUseColorCustomTemplate then
         begin
           WriteColor(LItem.Level, LLog);
           Break;
         end;
 
-        if FUseColorInConsoleByLogFormat then
+        if FUseColorCustomTemplate then
         begin
           LTagsKeys := [];
           LTagsValues := [];
@@ -303,7 +303,7 @@ begin
 
           if (Length(LTagsKeys) = 0) then
           begin
-            if FUseColorInConsole then
+            if FUseColor then
               WriteColor(LItem.Level, LLog, False)
             else
               Write(LLog);
@@ -321,25 +321,25 @@ begin
                 if not LLogMessage.Contains(LTagsKeys[I]) then
                   Continue;
 
-                LLogFormatBase := LLogMessage.Split(['${' + LTagsKeys[I] + '}']);
-                if (Length(LLogFormatBase) > 1) then
-                  if LLogFormatBase[0].Contains(C_TAG) then
+                LTemplateBase := LLogMessage.Split(['${' + LTagsKeys[I] + '}']);
+                if (Length(LTemplateBase) > 1) then
+                  if LTemplateBase[0].Contains(C_TAG) then
                     Continue;
 
                 LLogMessage := '';
-                if (Length(LLogFormatBase) > 1) then
-                  for J := 1 to High(LLogFormatBase) do
+                if (Length(LTemplateBase) > 1) then
+                  for J := 1 to High(LTemplateBase) do
                   begin
-                    LLogMessage := LLogMessage + LLogFormatBase[J];
+                    LLogMessage := LLogMessage + LTemplateBase[J];
 
-                    if (J <> High(LLogFormatBase)) then
+                    if (J <> High(LTemplateBase)) then
                       LLogMessage := LLogMessage + '${' + LTagsKeys[I] + '}';
                   end;
 
-                if FUseColorInConsole then
-                  WriteColor(LItem.Level, LLogFormatBase[0], False)
+                if FUseColor then
+                  WriteColor(LItem.Level, LTemplateBase[0], False)
                 else
-                  Write(LLogFormatBase[0]);
+                  Write(LTemplateBase[0]);
 
                 WriteColor(LTagsLevel[I], LTagsValues[I], False);
               end;
@@ -349,7 +349,7 @@ begin
           if LLogMessage.Trim.IsEmpty then
             Writeln
           else
-            if FUseColorInConsole then
+            if FUseColor then
               WriteColor(LItem.Level, LLogMessage)
             else
               Writeln(LLogMessage);

@@ -95,7 +95,7 @@ procedure TProviderDynatrace.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderDynatrace.Destroy;

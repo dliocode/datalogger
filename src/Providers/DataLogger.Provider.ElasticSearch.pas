@@ -104,7 +104,7 @@ procedure TProviderElasticSearch.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderElasticSearch.Destroy;

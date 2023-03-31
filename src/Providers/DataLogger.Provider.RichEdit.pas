@@ -64,7 +64,7 @@ type
     end;
   private
     FRichEdit: TCustomRichEdit;
-    FUseColorInRichEdit: Boolean;
+    FUseColor: Boolean;
 
     FAttributesTrace: TAttributesRichEdit;
     FAttributesDebug: TAttributesRichEdit;
@@ -88,7 +88,7 @@ type
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
     function RichEdit(const AValue: TCustomRichEdit): TProviderRichEdit;
-    function UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
+    function UseColor(const AValue: Boolean): TProviderRichEdit;
     function ChangeColor(const ALevel: TLoggerLevel; const ABackgroundColor: TColor; const AForegroundColor: TColor): TProviderRichEdit;
     function ChangeFont(const ALevel: TLoggerLevel; const AFontName: TFontName; const AFontSize: Integer; const AFontStyle: TFontStyles): TProviderRichEdit;
     function ModeInsert(const AValue: TRichEditModeInsert): TProviderRichEdit;
@@ -114,7 +114,7 @@ begin
   inherited Create;
 
   RichEdit(nil);
-  UseColorInRichEdit(True);
+  UseColor(True);
 
   ChangeColor(TLoggerLevel.Trace, $FFFFFF, $00A100AD);
   ChangeColor(TLoggerLevel.Debug, $FFFFFF, $00AEB600);
@@ -146,10 +146,10 @@ begin
   FRichEdit := AValue;
 end;
 
-function TProviderRichEdit.UseColorInRichEdit(const AValue: Boolean): TProviderRichEdit;
+function TProviderRichEdit.UseColor(const AValue: Boolean): TProviderRichEdit;
 begin
   Result := Self;
-  FUseColorInRichEdit := AValue;
+  FUseColor := AValue;
 end;
 
 function TProviderRichEdit.ChangeColor(const ALevel: TLoggerLevel; const ABackgroundColor: TColor; const AForegroundColor: TColor): TProviderRichEdit;
@@ -326,7 +326,7 @@ begin
     Exit;
 
   try
-    UseColorInRichEdit(LJO.GetValue<Boolean>('use_color_in_richedit', FUseColorInRichEdit));
+    UseColor(LJO.GetValue<Boolean>('use_color_in_richedit', FUseColor));
 
     ChangeColor(TLoggerLevel.Trace,
       StringToColor(LJO.GetValue<string>('change_color_trace_background', ColorToString(FAttributesTrace.BackgroundColor))),
@@ -379,7 +379,7 @@ var
 begin
   LJO := TJSONObject.Create;
   try
-    LJO.AddPair('use_color_in_richedit', TJSONBool.Create(FUseColorInRichEdit));
+    LJO.AddPair('use_color_in_richedit', TJSONBool.Create(FUseColor));
 
     LJO.AddPair('change_color_trace_background', TJSONString.Create(ColorToString(FAttributesTrace.BackgroundColor)));
     LJO.AddPair('change_color_trace_foreground', TJSONString.Create(ColorToString(FAttributesTrace.ForegroundColor)));
@@ -468,7 +468,7 @@ begin
               if (FModeInsert = TRichEditModeInsert.tmLast) then
               begin
                 SetFont(LItem.Level);
-                if FUseColorInRichEdit then
+                if FUseColor then
                   SetColor(LItem.Level);
               end;
 
@@ -491,7 +491,7 @@ begin
                 LFontStyle := FRichEdit.SelAttributes.Style;
 
                 SetFont(LItem.Level);
-                if FUseColorInRichEdit then
+                if FUseColor then
                   SetColor(LItem.Level);
 
                 FRichEdit.SelStart := 0;

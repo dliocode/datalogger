@@ -92,7 +92,7 @@ procedure TProviderGrafanaOnCallWebHook.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderGrafanaOnCallWebHook.Destroy;

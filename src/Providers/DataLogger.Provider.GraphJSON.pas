@@ -97,7 +97,7 @@ procedure TProviderGraphJSON.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderGraphJSON.Destroy;

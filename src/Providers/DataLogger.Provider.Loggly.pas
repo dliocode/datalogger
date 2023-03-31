@@ -95,7 +95,7 @@ procedure TProviderLoggly.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLoggly.Destroy;

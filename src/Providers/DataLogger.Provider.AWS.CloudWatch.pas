@@ -138,7 +138,7 @@ procedure TProviderAWSCloudWatch.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderAWSCloudWatch.Destroy;

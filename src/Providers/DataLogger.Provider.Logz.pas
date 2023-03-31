@@ -93,7 +93,7 @@ procedure TProviderLogz.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLogz.Destroy;

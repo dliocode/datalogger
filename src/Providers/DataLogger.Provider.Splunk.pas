@@ -96,7 +96,7 @@ procedure TProviderSplunk.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderSplunk.Destroy;

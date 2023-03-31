@@ -41,7 +41,7 @@ uses
 type
   TLoggerItem = DataLogger.Types.TLoggerItem;
 
-  TExecuteEvents = reference to procedure(const ALogFormat: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
+  TExecuteEvents = reference to procedure(const ATemplate: string; const AItem: TLoggerItem; const AFormatTimestamp: string);
   TExecuteEventsJSON = reference to procedure(const AItem: TJSONObject);
 
   TProviderEvents = class(TDataLoggerProvider<TProviderEvents>)
@@ -122,7 +122,7 @@ end;
 procedure TProviderEvents.AfterConstruction;
 begin
   inherited;
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 function TProviderEvents.OnAny(const AEvent: TExecuteEvents): TProviderEvents;
@@ -282,7 +282,7 @@ procedure TProviderEvents.Save(const ACache: TArray<TLoggerItem>);
     while True do
       try
         if Assigned(AEvent) then
-          AEvent(FLogFormat, AItem, FFormatTimestamp);
+          AEvent(FTemplate, AItem, FFormatTimestamp);
 
         if Assigned(AEventJSON) then
         begin

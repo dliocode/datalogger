@@ -46,7 +46,7 @@ type
   TLoggerLevels = DataLogger.Types.TLoggerLevels;
   TLoggerTransactionTypeCommit = DataLogger.Types.TLoggerTransactionTypeCommit;
   TLoggerOnException = DataLogger.Types.TLoggerOnException;
-  TLoggerFormat = DataLogger.Types.TLoggerFormat;
+  TLoggerTemplate = DataLogger.Types.TLoggerTemplate;
   TLoggerSerializeItem = DataLogger.SerializeItem.TLoggerSerializeItem;
 
   EDataLoggerException = DataLogger.Types.EDataLoggerException;
@@ -180,20 +180,20 @@ type
     function RollbackTransaction: TDataLogger;
     function InTransaction: Boolean;
 
-    function SetLogFormat(const ALogFormat: string; const AForced: Boolean = False): TDataLogger; overload;
-    function SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger; overload;
+    function SetTemplate(const ATemplate: string; const AForced: Boolean = False): TDataLogger; overload;
+    function SetTemplate(const ATemplate: string; AArgs: array of const; const AForced: Boolean = False): TDataLogger; overload;
     function SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
+    function SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
     function SetLevel(const ALevel: TLoggerLevel): TDataLogger;
     function SetDisableLevel(const ALevels: TLoggerLevels): TDataLogger;
     function SetOnlyLevel(const ALevels: TLoggerLevels): TDataLogger;
     function SetLogException(const AException: TLoggerOnException): TDataLogger;
     function SetMaxRetries(const AMaxRetries: Integer): TDataLogger;
-    function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
+    function SetIgnoreTemplate(const AIgnoreTemplate: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): TDataLogger;
     function SetName(const AName: string): TDataLogger;
     function SetLiveMode(const ALiveMode: Boolean): TDataLogger;
     function SetTagNameIsRequired(const ATagNameIsRequired: Boolean): TDataLogger;
     function SetGenerateLogWithoutProvider(const AGenerateLogWithoutProvider: Boolean): TDataLogger;
-    function SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
 
     function Clear: TDataLogger;
     function CountLogInCache: Int64;
@@ -743,7 +743,7 @@ begin
   end;
 end;
 
-function TDataLogger.SetLogFormat(const ALogFormat: string; const AForced: Boolean = False): TDataLogger;
+function TDataLogger.SetTemplate(const ATemplate: string; const AForced: Boolean = False): TDataLogger;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
   I: Integer;
@@ -755,12 +755,12 @@ begin
 
   LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
-    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetLogFormat(ALogFormat, AForced);
+    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetTemplate(ATemplate, AForced);
 end;
 
-function TDataLogger.SetLogFormat(const ALogFormat: string; AArgs: array of const): TDataLogger;
+function TDataLogger.SetTemplate(const ATemplate: string; AArgs: array of const; const AForced: Boolean = False): TDataLogger;
 begin
-  Result := SetLogFormat(Format(ALogFormat, AArgs));
+  Result := SetTemplate(Format(ATemplate, AArgs), AForced);
 end;
 
 function TDataLogger.SetFormatTimestamp(const AFormatTimestamp: string): TDataLogger;
@@ -776,6 +776,18 @@ begin
   LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetFormatTimestamp(AFormatTimestamp);
+end;
+
+function TDataLogger.SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
+begin
+  Result := Self;
+
+  Lock;
+  try
+    FLevelName.Items[ALevel] := AName;
+  finally
+    UnLock;
+  end;
 end;
 
 function TDataLogger.SetLevel(const ALevel: TLoggerLevel): TDataLogger;
@@ -844,7 +856,7 @@ begin
     TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetMaxRetries(AMaxRetries);
 end;
 
-function TDataLogger.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string; const AIncludeKey: Boolean; const AIncludeKeySeparator: string): TDataLogger;
+function TDataLogger.SetIgnoreTemplate(const AIgnoreTemplate: Boolean; const ASeparator: string; const AIncludeKey: Boolean; const AIncludeKeySeparator: string): TDataLogger;
 var
   LProviders: TArray<TDataLoggerProviderBase>;
   I: Integer;
@@ -856,7 +868,7 @@ begin
 
   LProviders := GetProviders;
   for I := Low(LProviders) to High(LProviders) do
-    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetIgnoreLogFormat(AIgnoreLogFormat, ASeparator, AIncludeKey, AIncludeKeySeparator);
+    TDataLoggerProvider<TDataLoggerProviderBase>(LProviders[I]).SetIgnoreTemplate(AIgnoreTemplate, ASeparator, AIncludeKey, AIncludeKeySeparator);
 end;
 
 function TDataLogger.SetName(const AName: string): TDataLogger;
@@ -915,18 +927,6 @@ begin
   Lock;
   try
     FGenerateLogWithoutProvider := AGenerateLogWithoutProvider;
-  finally
-    UnLock;
-  end;
-end;
-
-function TDataLogger.SetLevelName(const ALevel: TLoggerLevel; const AName: string): TDataLogger;
-begin
-  Result := Self;
-
-  Lock;
-  try
-    FLevelName.Items[ALevel] := AName;
   finally
     UnLock;
   end;

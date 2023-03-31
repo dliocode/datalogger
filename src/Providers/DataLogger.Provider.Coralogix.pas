@@ -93,7 +93,7 @@ procedure TProviderCoralogix.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderCoralogix.Destroy;

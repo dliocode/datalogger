@@ -105,7 +105,7 @@ procedure TProviderRealtimeDatabase.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderRealtimeDatabase.Destroy;

@@ -94,7 +94,7 @@ procedure TProviderNewRelic.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderNewRelic.Destroy;

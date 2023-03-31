@@ -106,7 +106,7 @@ procedure TProviderNovu.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderNovu.Destroy;

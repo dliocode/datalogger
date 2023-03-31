@@ -9,11 +9,11 @@ uses
 type
   ILoggerSerializeItem = interface
     ['{B1ED6A14-5FD4-4D97-944A-552A31B94595}']
-    function LogFormat(const AValue: string): ILoggerSerializeItem;
-    function IgnoreLogFormat(const AValue: Boolean): ILoggerSerializeItem;
-    function IgnoreLogFormatSeparator(const AValue: string): ILoggerSerializeItem;
-    function IgnoreLogFormatIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
-    function IgnoreLogFormatIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
+    function Template(const AValue: string): ILoggerSerializeItem;
+    function IgnoreTemplate(const AValue: Boolean): ILoggerSerializeItem;
+    function IgnoreTemplateSeparator(const AValue: string): ILoggerSerializeItem;
+    function IgnoreTemplateIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
+    function IgnoreTemplateIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
     function LogItem(const AValue: TLoggerItem): ILoggerSerializeItem;
     function FormatTimestamp(const AValue: string): ILoggerSerializeItem;
     function Prefix(const AValue: string): ILoggerSerializeItem;
@@ -30,22 +30,22 @@ type
 
   TLoggerSerializeItem = class(TInterfacedObject, ILoggerSerializeItem)
   private
-    FLogFormat: string;
-    FIgnoreLogFormat: Boolean;
-    FIgnoreLogFormatSeparator: string;
-    FIgnoreLogFormatIncludeKey: Boolean;
-    FIgnoreLogFormatIncludeKeySeparator: string;
+    FTemplate: string;
+    FIgnoreTemplate: Boolean;
+    FIgnoreTemplateSeparator: string;
+    FIgnoreTemplateIncludeKey: Boolean;
+    FIgnoreTemplateIncludeKeySeparator: string;
     FLogItem: TLoggerItem;
     FFormatTimestamp: string;
     FPrefix: string;
 
     constructor Create;
   public
-    function LogFormat(const AValue: string): ILoggerSerializeItem;
-    function IgnoreLogFormat(const AValue: Boolean): ILoggerSerializeItem;
-    function IgnoreLogFormatSeparator(const AValue: string): ILoggerSerializeItem;
-    function IgnoreLogFormatIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
-    function IgnoreLogFormatIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
+    function Template(const AValue: string): ILoggerSerializeItem;
+    function IgnoreTemplate(const AValue: Boolean): ILoggerSerializeItem;
+    function IgnoreTemplateSeparator(const AValue: string): ILoggerSerializeItem;
+    function IgnoreTemplateIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
+    function IgnoreTemplateIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
     function LogItem(const AValue: TLoggerItem): ILoggerSerializeItem;
     function FormatTimestamp(const AValue: string): ILoggerSerializeItem;
     function Prefix(const AValue: string): ILoggerSerializeItem;
@@ -79,44 +79,44 @@ end;
 
 constructor TLoggerSerializeItem.Create;
 begin
-  FLogFormat := '';
-  FIgnoreLogFormat := False;
-  FIgnoreLogFormatSeparator := ' ';
-  FIgnoreLogFormatIncludeKey := False;
-  FIgnoreLogFormatIncludeKeySeparator := ' -> ';
+  FTemplate := '';
+  FIgnoreTemplate := False;
+  FIgnoreTemplateSeparator := ' ';
+  FIgnoreTemplateIncludeKey := False;
+  FIgnoreTemplateIncludeKeySeparator := ' -> ';
   FLogItem := Default (TLoggerItem);
   FFormatTimestamp := '';
   FPrefix := 'log_';
 end;
 
-function TLoggerSerializeItem.LogFormat(const AValue: string): ILoggerSerializeItem;
+function TLoggerSerializeItem.Template(const AValue: string): ILoggerSerializeItem;
 begin
   Result := Self;
-  FLogFormat := AValue;
+  FTemplate := AValue;
 end;
 
-function TLoggerSerializeItem.IgnoreLogFormat(const AValue: Boolean): ILoggerSerializeItem;
+function TLoggerSerializeItem.IgnoreTemplate(const AValue: Boolean): ILoggerSerializeItem;
 begin
   Result := Self;
-  FIgnoreLogFormat := AValue;
+  FIgnoreTemplate := AValue;
 end;
 
-function TLoggerSerializeItem.IgnoreLogFormatSeparator(const AValue: string): ILoggerSerializeItem;
+function TLoggerSerializeItem.IgnoreTemplateSeparator(const AValue: string): ILoggerSerializeItem;
 begin
   Result := Self;
-  FIgnoreLogFormatSeparator := AValue;
+  FIgnoreTemplateSeparator := AValue;
 end;
 
-function TLoggerSerializeItem.IgnoreLogFormatIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
+function TLoggerSerializeItem.IgnoreTemplateIncludeKey(const AValue: Boolean): ILoggerSerializeItem;
 begin
   Result := Self;
-  FIgnoreLogFormatIncludeKey := AValue;
+  FIgnoreTemplateIncludeKey := AValue;
 end;
 
-function TLoggerSerializeItem.IgnoreLogFormatIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
+function TLoggerSerializeItem.IgnoreTemplateIncludeKeySeparator(const AValue: string): ILoggerSerializeItem;
 begin
   Result := Self;
-  FIgnoreLogFormatIncludeKeySeparator := AValue;
+  FIgnoreTemplateIncludeKeySeparator := AValue;
 end;
 
 function TLoggerSerializeItem.LogItem(const AValue: TLoggerItem): ILoggerSerializeItem;
@@ -147,7 +147,7 @@ function TLoggerSerializeItem.ToJSONObject: TJSONObject;
   begin
     LJSONKey := Copy(ALogKey, 3, (Length(ALogKey) - 3));
 
-    if FIgnoreLogFormat then
+    if FIgnoreTemplate then
     begin
       if AIncludePrefix then
         LJSONKey := FPrefix + LJSONKey;
@@ -159,7 +159,7 @@ function TLoggerSerializeItem.ToJSONObject: TJSONObject;
     for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
     begin
       LKeyLetter := Format('${%s}', [LJSONKey + TLoggerLetterKeyString[LLetter]]);
-      if not FLogFormat.Contains(LKeyLetter) then
+      if not FTemplate.Contains(LKeyLetter) then
         Continue;
 
       if AIncludePrefix then
@@ -207,34 +207,34 @@ begin
   Result := TJSONObject.Create;
 
   try
-    _Add(TLoggerFormat.LOG_TIMESTAMP, True, TJSONString.Create(FormatDateTime(FFormatTimestamp, FLogItem.TimeStamp)));
-    _Add(TLoggerFormat.LOG_TIMESTAMP_ISO8601, True, TJSONString.Create(FLogItem.TimeStampISO8601));
-    _Add(TLoggerFormat.LOG_TIMESTAMP_UNIX, True, TJSONNumber.Create(FLogItem.TimeStampUNIX));
-    _Add(TLoggerFormat.LOG_ID, True, TJSONString.Create(FLogItem.Id));
-    _Add(TLoggerFormat.LOG_NAME, True, TJSONString.Create(FLogItem.Name));
-    _Add(TLoggerFormat.LOG_SEQUENCE, True, TJSONNumber.Create(FLogItem.Sequence));
-    _Add(TLoggerFormat.LOG_THREADID, True, TJSONNumber.Create(FLogItem.ThreadID));
-    _Add(TLoggerFormat.LOG_LEVEL, True, TJSONString.Create(FLogItem.LevelString));
-    _Add(TLoggerFormat.LOG_LEVEL_VALUE, True, TJSONNumber.Create(FLogItem.LevelValue));
-    _Add(TLoggerFormat.LOG_TAG, True, TJSONString.Create(FLogItem.Tag));
+    _Add(TLoggerTemplate.LOG_TIMESTAMP, True, TJSONString.Create(FormatDateTime(FFormatTimestamp, FLogItem.TimeStamp)));
+    _Add(TLoggerTemplate.LOG_TIMESTAMP_ISO8601, True, TJSONString.Create(FLogItem.TimeStampISO8601));
+    _Add(TLoggerTemplate.LOG_TIMESTAMP_UNIX, True, TJSONNumber.Create(FLogItem.TimeStampUNIX));
+    _Add(TLoggerTemplate.LOG_ID, True, TJSONString.Create(FLogItem.Id));
+    _Add(TLoggerTemplate.LOG_NAME, True, TJSONString.Create(FLogItem.Name));
+    _Add(TLoggerTemplate.LOG_SEQUENCE, True, TJSONNumber.Create(FLogItem.Sequence));
+    _Add(TLoggerTemplate.LOG_THREADID, True, TJSONNumber.Create(FLogItem.ThreadID));
+    _Add(TLoggerTemplate.LOG_LEVEL, True, TJSONString.Create(FLogItem.LevelString));
+    _Add(TLoggerTemplate.LOG_LEVEL_VALUE, True, TJSONNumber.Create(FLogItem.LevelValue));
+    _Add(TLoggerTemplate.LOG_TAG, True, TJSONString.Create(FLogItem.Tag));
 
     if not FLogItem.MessageJSON.IsEmpty then
-      _Add(TLoggerFormat.LOG_MESSAGE, True, TJSONString.Create(FLogItem.MessageJSON.Trim))
+      _Add(TLoggerTemplate.LOG_MESSAGE, True, TJSONString.Create(FLogItem.MessageJSON.Trim))
     else
-      _Add(TLoggerFormat.LOG_MESSAGE, True, TJSONString.Create(FLogItem.Message.Trim));
+      _Add(TLoggerTemplate.LOG_MESSAGE, True, TJSONString.Create(FLogItem.Message.Trim));
 
-    _Add(TLoggerFormat.LOG_APPNAME, True, TJSONString.Create(FLogItem.AppName));
-    _Add(TLoggerFormat.LOG_APPVERSION, True, TJSONString.Create(FLogItem.AppVersion.FileVersion));
-    _Add(TLoggerFormat.LOG_APPPATH, True, TJSONString.Create(FLogItem.AppPath));
-    _Add(TLoggerFormat.LOG_APPSIZE, True, TJSONString.Create(FormatFloat('#,##0.00 MB', FLogItem.AppSize / 1024)));
+    _Add(TLoggerTemplate.LOG_APPNAME, True, TJSONString.Create(FLogItem.AppName));
+    _Add(TLoggerTemplate.LOG_APPVERSION, True, TJSONString.Create(FLogItem.AppVersion.FileVersion));
+    _Add(TLoggerTemplate.LOG_APPPATH, True, TJSONString.Create(FLogItem.AppPath));
+    _Add(TLoggerTemplate.LOG_APPSIZE, True, TJSONString.Create(FormatFloat('#,##0.00 MB', FLogItem.AppSize / 1024)));
 
-    _Add(TLoggerFormat.LOG_COMPUTERNAME, True, TJSONString.Create(FLogItem.ComputerName));
-    _Add(TLoggerFormat.LOG_USERNAME, True, TJSONString.Create(FLogItem.Username));
-    _Add(TLoggerFormat.LOG_OSVERSION, True, TJSONString.Create(FLogItem.OSVersion));
-    _Add(TLoggerFormat.LOG_PROCESSID, True, TJSONString.Create(FLogItem.ProcessId));
+    _Add(TLoggerTemplate.LOG_COMPUTERNAME, True, TJSONString.Create(FLogItem.ComputerName));
+    _Add(TLoggerTemplate.LOG_USERNAME, True, TJSONString.Create(FLogItem.Username));
+    _Add(TLoggerTemplate.LOG_OSVERSION, True, TJSONString.Create(FLogItem.OSVersion));
+    _Add(TLoggerTemplate.LOG_PROCESSID, True, TJSONString.Create(FLogItem.ProcessId));
 
-    _Add(TLoggerFormat.LOG_IP_LOCAL, True, TJSONString.Create(FLogItem.IPLocal));
-    _Add(TLoggerFormat.LOG_MAC_ADDRESS, True, TJSONString.Create(FLogItem.MACAddress));
+    _Add(TLoggerTemplate.LOG_IP_LOCAL, True, TJSONString.Create(FLogItem.IPLocal));
+    _Add(TLoggerTemplate.LOG_MAC_ADDRESS, True, TJSONString.Create(FLogItem.MACAddress));
 
     if not FLogItem.MessageJSON.IsEmpty then
       try
@@ -290,8 +290,8 @@ begin
   Prefix('');
 
   LLog := '';
-  if not FIgnoreLogFormat then
-    LLog := FLogFormat;
+  if not FIgnoreTemplate then
+    LLog := FTemplate;
 
   LJO := ToJSONObject;
   try
@@ -300,12 +300,12 @@ begin
       LKey := LJO.Pairs[I].JsonString.Value;
       LValue := LJO.Pairs[I].JsonValue.Value;
 
-      if not FIgnoreLogFormat then
+      if not FIgnoreTemplate then
       begin
         for LLetter := Low(TLoggerLetter) to High(TLoggerLetter) do
         begin
           LKeyLetter := Format('${%s}', [LKey + TLoggerLetterKeyString[LLetter]]);
-          if not FLogFormat.Contains(LKeyLetter) then
+          if not FTemplate.Contains(LKeyLetter) then
             Continue;
 
           LLog := LLog.Replace(LKeyLetter, LValue);
@@ -313,15 +313,15 @@ begin
       end
       else
       begin
-        if FIgnoreLogFormatIncludeKey then
-          LLog := LLog + LKey + FIgnoreLogFormatIncludeKeySeparator + LValue + FIgnoreLogFormatSeparator
+        if FIgnoreTemplateIncludeKey then
+          LLog := LLog + LKey + FIgnoreTemplateIncludeKeySeparator + LValue + FIgnoreTemplateSeparator
         else
-          LLog := LLog + LValue + FIgnoreLogFormatSeparator;
+          LLog := LLog + LValue + FIgnoreTemplateSeparator;
       end;
     end;
 
-    if FIgnoreLogFormat then
-      LLog := Copy(LLog, 1, Length(LLog) - Length(FIgnoreLogFormatSeparator));
+    if FIgnoreTemplate then
+      LLog := Copy(LLog, 1, Length(LLog) - Length(FIgnoreTemplateSeparator));
   finally
     LJO.Free;
   end;
@@ -371,7 +371,7 @@ end;
 function TLoggerSerializeItem.ToListTAG(const ALog: string; const ATag: TArray<string>): TDictionary<string, string>;
 var
   LJO: TJSONObject;
-  LLogFormatBase: TArray<string>;
+  LTemplateBase: TArray<string>;
   LTag: string;
   I: Integer;
   LLetter: TLoggerLetter;
@@ -379,13 +379,13 @@ var
   LValue: string;
 begin
   Prefix('');
-  IgnoreLogFormat(True);
+  IgnoreTemplate(True);
 
   Result := TDictionary<string, string>.Create;
 
   LJO := ToJSONObject;
   try
-    LLogFormatBase := [];
+    LTemplateBase := [];
 
     for LTag in ATag do
       for I := 0 to Pred(LJO.Count) do

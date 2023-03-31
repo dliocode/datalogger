@@ -95,7 +95,7 @@ procedure TProviderLogflare.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLogflare.Destroy;

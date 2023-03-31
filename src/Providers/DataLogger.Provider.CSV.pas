@@ -124,7 +124,7 @@ procedure TProviderCSV.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True, ';', False);
+  SetIgnoreTemplate(True, ';', False);
 end;
 
 destructor TProviderCSV.Destroy;
@@ -326,7 +326,7 @@ begin
         Continue;
       end;
 
-      LLog := SerializeItem.LogItem(LItem).IgnoreLogFormatSeparator(FSeparator).ToString;
+      LLog := SerializeItem.LogItem(LItem).IgnoreTemplateSeparator(FSeparator).ToString;
 
       InternalWriteLog(LLog);
 

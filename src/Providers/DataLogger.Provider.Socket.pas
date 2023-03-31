@@ -191,7 +191,7 @@ procedure TProviderSocket.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderSocket.Destroy;

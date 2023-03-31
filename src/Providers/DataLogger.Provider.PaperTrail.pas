@@ -95,7 +95,7 @@ procedure TProviderPaperTrail.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderPaperTrail.Destroy;

@@ -102,7 +102,7 @@ procedure TProviderDatadog.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderDatadog.Destroy;

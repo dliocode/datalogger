@@ -101,7 +101,7 @@ procedure TProviderNtfy.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(False);
+  SetIgnoreTemplate(False);
 end;
 
 destructor TProviderNtfy.Destroy;

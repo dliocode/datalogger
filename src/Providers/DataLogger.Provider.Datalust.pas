@@ -95,7 +95,7 @@ procedure TProviderDatalust.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderDatalust.Destroy;

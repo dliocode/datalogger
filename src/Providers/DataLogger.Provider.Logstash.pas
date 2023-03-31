@@ -94,7 +94,7 @@ procedure TProviderLogstash.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLogstash.Destroy;

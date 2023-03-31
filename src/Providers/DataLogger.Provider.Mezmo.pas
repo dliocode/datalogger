@@ -95,7 +95,7 @@ procedure TProviderLogDNA.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLogDNA.Destroy;

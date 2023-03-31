@@ -96,7 +96,7 @@ procedure TProviderElmah.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(False);
+  SetIgnoreTemplate(False);
 end;
 
 destructor TProviderElmah.Destroy;

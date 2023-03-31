@@ -98,7 +98,7 @@ procedure TProviderGraylog.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderGraylog.Destroy;

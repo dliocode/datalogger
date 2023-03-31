@@ -94,7 +94,7 @@ procedure TProviderSematextLogs.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderSematextLogs.Destroy;

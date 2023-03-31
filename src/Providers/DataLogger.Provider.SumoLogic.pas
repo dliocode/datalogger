@@ -92,7 +92,7 @@ procedure TProviderSumoLogic.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderSumoLogic.Destroy;

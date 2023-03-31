@@ -93,7 +93,7 @@ procedure TProviderLogtail.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderLogtail.Destroy;

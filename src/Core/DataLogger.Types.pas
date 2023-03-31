@@ -97,7 +97,7 @@ type
 
   TLoggerOnException = reference to procedure(const Sender: TObject; const LogItem: TLoggerItem; const E: Exception; var RetriesCount: Integer);
 
-  TLoggerFormat = record
+  TLoggerTemplate = record
   const
     LOG_ID = '${id}';
     LOG_NAME = '${name}';
@@ -123,7 +123,7 @@ type
     LOG_IP_LOCAL = '${ip_local}';
     LOG_MAC_ADDRESS = '${mac_address}';
 
-    DEFAULT_LOG_FORMAT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
+    C_TEMPLATE_DEFAULT = LOG_TIMESTAMP + ' [TID ' + LOG_THREADID + '] [PID ' + LOG_PROCESSID + '] [SEQ ' + LOG_SEQUENCE + '] [' + LOG_LEVEL + '] [' + LOG_TAG + '] ' + LOG_MESSAGE;
   end;
 
   TLoggerConst = record

@@ -95,7 +95,7 @@ procedure TProviderAxiom.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(True);
+  SetIgnoreTemplate(True);
 end;
 
 destructor TProviderAxiom.Destroy;

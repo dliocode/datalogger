@@ -128,7 +128,7 @@ procedure TProviderHTML.AfterConstruction;
 begin
   inherited;
 
-  SetIgnoreLogFormat(False);
+  SetIgnoreTemplate(False);
 end;
 
 destructor TProviderHTML.Destroy;

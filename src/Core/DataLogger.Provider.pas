@@ -88,14 +88,14 @@ type
     procedure LockCache;
     procedure UnLockCache;
   protected
-    FLogFormat: string;
+    FTemplate: string;
     FFormatTimestamp: string;
-    FIgnoreLogFormat: Boolean;
-    FIgnoreLogFormatSeparator: string;
-    FIgnoreLogFormatIncludeKey: Boolean;
-    FIgnoreLogFormatIncludeKeySeparator: string;
+    FIgnoreTemplate: Boolean;
+    FIgnoreTemplateSeparator: string;
+    FIgnoreTemplateIncludeKey: Boolean;
+    FIgnoreTemplateIncludeKeySeparator: string;
 
-    FLogFormatExclusive: Boolean;
+    FTemplateExclusive: Boolean;
     FLogException: TLoggerOnException;
     FMaxRetries: Integer;
 
@@ -111,14 +111,14 @@ type
     procedure AddLastMessageId(const AValue: string);
     function GetLastMessageId: string;
   public
-    function SetLogFormat(const ALogFormat: string; const AExcluisive: Boolean = True): T;
+    function SetTemplate(const ATemplate: string; const AExcluisive: Boolean = True): T;
     function SetFormatTimestamp(const AFormatTimestamp: string): T;
     function SetLevel(const ALevel: TLoggerLevel): T;
     function SetDisableLevel(const ALevels: TLoggerLevels): T;
     function SetOnlyLevel(const ALevels: TLoggerLevels): T;
     function SetLogException(const AException: TLoggerOnException): T;
     function SetMaxRetries(const AMaxRetries: Integer): T;
-    function SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
+    function SetIgnoreTemplate(const AIgnoreTemplate: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
     function SetLiveMode(const ALiveMode: Boolean): T;
 
     function UseTransaction(const AUseTransaction: Boolean; const AModeMultThread: Boolean = True): T;
@@ -169,24 +169,22 @@ begin
   FListLoggerBase := TDataLoggerListItem.Create;
   FListTransaction := TDataLoggerListTransaction.Create([doOwnsValues]);
 
-  SetLogFormat(TLoggerFormat.DEFAULT_LOG_FORMAT, False);
+  FTemplateExclusive := False;
+
+  SetTemplate(TLoggerTemplate.C_TEMPLATE_DEFAULT, False);
   SetFormatTimestamp('yyyy-mm-dd hh:nn:ss.zzz');
   SetLevel(TLoggerLevel.All);
   SetDisableLevel([]);
   SetOnlyLevel([TLoggerLevel.All]);
   SetLogException(nil);
   SetMaxRetries(5);
-  SetIgnoreLogFormat(False);
+  SetIgnoreTemplate(False);
   SetLiveMode(IsLibrary or ModuleIsLib);
-
   UseTransaction(False);
   TransactionAutoCommit([], TLoggerTransactionTypeCommit.tcBlock);
 
-  FLogFormatExclusive := False;
-
   FThreadExecute := nil;
   FThreadTerminated := False;
-
   FLastMessageID := TStack<string>.Create;
 end;
 
@@ -221,14 +219,14 @@ begin
   inherited;
 end;
 
-function TDataLoggerProvider<T>.SetLogFormat(const ALogFormat: string; const AExcluisive: Boolean = True): T;
+function TDataLoggerProvider<T>.SetTemplate(const ATemplate: string; const AExcluisive: Boolean = True): T;
 begin
   Result := FOwner;
 
-  if AExcluisive or not FLogFormatExclusive then
+  if AExcluisive or not FTemplateExclusive then
   begin
-    FLogFormat := ALogFormat;
-    FLogFormatExclusive := AExcluisive;
+    FTemplate := ATemplate;
+    FTemplateExclusive := AExcluisive;
   end;
 end;
 
@@ -248,11 +246,11 @@ function TDataLoggerProvider<T>.SerializeItem: ILoggerSerializeItem;
 begin
   Result :=
     TLoggerSerializeItem.New
-    .LogFormat(FLogFormat)
-    .IgnoreLogFormat(FIgnoreLogFormat)
-    .IgnoreLogFormatSeparator(FIgnoreLogFormatSeparator)
-    .IgnoreLogFormatIncludeKey(FIgnoreLogFormatIncludeKey)
-    .IgnoreLogFormatIncludeKeySeparator(FIgnoreLogFormatIncludeKeySeparator)
+    .Template(FTemplate)
+    .IgnoreTemplate(FIgnoreTemplate)
+    .IgnoreTemplateSeparator(FIgnoreTemplateSeparator)
+    .IgnoreTemplateIncludeKey(FIgnoreTemplateIncludeKey)
+    .IgnoreTemplateIncludeKeySeparator(FIgnoreTemplateIncludeKeySeparator)
     .FormatTimestamp(FFormatTimestamp);
 end;
 
@@ -280,14 +278,14 @@ begin
   FMaxRetries := AMaxRetries;
 end;
 
-function TDataLoggerProvider<T>.SetIgnoreLogFormat(const AIgnoreLogFormat: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
+function TDataLoggerProvider<T>.SetIgnoreTemplate(const AIgnoreTemplate: Boolean; const ASeparator: string = ' '; const AIncludeKey: Boolean = False; const AIncludeKeySeparator: string = ' -> '): T;
 begin
   Result := FOwner;
 
-  FIgnoreLogFormat := AIgnoreLogFormat;
-  FIgnoreLogFormatSeparator := ASeparator;
-  FIgnoreLogFormatIncludeKey := AIncludeKey;
-  FIgnoreLogFormatIncludeKeySeparator := AIncludeKeySeparator;
+  FIgnoreTemplate := AIgnoreTemplate;
+  FIgnoreTemplateSeparator := ASeparator;
+  FIgnoreTemplateIncludeKey := AIncludeKey;
+  FIgnoreTemplateIncludeKeySeparator := AIncludeKeySeparator;
 end;
 
 function TDataLoggerProvider<T>.SetLiveMode(const ALiveMode: Boolean): T;
@@ -706,7 +704,7 @@ begin
 
   LJOInternal := AJO.GetValue<TJSONObject>('internal');
 
-  SetLogFormat(LJOInternal.GetValue<string>('log_format', FLogFormat));
+  SetTemplate(LJOInternal.GetValue<string>('template', FTemplate));
   SetFormatTimestamp(LJOInternal.GetValue<string>('format_timestamp', FFormatTimestamp));
 
   LValue := FLevel.ToString;
@@ -785,7 +783,7 @@ begin
   LJOInternal := TJSONObject.Create;
   AJO.AddPair('internal', LJOInternal);
 
-  LJOInternal.AddPair('log_format', TJSONString.Create(FLogFormat));
+  LJOInternal.AddPair('log_format', TJSONString.Create(FTemplate));
   LJOInternal.AddPair('format_timestamp', TJSONString.Create(FFormatTimestamp));
   LJOInternal.AddPair('level', TJSONString.Create(FLevel.ToString));
 
