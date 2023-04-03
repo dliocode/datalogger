@@ -13,7 +13,7 @@
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=green&category=code">
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=yellow&category=files">
  
-  <p align="center">
+  <p align="center"> 
     |
     <a href="https://github.com/dliocode/datalogger/blob/v3/README.md">Português Brasileiro</a> |  
     <a href="https://github.com/dliocode/datalogger/blob/v3/README.en-US.md">English</a> 
