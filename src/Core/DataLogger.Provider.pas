@@ -339,16 +339,16 @@ begin
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
+
+    LCountTransaction := LTransaction.ListItemTransaction.Count;
+    if (LCountTransaction = 0) then
+      LTransaction.InTransaction := True;
+
+    LTransaction.ListItemTransaction.Add(LCountTransaction + 1, TDataLoggerListItem.Create);
   finally
     if AUseLock then
       UnLock;
   end;
-
-  LCountTransaction := LTransaction.ListItemTransaction.Count;
-  if (LCountTransaction = 0) then
-    LTransaction.InTransaction := True;
-
-  LTransaction.ListItemTransaction.Add(LCountTransaction + 1, TDataLoggerListItem.Create);
 end;
 
 function TDataLoggerProvider<T>.CommitTransaction(const AID: string; const ALevelCommit: TLoggerTransactionTypeCommit = TLoggerTransactionTypeCommit.tcBlock; const AUseLock: Boolean = True): T;
@@ -378,47 +378,40 @@ begin
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
-  finally
-    if AUseLock then
-      UnLock;
-  end;
 
-  while True do
-  begin
-    LCountTransaction := LTransaction.ListItemTransaction.Count;
-    if (LCountTransaction = 0) then
-      Exit;
-
-    LTransaction.ListItemTransaction.TryGetValue(LCountTransaction, LCurrent);
-    LCurrentValues := LCurrent.ToArray;
-
-    if (LCountTransaction > 1) then
+    while True do
     begin
-      LTransaction.ListItemTransaction.TryGetValue(LCountTransaction - 1, LCurrent);
-      LCurrent.AddRange(LCurrentValues);
-    end;
+      LCountTransaction := LTransaction.ListItemTransaction.Count;
+      if (LCountTransaction = 0) then
+        Exit;
 
-    LTransaction.ListItemTransaction.Remove(LCountTransaction);
+      LTransaction.ListItemTransaction.TryGetValue(LCountTransaction, LCurrent);
+      LCurrentValues := LCurrent.ToArray;
 
-    if (LCountTransaction = 1) then
-    begin
-      if AUseLock then
-        Lock;
-      try
+      if (LCountTransaction > 1) then
+      begin
+        LTransaction.ListItemTransaction.TryGetValue(LCountTransaction - 1, LCurrent);
+        LCurrent.AddRange(LCurrentValues);
+      end;
+
+      LTransaction.ListItemTransaction.Remove(LCountTransaction);
+
+      if (LCountTransaction = 1) then
+      begin
         FListLoggerBase.AddRange(LCurrentValues);
         NotifyEvent(False);
         LTransaction.InTransaction := False;
         FListTransaction.Remove(LID);
-      finally
-        if AUseLock then
-          UnLock;
+
+        Break;
       end;
 
-      Break;
+      if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
+        Break;
     end;
-
-    if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
-      Break;
+  finally
+    if AUseLock then
+      UnLock;
   end;
 end;
 
@@ -446,34 +439,29 @@ begin
 
       LTransaction.ListItemTransaction := TDataLoggerListItemTransaction.Create([doOwnsValues]);
     end;
-  finally
-    UnLock;
-  end;
 
-  while True do
-  begin
-    LCountTransaction := LTransaction.ListItemTransaction.Count;
-    if (LCountTransaction = 0) then
-      Exit;
-
-    LTransaction.ListItemTransaction.Remove(LCountTransaction);
-
-    if (LCountTransaction = 1) then
+    while True do
     begin
-      Lock;
-      try
+      LCountTransaction := LTransaction.ListItemTransaction.Count;
+      if (LCountTransaction = 0) then
+        Exit;
+
+      LTransaction.ListItemTransaction.Remove(LCountTransaction);
+
+      if (LCountTransaction = 1) then
+      begin
         NotifyEvent(False);
         LTransaction.InTransaction := False;
         FListTransaction.Remove(LID);
-      finally
-        UnLock;
+
+        Break;
       end;
 
-      Break;
+      if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
+        Break;
     end;
-
-    if (ALevelCommit = TLoggerTransactionTypeCommit.tcBlock) then
-      Break;
+  finally
+    UnLock;
   end;
 end;
 
@@ -631,7 +619,8 @@ begin
           LListLoggerItem := nil;
           LTransaction.ListItemTransaction.TryGetValue(LTransaction.ListItemTransaction.Count, LListLoggerItem);
           if not Assigned(LListLoggerItem) then
-            Exit;
+            raise Exception.Create('Erro para achar o transaction');
+          // Exit;
 
           LListLoggerItem.Add(LItem);
 
