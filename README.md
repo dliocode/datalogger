@@ -34,7 +34,7 @@ Suporte: developer.dlio@gmail.com
 $ boss install github.com/dliocode/datalogger
 ```
 
-### Instalação Manual
+### Instalação Manual 
 
 Adicione as seguintes pastas ao seu projeto, em _Project > Options > Delphi Compiler > Search path_
 
