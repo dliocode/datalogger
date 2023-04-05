@@ -3,7 +3,7 @@
     <img alt="datalogger" src="https://user-images.githubusercontent.com/54585337/123354958-0f374800-d53b-11eb-8a2b-9c7041cfff47.png">
   </a>  
 </p>
-<br>
+<br> 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/dliocode/datalogger?style=flat-square">
   <img src="https://img.shields.io/github/stars/dliocode/datalogger?style=flat-square">
@@ -13,20 +13,18 @@
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=green&category=code">
   <img src="https://tokei.rs/b1/github/dliocode/datalogger?color=yellow&category=files">
  
-  <p align="center"> 
-    |
+  <p align="center">
+ |
     <a href="https://github.com/dliocode/datalogger/blob/v3/README.md">Português Brasileiro</a> |  
-    <a href="https://github.com/dliocode/datalogger/blob/v3/README.en-US.md">English</a> 
-    |
+    <a href="https://github.com/dliocode/datalogger/blob/v3/README.en.md">English</a> |
   </p>
-
 </p>
 
 # DataLogger
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
 
-Support: developer.dlio@gmail.com
+Suporte: developer.dlio@gmail.com 
 
 ## ⚙️ Instalação
 
@@ -56,7 +54,7 @@ Adicione as seguintes pastas ao seu projeto, em _Project > Options > Delphi Comp
   - [Criar uma nova instância do DataLogger](#criar-uma-nova-instância-do-datalogger)
   - [DataLogger Simple](#datalogger-simple)
   - [Custom](#custom)
-  - [Chamadas Especiais](#chamadas-especiais)
+  - [Especiais](#especiais)
     - [SlineBreak](#slinebreak)
     - [UndoLast](#undolast)
   - [Template (Formato do Log)](#template-formato-do-log)
@@ -98,78 +96,78 @@ Cada instância de um TDataLogger pode ter vários **_providers_** configurados.
 
 Aqui temos uma lista com **60 _providers_** disponíveis:
 
-| Nome                                                             | Uses                                                                                                               | Samples                                                                                                                                                                                                                                                                                                         |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [AWS CloudWatch](https://aws.amazon.com/cloudwatch)              | DataLogger.Provider.AWS.CloudWatch                                                                                 | [AWS CloudWatch](https://github.com/dliocode/datalogger/tree/main/Samples/AWSCloudWatch)                                                                                                                                                                                                                        |
-| [Axiom](https://axiom.co/)                                       | DataLogger.Provider.Axiom                                                                                          | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom)                                                                                                                                                                                                                                         |
-| [CallMeBot](https://www.callmebot.com/)                          | DataLogger.Provider.CallMeBot.WhatsApp                                                                             | [CallMeBot](https://github.com/dliocode/datalogger/tree/main/Samples/CallMeBot)                                                                                                                                                                                                                                 |
-| Console                                                          | DataLogger.Provider.Console                                                                                        | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console)<br /> [Console Simple](https://github.com/dliocode/datalogger/tree/main/Samples/Console%20-%20Simple)                                                                                                                               |
-| [Coralogix](https://coralogix.com/)                              | DataLogger.Provider.Coralogix                                                                                      | [Coralogix](https://github.com/dliocode/datalogger/tree/main/Samples/Coralogix)                                                                                                                                                                                                                                 |
-| CSV                                                              | DataLogger.Provider.CSV                                                                                            | [CSV](https://github.com/dliocode/datalogger/tree/main/Samples/CSV)                                                                                                                                                                                                                                             |
-| [Datadog](https://www.datadoghq.com/)                            | DataLogger.Provider.Datadog                                                                                        | [Datadog](https://github.com/dliocode/datalogger/tree/main/Samples/Datadog)                                                                                                                                                                                                                                     |
-| [Datalust](https://datalust.co/)                                 | DataLogger.Provider.Datalust                                                                                       | [Datalust](https://github.com/dliocode/datalogger/tree/main/Samples/Datalust)                                                                                                                                                                                                                                   |
-| [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.WebHook                                                                                | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook)                                                                                                                                                                                                                             |
-| [Dynatrace](https://www.dynatrace.com/)                          | DataLogger.Provider.Dyatrace                                                                                       | [Dynatrace](https://github.com/dliocode/datalogger/tree/main/Samples/Dynatrace)                                                                                                                                                                                                                                 |
-| [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch                                                                                  | [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch)                                                                                                                                                                                                                         |
-| [Elmah](https://elmah.io/)                                       | DataLogger.Provider.Elmah                                                                                          | [Elmah](https://github.com/dliocode/datalogger/tree/main/Samples/Elmah)                                                                                                                                                                                                                                         |
-| Email                                                            | DataLogger.Provider.Email                                                                                          | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email)                                                                                                                                                                                                                                         |
-| EventLog                                                         | DataLogger.Provider.EventLog                                                                                       | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog)                                                                                                                                                                                                                                   |
-| Events                                                           | DataLogger.Provider.Events                                                                                         | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events)<br />[Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet)<br />[Events - With SQLLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) |
-| [Firebase](https://firebase.google.com/)                         | DataLogger.Provider.Firebase.RealtimeDatabase                                                                      | [Firebase](https://github.com/dliocode/datalogger/tree/main/Samples/Firebase)                                                                                                                                                                                                                                   |
-| [Grafana](https://grafana.com/)                                  | DataLogger.Provider.Grafana.Loki<br />DataLogger.Provider.Grafana.OnCall.WebHook                                   | [Grafana](https://github.com/dliocode/datalogger/tree/main/Samples/Grafana)                                                                                                                                                                                                                                     |
-| [GraphJSON](https://graphjson.com/)                              | DataLogger.Provider.GraphJSON                                                                                      | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON)                                                                                                                                                                                                                                 |
-| [Graylog](https://www.graylog.org/)                              | DataLogger.Provider.Graylog                                                                                        | [Graylog](https://github.com/dliocode/datalogger/tree/main/Samples/Graylog)                                                                                                                                                                                                                                     |
-| HTML                                                             | DataLogger.Provider.HTML                                                                                           | [HTML](https://github.com/dliocode/datalogger/tree/main/Samples/HTML)                                                                                                                                                                                                                                           |
-| ListBox                                                          | DataLogger.Provider.ListBox                                                                                        | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox)                                                                                                                                                                                                                                     |
-| ListView                                                         | DataLogger.Provider.ListView                                                                                       | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView)                                                                                                                                                                                                                                   |
-| [Logentries](https://logentries.com/)                            | DataLogger.Provider.Logentries                                                                                     | [Logentries](https://github.com/dliocode/datalogger/tree/main/Samples/Logentries)                                                                                                                                                                                                                               |
-| [Logflare](https://logflare.app/)                                | DataLogger.Provider.Logflare                                                                                       | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare)                                                                                                                                                                                                                                   |
-| [Loggly](https://www.loggly.com/)                                | DataLogger.Provider.Loggly                                                                                         | [Loggly](https://github.com/dliocode/datalogger/tree/main/Samples/Loggly)                                                                                                                                                                                                                                       |
-| [Logstash](https://www.elastic.co/pt/logstash/)                  | DataLogger.Provider.Logstash                                                                                       | [Logstash](https://github.com/dliocode/datalogger/tree/main/Samples/Logstash)                                                                                                                                                                                                                                   |
-| [Logtail](https://betterstack.com/logtail)                       | DataLogger.Provider.Logtail                                                                                        | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail)                                                                                                                                                                                                                                     |
-| [Logz](https://logz.io/)                                         | DataLogger.Provider.Logz                                                                                           | [Logz](https://github.com/dliocode/datalogger/tree/main/Samples/Logz)                                                                                                                                                                                                                                           |
-| [Mailgun](https://www.mailgun.com/)                              | DataLogger.Provider.Mailgun.Api                                                                                    | [Mailgun](https://github.com/dliocode/datalogger/tree/main/Samples/Mailgun-Api)                                                                                                                                                                                                                                 |
-| [Mailjet](https://www.mailjet.com/)                              | DataLogger.Provider.Mailjet.Api                                                                                    | [Mailjet](https://github.com/dliocode/datalogger/tree/main/Samples/Mailjet-Api)                                                                                                                                                                                                                                 |
-| [Mattermost](https://mattermost.com/)                            | DataLogger.Provider.Mattermost<br />DataLogger.Provider.Mattermost.WebHooks                                        | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook)                                                                                                                              |
-| Memo                                                             | DataLogger.Provider.Memo                                                                                           | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo)<br />[Memo and TexFile](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile)<br />[Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL)                 |
-| Memory                                                           | DataLogger.Provider.Memory                                                                                         | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory)                                                                                                                                                                                                                                       |
-| [Mezmo](https://www.mezmo.com/)                                  | DataLogger.Provider.Mezmo                                                                                          | [Mezmo](https://github.com/dliocode/datalogger/tree/main/Samples/Mezmo)                                                                                                                                                                                                                                         |
-| [MongoDB](https://www.mongodb.com)                               | DataLogger.Provider.MongoDB.Cloud                                                                                  | [MongoDB](https://github.com/dliocode/datalogger/tree/main/Samples/MongoDB)                                                                                                                                                                                                                                     |
-| [Ntfy](https://ntfy.sh)                                          | DataLogger.Provider.Ntfy                                                                                           | [Ntfy](https://github.com/dliocode/datalogger/tree/main/Samples/Ntfy)                                                                                                                                                                                                                                           |
-| [NewRelic](https://newrelic.com)                                 | DataLogger.Provider.NewRelic                                                                                       | [NewRelic](https://github.com/dliocode/datalogger/tree/main/Samples/NewRelic)                                                                                                                                                                                                                                   |
-| Notification                                                     | DataLogger.Provider.Notification                                                                                   | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification)                                                                                                                                                                                                                           |
-| [Novu](https://novu.co/)                                         | DataLogger.Provider.Novu                                                                                           | [Novu](https://github.com/dliocode/datalogger/tree/main/Samples/Novu)                                                                                                                                                                                                                                           |
-| OutputDebugString                                                | DataLogger.Provider.OutputDebugString                                                                              | [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString)                                                                                                                                                                                                                 |
-| [PaperTrail](https://papertrailapp.com)                          | DataLogger.Provider.PaperTrail                                                                                     | [PaperTrail](https://github.com/dliocode/datalogger/tree/main/Samples/PaperTrail)                                                                                                                                                                                                                               |
-| [Postmark](https://postmarkapp.com)                              | DataLogger.Provider.Postmark.Api                                                                                   | [Postmark](https://github.com/dliocode/datalogger/tree/main/Samples/Postmark-Api)                                                                                                                                                                                                                               |
-| [RabbitMQ](https://github.com/danieleteti/delphistompclient)     | DataLogger.Provider.RabbitMQ                                                                                       | [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ)                                                                                                                                                                                                                                   |
-| [Redis](https://github.com/danieleteti/delphiredisclient)        | DataLogger.Provider.Redis                                                                                          | [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis)                                                                                                                                                                                                                                         |
-| Rest                                                             | DataLogger.Provider.REST.HTTPClient<br />DataLogger.Provider.REST.Indy<br />DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST)                                                                                                                                                                                                                                           |
-| RichEdit                                                         | DataLogger.Provider.RichEdit                                                                                       | [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit)                                                                                                                                                                                                                                   |
-| [Sematext](https://sematext.com/)                                | DataLogger.Provider.Sematext.Logs                                                                                  | [Sematext-Logs](https://github.com/dliocode/datalogger/tree/main/Samples/Sematext-Logs)                                                                                                                                                                                                                         |
-| [SendChamp](https://www.sendchamp.com/)                          | DataLogger.Provider.SendChamp.SMS<br />DataLogger.Provider.SendChamp.WhatsApp                                      | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendChamp)                                                                                                                                                                                                                                 |
-| [SendEmail](https://github.com/dliocode/sendemail)               | DataLogger.Provider.SendEmail                                                                                      | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail)                                                                                                                                                                                                                                 |
-| [SendGrid](https://sendgrid.com/)                                | DataLogger.Provider.SendGrid.WebApi                                                                                | [SendGridWebApi](https://github.com/dliocode/datalogger/tree/main/Samples/SendGrid-WebApi)                                                                                                                                                                                                                      |
-| [Slack](https://slack.com/)                                      | DataLogger.Provider.Slack.WebApi<br />DataLogger.Provider.Slack.WebHook                                            | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack)                                                                                                                                                                                                                                         |
-| [Splunk](https://www.splunk.com/)                                | DataLogger.Provider.Splunk                                                                                         | [Splunk](https://github.com/dliocode/datalogger/tree/main/Samples/Splunk)                                                                                                                                                                                                                                       |
-| Socket                                                           | DataLogger.Provider.Socket                                                                                         | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket)                                                                                                                                                                                                                                       |
-| [SumoLogic](https://www.sumologic.com/)                          | DataLogger.Provider.SumoLogic                                                                                      | [SumoLogic](https://github.com/dliocode/datalogger/tree/main/Samples/SumoLogic)                                                                                                                                                                                                                                 |
-| SysLog                                                           | DataLogger.Provider.SysLog<br />DataLogger.Provider.SysLog.Indy                                                    | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog)<br />[SysLog Indy](https://github.com/dliocode/datalogger/tree/main/Samples/SysLogIndy)                                                                                                                                               |
-| [Telegram](https://core.telegram.org/)                           | DataLogger.Provider.Telegram                                                                                       | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram)                                                                                                                                                                                                                                   |
-| TextFile                                                         | DataLogger.Provider.TextFile                                                                                       | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile)                                                                                                                                                                                                                                   |
-| [UltraMSG](https://ultramsg.com)                                 | DataLogger.Provider.UltraMSG.WhatsApp                                                                              | [UltraMSG](https://github.com/dliocode/datalogger/tree/main/Samples/UltraMSG)                                                                                                                                                                                                                                   |
-| [Twilio](https://www.twilio.com/)                                | DataLogger.Provider.Twilio.SMS<br />DataLogger.Provider.Twilio.WhatsApp                                            | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio)                                                                                                                                                                                                                                       |
-| [Z-API](https://z-api.io/)                                       | DataLogger.Provider.ZAPI.WhatsApp                                                                                  | [ZAP-API](https://github.com/dliocode/datalogger/tree/main/Samples/ZAPI)                                                                                                                                                                                                                                        |
+| Nome | Uses | Exemplos |
+| --- | --- | --- |
+| [AWS CloudWatch](https://aws.amazon.com/cloudwatch) | DataLogger.Provider.AWS.CloudWatch | [AWS CloudWatch](https://github.com/dliocode/datalogger/tree/main/Samples/AWSCloudWatch) |
+| [Axiom](https://axiom.co/) | DataLogger.Provider.Axiom | [Axiom](https://github.com/dliocode/datalogger/tree/main/Samples/Axiom) |
+| [CallMeBot](https://www.callmebot.com/) | DataLogger.Provider.CallMeBot.WhatsApp | [CallMeBot](https://github.com/dliocode/datalogger/tree/main/Samples/CallMeBot) |
+| Console | DataLogger.Provider.Console | [Console](https://github.com/dliocode/datalogger/tree/main/Samples/Console) <br />  [Console Simple](https://github.com/dliocode/datalogger/tree/main/Samples/Console%20-%20Simple) |
+| [Coralogix](https://coralogix.com/) | DataLogger.Provider.Coralogix | [Coralogix](https://github.com/dliocode/datalogger/tree/main/Samples/Coralogix) |
+| CSV | DataLogger.Provider.CSV | [CSV](https://github.com/dliocode/datalogger/tree/main/Samples/CSV) |
+| [Datadog](https://www.datadoghq.com/) | DataLogger.Provider.Datadog | [Datadog](https://github.com/dliocode/datalogger/tree/main/Samples/Datadog) |
+| [Datalust](https://datalust.co/) | DataLogger.Provider.Datalust | [Datalust](https://github.com/dliocode/datalogger/tree/main/Samples/Datalust) |
+| [Discord](https://discord.com/developers/docs/resources/webhook) | DataLogger.Provider.Discord.WebHook | [DiscordHook](https://github.com/dliocode/datalogger/tree/main/Samples/DiscordHook) |
+| [Dynatrace](https://www.dynatrace.com/) | Data Logger.Provider.Dynatrace | [Dynatrace](https://github.com/dliocode/datalogger/tree/main/Samples/Dynatrace) |
+| [ElasticSearch](https://www.elastic.co/pt/what-is/elasticsearch) | DataLogger.Provider.ElasticSearch | [ElasticSearch](https://github.com/dliocode/datalogger/tree/main/Samples/ElasticSearch) |
+| [Teach him](https://elmah.io/) | DataLogger.Provider.Elmah | [Teach him](https://github.com/dliocode/datalogger/tree/main/Samples/Elmah) |
+| Email | DataLogger.Provider.Email | [Email](https://github.com/dliocode/datalogger/tree/main/Samples/Email) |
+| event log | DataLogger.Provider.EventLog | [EventLog](https://github.com/dliocode/datalogger/tree/main/Samples/EventLog) |
+| Events | DataLogger.Provider.Events | [Events](https://github.com/dliocode/datalogger/tree/main/Samples/Events) <br /> [Events - With DataSet](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20DataSet) <br /> [Events - With SQLite](https://github.com/dliocode/datalogger/tree/main/Samples/Events%20-%20With%20SQLLite) |
+| [Firebase](https://firebase.google.com/) | Data Logger.Provider.Firebase.Realtime Database | [Firebase](https://github.com/dliocode/datalogger/tree/main/Samples/Firebase) |
+| [Grafana](https://grafana.com/) | DataLogger.Provider.Grafana.Loki <br /> DataLogger.Provider.Grafana.OnCall.WebHook | [Grafana](https://github.com/dliocode/datalogger/tree/main/Samples/Grafana) |
+| [GraphJSON](https://graphjson.com/) | DataLogger.Provider.GraphJSON | [GraphJSON](https://github.com/dliocode/datalogger/tree/main/Samples/GraphJSON) |
+| [Graylog](https://www.graylog.org/) | DataLogger.Provider.Graylog | [Graylog](https://github.com/dliocode/datalogger/tree/main/Samples/Graylog) |
+| HTML | DataLogger.Provider.HTML | [HTML](https://github.com/dliocode/datalogger/tree/main/Samples/HTML) |
+| ListBox | DataLogger.Provider.ListBox | [ListBox](https://github.com/dliocode/datalogger/tree/main/Samples/ListBox) |
+| ListView | DataLogger.Provider.ListView | [ListView](https://github.com/dliocode/datalogger/tree/main/Samples/ListView) |
+| [Logentries](https://logentries.com/) | DataLogger.Provider.Logentries | [Logentries](https://github.com/dliocode/datalogger/tree/main/Samples/Logentries) |
+| [Logflare](https://logflare.app/) | DataLogger.Provider.Logflare | [Logflare](https://github.com/dliocode/datalogger/tree/main/Samples/Logflare) |
+| [Loggly](https://www.loggly.com/) | DataLogger.Provider.Loggly | [Loggly](https://github.com/dliocode/datalogger/tree/main/Samples/Loggly) |
+| [Logstash](https://www.elastic.co/pt/logstash/) | DataLogger.Provider.Logstash | [Logstash](https://github.com/dliocode/datalogger/tree/main/Samples/Logstash) |
+| [Logtail](https://betterstack.com/logtail) | DataLogger.Provider.Logtail | [Logtail](https://github.com/dliocode/datalogger/tree/main/Samples/Logtail) |
+| [Logz](https://logz.io/) | DataLogger.Provider.Logz | [Logz](https://github.com/dliocode/datalogger/tree/main/Samples/Logz) |
+| [Mailgun](https://www.mailgun.com/) | DataLogger.Provider.Mailgun.Api | [Mailgun](https://github.com/dliocode/datalogger/tree/main/Samples/Mailgun-Api) |
+| [Mailjet](https://www.mailjet.com/) | DataLogger.Provider.Mailjet.Api | [Mailjet](https://github.com/dliocode/datalogger/tree/main/Samples/Mailjet-Api) |
+| [Mattermost](https://mattermost.com/) | DataLogger.Provider.Mattermost <br /> DataLogger.Provider.Mattermost.WebHooks | [Mattermost](https://github.com/dliocode/datalogger/tree/main/Samples/Mattermost) <br /> [MattermostHook](https://github.com/dliocode/datalogger/tree/main/Samples/MattermostHook) |
+| Memo | DataLogger.Provider.Memo | [Memo](https://github.com/dliocode/datalogger/tree/main/Samples/Memo) <br /> [Memo and Text File](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20and%20TexFile) <br /> [Memo - Only Error/VCL](https://github.com/dliocode/datalogger/tree/main/Samples/Memo%20-%20Only%20Error/VCL) |
+| Memory | DataLogger.Provider.Memory | [Memory](https://github.com/dliocode/datalogger/tree/main/Samples/Memory) |
+| [Mezma](https://www.mezmo.com/) | DataLogger.Provider.Mezmo | [Mezma](https://github.com/dliocode/datalogger/tree/main/Samples/Mezmo) |
+| [MongoDB](https://www.mongodb.com) | DataLogger.Provider.MongoDB.Cloud | [MongoDB](https://github.com/dliocode/datalogger/tree/main/Samples/MongoDB) |
+| [Ntfy](https://ntfy.sh) | DataLogger.Provider.Ntfy | [Ntfy](https://github.com/dliocode/datalogger/tree/main/Samples/Ntfy) |
+| [NewRelic](https://newrelic.com) | DataLogger.Provider.NewRelic | [NewRelic](https://github.com/dliocode/datalogger/tree/main/Samples/NewRelic) |
+| Notification | DataLogger.Provider.Notification | [Notification](https://github.com/dliocode/datalogger/tree/main/Samples/Notification) |
+| [New](https://novu.co/) | DataLogger.Provider.Novu | [New](https://github.com/dliocode/datalogger/tree/main/Samples/Novu) |
+| OutputDebugString | DataLogger.Provider.OutputDebugString | [OutputDebugString](https://github.com/dliocode/datalogger/tree/main/Samples/OutputDebugString) |
+| [PaperTrail](https://papertrailapp.com) | DataLogger.Provider.PaperTrail | [PaperTrail](https://github.com/dliocode/datalogger/tree/main/Samples/PaperTrail) |
+| [Postmark](https://postmarkapp.com) | DataLogger.Provider.Postmark.Api | [Postmark](https://github.com/dliocode/datalogger/tree/main/Samples/Postmark-Api) |
+| [RabbitMQ](https://github.com/danieleteti/delphistompclient) | DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/dliocode/datalogger/tree/main/Samples/RabbitMQ) |
+| [Redis](https://github.com/danieleteti/delphiredisclient) | DataLogger.Provider.Redis | [Redis](https://github.com/dliocode/datalogger/tree/main/Samples/Redis) |
+| Rest | DataLogger.Provider.REST.HTTPClient <br /> DataLogger.Provider.REST.Indy <br /> DataLogger.Provider.REST.NetHTTPClient | [Rest](https://github.com/dliocode/datalogger/tree/main/Samples/REST) |
+| RichEdit | DataLogger.Provider.RichEdit | [RichEdit](https://github.com/dliocode/datalogger/tree/main/Samples/RichEdit) |
+| [Sematext](https://sematext.com/) | DataLogger.Provider.Sematext.Logs | [Sematext-Logs](https://github.com/dliocode/datalogger/tree/main/Samples/Sematext-Logs) |
+| [SendChamp](https://www.sendchamp.com/) | DataLogger.Provider.SendChamp.SMS <br /> DataLogger.Provider.SendChamp.WhatsApp | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendChamp) |
+| [SendEmail](https://github.com/dliocode/sendemail) | DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/datalogger/tree/main/Samples/SendEmail) |
+| [SendGrid](https://sendgrid.com/) | DataLogger.Provider.SendGrid.WebApi | [SendGridWebApi](https://github.com/dliocode/datalogger/tree/main/Samples/SendGrid-WebApi) |
+| [Slack](https://slack.com/) | DataLogger.Provider.Slack.WebApi <br /> DataLogger.Provider.Slack.WebHook | [Slack](https://github.com/dliocode/datalogger/tree/main/Samples/Slack) |
+| [Splunk](https://www.splunk.com/) | DataLogger.Provider.Splunk | [Splunk](https://github.com/dliocode/datalogger/tree/main/Samples/Splunk) |
+| Socket | DataLogger.Provider.Socket | [Socket](https://github.com/dliocode/datalogger/tree/main/Samples/Socket) |
+| [SumoLogic](https://www.sumologic.com/) | DataLogger.Provider.SumoLogic | [SumoLogic](https://github.com/dliocode/datalogger/tree/main/Samples/SumoLogic) |
+| SysLog | DataLogger.Provider.SysLog <br /> DataLogger.Provider.SysLog.Indy | [SysLog](https://github.com/dliocode/datalogger/tree/main/Samples/SysLog) <br /> [SysLog Indy](https://github.com/dliocode/datalogger/tree/main/Samples/SysLogIndy) |
+| [Telegram](https://core.telegram.org/) | DataLogger.Provider.Telegram | [Telegram](https://github.com/dliocode/datalogger/tree/main/Samples/Telegram) |
+| TextFile | DataLogger.Provider.TextFile | [TextFile](https://github.com/dliocode/datalogger/tree/main/Samples/TextFile) |
+| [UltraMSG](https://ultramsg.com) | DataLogger.Provider.UltraMSG.WhatsApp | [UltraMSG](https://github.com/dliocode/datalogger/tree/main/Samples/UltraMSG) |
+| [Twilio](https://www.twilio.com/) | DataLogger.Provider.Twilio.SMS <br /> DataLogger.Provider.Twilio.WhatsApp | [Twilio](https://github.com/dliocode/datalogger/tree/main/Samples/Twilio) |
+| [Z-API](https://z-api.io/) | DataLogger.Provider.ZAPI.WhatsApp | [Z-API](https://github.com/dliocode/datalogger/tree/main/Samples/ZAPI) |
 
 ## Dependências
 
 Essas dependências se dá quando utilizado alguns _providers_
 
-| Provider                      | Dependence                                                   |
-| ----------------------------- | ------------------------------------------------------------ |
-| DataLogger.Provider.RabbitMQ  | [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
-| DataLogger.Provider.Redis     | [Redis](https://github.com/danieleteti/delphiredisclient)    |
-| DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/sendemail)           |
+| Provider | Dependence |
+| --- | --- |
+| DataLogger.Provider.RabbitMQ | [RabbitMQ](https://github.com/danieleteti/delphistompclient) |
+| DataLogger.Provider.Redis | [Redis](https://github.com/danieleteti/delphiredisclient) |
+| DataLogger.Provider.SendEmail | [SendEmail](https://github.com/dliocode/sendemail) |
 
 ## Informações Extras
 
@@ -323,13 +321,13 @@ begin
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
+  Logger.Info('My message with level INFO');
   Logger.SlineBreak;
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05.500 [INFO] My message with level INFO
   // Output:
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -353,15 +351,15 @@ begin
   Logger.SetTemplate('${timestamp} [${level}] ${message}');
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
+  Logger.Info('My message with level INFO');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
+  // Output: 2022-12-01 09:00:05.500 [INFO] My message with level INFO
 
   Sleep(4000);
   Logger.UndoLast;
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -472,11 +470,11 @@ begin
   Logger.SetTemplate(Format('%s [%s] %s', [TLoggerTemplate.LOG_TIMESTAMP, TLoggerTemplate.LOG_LEVEL, LoggerTemplate.LOG_MESSAGE]));
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Info('My message with level INFO');
+  Logger.Error('My message with level ERROR');
 
-  // Output: 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.500 [INFO] My message with level INFO
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -506,16 +504,16 @@ begin
   );
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Info('My message with level INFO');
+  Logger.Error('My message with level ERROR');
 
   // Output Console:
-  // 2022-12-01 09:00:05.500 [INFO] Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 [INFO] My message with level INFO
+  // 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   // Output TextFile:
-  // 2022-12-01 09:00:05.500 - Minha mensagem no Log do tipo INFO
-  // 2022-12-01 09:00:05.600 - Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 - My message with level INFO
+  // 2022-12-01 09:00:05.600 - My message with level ERROR
 
   Readln;
 end.
@@ -545,11 +543,11 @@ begin
   Logger.SetTemplate(Format('%s [%s] %s', [TLoggerTemplate.LOG_TIMESTAMP, TLoggerTemplate.LOG_LEVEL, LoggerTemplate.LOG_MESSAGE]));
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Info('My message with level INFO');
+  Logger.Error('My message with level ERROR');
 
-  // Output: 01/12/2022 09:00:05 [INFO] Minha mensagem no Log do tipo INFO
-  // Output: 01/12/2022 09:00:05 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 01/12/2022 09:00:05 [INFO] My message with level INFO
+  // Output: 01/12/2022 09:00:05 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -600,11 +598,11 @@ begin
   Logger.SetLevelName(TLoggerLevel.Warn, '  WARNING  ');
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
+  Logger.Info('My message with level INFO');
+  Logger.Warn('My message with level WARN');
 
-  // Output: 2022-12-01 09:00:05.600 [INFORMATION] Minha mensagem no Log do tipo INFO
-  // Output: 2022-12-01 09:00:05.600 [  WARNING  ] Minha mensagem no Log do tipo WARN
+  // Output: 2022-12-01 09:00:05.600 [INFORMATION] My message with level INFO
+  // Output: 2022-12-01 09:00:05.600 [  WARNING  ] My message with level WARN
 
   Readln;
 end.
@@ -648,10 +646,10 @@ begin
   Logger.SetLevel(TLoggerLevel.Warn);
 
   // Gerando os logs
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Info('My message with level INFO');
+  Logger.Error('My message with level ERROR');
 
-  // Output: 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // Output: 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -681,14 +679,14 @@ begin
   Logger.SetDisableLevel([TLoggerLevel.Info, TLoggerLevel.Warn]);
 
   // Gerando os logs
-  Logger.Debug('Minha mensagem no Log do tipo DEBUG');
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Debug('My message with level DEBUG');
+  Logger.Info('My message with level INFO');
+  Logger.Warn('My message with level WARN');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.500 [DEBUG] Minha mensagem no Log do tipo DEBUG
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.500 [DEBUG] My message with level DEBUG
+  // 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -718,13 +716,13 @@ begin
   Logger.SetOnlyLevel([TLoggerLevel.Error]);
 
   // Gerando os logs
-  Logger.Debug('Minha mensagem no Log do tipo DEBUG');
-  Logger.Info('Minha mensagem no Log do tipo INFO');
-  Logger.Warn('Minha mensagem no Log do tipo WARN');
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Debug('My message with level DEBUG');
+  Logger.Info('My message with level INFO');
+  Logger.Warn('My message with level WARN');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -763,10 +761,10 @@ begin
   );
 
   // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -793,10 +791,10 @@ begin
   Logger.SetMaxRetries(5);
 
   // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -840,10 +838,10 @@ begin
   Logger.SetIgnoreTemplate(True, '|', True, ' -> ');
 
   // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name ->  | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag ->  | message -> My Trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
+  // timestamp -> 2022-09-15T14:39:38.896-03:00 | timestamp_format -> 2022-09-15 14:39:38.896 | name -> | sequence -> 1 | thread_id -> 3804 | level -> Trace | level_value -> 1 | tag -> | message -> My Trace | app_name -> ProviderTextFile | app_version -> 1.0.0.0 | app_path -> C:\Github\DataLogger\Samples\TextFile\Win32\Debug | app_size -> 13,24 MB | computer_name -> DESKTOP-7RP1H3K | username -> danil | os_version -> Windows 10 (Version 21H2, OS Build 19044.1889, 64-bit Edition) | process_id -> 13608 | ip_local -> 192.168.56.1
 
   Readln;
 end.
@@ -870,10 +868,10 @@ begin
   Logger.SetName('MyLogger');
 
   // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -902,10 +900,10 @@ begin
   Logger.SetLiveMode(True);
 
   // Gerando o log
-  Logger.Error('Minha mensagem no Log do tipo ERROR');
+  Logger.Error('My message with level ERROR');
 
   // Output:
-  // MyLogger 2022-12-01 09:00:05.600 [ERROR] Minha mensagem no Log do tipo ERROR
+  // MyLogger 2022-12-01 09:00:05.600 [ERROR] My message with level ERROR
 
   Readln;
 end.
@@ -967,15 +965,15 @@ begin
   Writeln('Iniciou a transaction');
 
   // Gerando o log
-  Logger.Info('Minha mensagem no Log do tipo INFO 1 ');
-  Logger.Info('Minha mensagem no Log do tipo INFO 2');
-  Logger.Info('Minha mensagem no Log do tipo INFO 3');
-  Logger.Info('Minha mensagem no Log do tipo INFO 4');
-  Logger.Info('Minha mensagem no Log do tipo INFO 5');
-  Logger.Info('Minha mensagem no Log do tipo INFO 6');
-  Logger.Info('Minha mensagem no Log do tipo INFO 7');
-  Logger.Info('Minha mensagem no Log do tipo INFO 8');
-  Logger.Info('Minha mensagem no Log do tipo INFO 9');
+  Logger.Info('My message with level INFO 1 ');
+  Logger.Info('My message with level INFO 2');
+  Logger.Info('My message with level INFO 3');
+  Logger.Info('My message with level INFO 4');
+  Logger.Info('My message with level INFO 5');
+  Logger.Info('My message with level INFO 6');
+  Logger.Info('My message with level INFO 7');
+  Logger.Info('My message with level INFO 8');
+  Logger.Info('My message with level INFO 9');
 
   Writeln('Terminou os Logs');
 
@@ -1010,24 +1008,24 @@ begin
   Logger.StartTransaction;
   try
     // Gerando o log
-    Logger.Info('Minha mensagem no Log do tipo INFO 1 ');
-    Logger.Info('Minha mensagem no Log do tipo INFO 2');
-    Logger.Info('Minha mensagem no Log do tipo INFO 3');
-    Logger.Info('Minha mensagem no Log do tipo INFO 4');
+    Logger.Info('My message with level INFO 1 ');
+    Logger.Info('My message with level INFO 2');
+    Logger.Info('My message with level INFO 3');
+    Logger.Info('My message with level INFO 4');
 
     // Iniciando 2 transaction
     Logger.StartTransaction;
     try
-      Logger.Info('Minha mensagem no Log do tipo INFO 5');
-      Logger.Info('Minha mensagem no Log do tipo INFO 6');
+      Logger.Info('My message with level INFO 5');
+      Logger.Info('My message with level INFO 6');
     finally
       // fazendo Rollback da segunda transaction
       Logger.RollbackTransaction;
     end;
 
-    Logger.Info('Minha mensagem no Log do tipo INFO 7');
-    Logger.Info('Minha mensagem no Log do tipo INFO 8');
-    Logger.Info('Minha mensagem no Log do tipo INFO 9');
+    Logger.Info('My message with level INFO 7');
+    Logger.Info('My message with level INFO 8');
+    Logger.Info('My message with level INFO 9');
   finally
     // Fazendo o commit
     Logger.CommitTransaction;
