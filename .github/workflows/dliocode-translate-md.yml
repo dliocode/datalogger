@@ -3,8 +3,7 @@ name: dliocode-translate-md
 on:
   push:
     branches:
-      - main
-      - master
+      - v3
     paths:
       - 'README.md'    	  
 jobs:
