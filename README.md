@@ -20,7 +20,7 @@
   </p>
 </p>
 
-# DataLogger
+# DataLogger 
 
 DataLogger foi projetado para ser uma biblioteca simples de log com suporte a vários _providers_.
 
