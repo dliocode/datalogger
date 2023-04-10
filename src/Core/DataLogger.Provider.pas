@@ -619,8 +619,7 @@ begin
           LListLoggerItem := nil;
           LTransaction.ListItemTransaction.TryGetValue(LTransaction.ListItemTransaction.Count, LListLoggerItem);
           if not Assigned(LListLoggerItem) then
-            raise Exception.Create('Erro para achar o transaction');
-          // Exit;
+            Exit;
 
           LListLoggerItem.Add(LItem);
 
