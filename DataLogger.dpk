@@ -112,6 +112,7 @@ contains
   DataLogger.Simple in 'src\Core\DataLogger.Simple.pas',
   DataLogger.Transaction in 'src\Core\DataLogger.Transaction.pas',
   DataLogger.Types in 'src\Core\DataLogger.Types.pas',
-  DataLogger.Utils in 'src\Core\DataLogger.Utils.pas';
+  DataLogger.Utils in 'src\Core\DataLogger.Utils.pas',
+  DataLogger.Provider.Supabase in 'src\Providers\DataLogger.Provider.Supabase.pas';
 
 end.
