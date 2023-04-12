@@ -71,7 +71,8 @@ type
     FColorFatal: TColorConsole;
     FColorCustom: TColorConsole;
 
-    procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
+    procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True); overload;
+    procedure WriteColor(const AColorBackground: TColor; const AColorForeground: TColor; const ALog: string; const ASlinebreak: Boolean = True); overload;
     procedure UndoLast;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
@@ -383,11 +384,6 @@ begin
 end;
 
 procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
-  function _Color(const AColor: TColorConsole): SmallInt;
-  begin
-    Result := SmallInt(Integer(AColor.Background) shl 4) or Integer(AColor.Foreground);
-  end;
-
   function _ColorLevel: TColorConsole;
   begin
     case ALevel of
@@ -419,15 +415,26 @@ procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: st
     end;
   end;
 
+var
+  LColorLevel: TColorConsole;
+begin
+  LColorLevel := _ColorLevel;
+  WriteColor(LColorLevel.Background, LColorLevel.Foreground, ALog, ASlinebreak);
+end;
+
+procedure TProviderConsole.WriteColor(const AColorBackground: TColor; const AColorForeground: TColor; const ALog: string; const ASlinebreak: Boolean = True);
 {$IF DEFINED(MSWINDOWS)}
 
 var
+  LColorLevel: SmallInt;
   LHandleOutput: THandle;
   LBufferInfo: TConsoleScreenBufferInfo;
 begin
+  LColorLevel := SmallInt(Integer(AColorBackground) shl 4) or Integer(AColorForeground);
+
   LHandleOutput := GetStdHandle(STD_OUTPUT_HANDLE);
   GetConsoleScreenBufferInfo(LHandleOutput, LBufferInfo);
-  SetConsoleTextAttribute(LHandleOutput, _Color(_ColorLevel));
+  SetConsoleTextAttribute(LHandleOutput, LColorLevel);
 
   if ASlinebreak then
     Writeln(ALog)
@@ -439,15 +446,20 @@ end;
 
 {$ELSEIF DEFINED(LINUX)}
 
+
 var
-  LColor: Integer;
+  LColorBackground: Integer;
+  LColorForeground: Integer;
 begin
-  LColor := Integer(_ColorLevel.Foreground) + 30;
+  LColorForeground := Integer(AColorForeground) + 30;
+  if (LColorForeground > 37) then
+    LColorForeground := Integer(AColorForeground) + 90 - 8;
 
-  if (LColor > 37) then
-    LColor := LColor - 8;
+  LColorBackground := Integer(AColorBackground) + 40;
+  if (LColorBackground > 47) then
+    LColorBackground := Integer(AColorBackground) + 100 - 8;
 
-  Write(#27'[1;' + LColor.ToString + 'm');
+  Write(#27'[0;' + LColorForeground.ToString + ';' + LColorBackground.ToString + 'm');
 
   if ASlinebreak then
     Writeln(ALog)
@@ -459,11 +471,13 @@ end;
 
 {$ELSE}
 
+
 begin
   Writeln(ALog);
 end;
 
 {$ENDIF}
+
 
 procedure TProviderConsole.UndoLast;
 {$IF DEFINED(MSWINDOWS)}
@@ -490,6 +504,7 @@ end;
 
 {$ELSE}
 
+
 begin
   Write(#27'[1F'); // Move Line Prior
   Write(#27'[K'); // Move End Cursor
@@ -497,6 +512,7 @@ begin
 end;
 
 {$ENDIF}
+
 
 procedure ForceReferenceToClass(C: TClass);
 begin
