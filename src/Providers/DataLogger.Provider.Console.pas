@@ -39,7 +39,7 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
-  System.SysUtils, System.JSON, System.Generics.Collections;
+  System.SysUtils, System.StrUtils, System.JSON, System.Generics.Collections, System.TypInfo;
 
 type
 {$SCOPEDENUMS ON}
@@ -74,6 +74,7 @@ type
     procedure WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True); overload;
     procedure WriteColor(const AColorBackground: TColor; const AColorForeground: TColor; const ALog: string; const ASlinebreak: Boolean = True); overload;
     procedure UndoLast;
+    function ColorLevel(const ALevel: TLoggerLevel): TColorConsole;
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -88,6 +89,12 @@ type
   end;
 
 implementation
+
+type
+  TColorHelper = record helper for TColor
+  public
+    function ToString: string;
+  end;
 
 { TProviderConsole }
 
@@ -227,16 +234,17 @@ var
   LRetriesCount: Integer;
   LItem: TLoggerItem;
   LLog: string;
-  LTagsKeys: TArray<string>;
-  LTagsValues: TArray<string>;
-  LTagsLevel: TArray<TLoggerLevel>;
-  LLevel: TLoggerLevel;
   LTag: string;
-  LTags: TDictionary<string, string>;
+  LTagsColorKeys: TArray<string>;
+  LTagsColorValues: TArray<string>;
+  LTagsColor: TArray<TColor>;
+  LColor: TColor;
+  LListTags: TDictionary<string, string>;
   LLogMessage: string;
   I: Integer;
-  J: Integer;
   LTemplateBase: TArray<string>;
+  J: Integer;
+  LColorLevel: TColorConsole;
 begin
   if not IsConsole then
     Exit;
@@ -272,37 +280,47 @@ begin
 
         if FUseColorCustomTemplate then
         begin
-          LTagsKeys := [];
-          LTagsValues := [];
-          LTagsLevel := [];
+          // Color
+          LTagsColorKeys := [];
+          LTagsColorValues := [];
+          LTagsColor := [];
 
-          for LLevel := Low(TLoggerLevel) to High(TLoggerLevel) do
+          LTag := C_TAG;
+          LListTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [LTag]);
+          LColor := ColorLevel(LItem.Level).Foreground;
+          try
+            if (LListTags.Count > 0) then
+            begin
+              LTagsColorKeys := LTagsColorKeys + LListTags.Keys.ToArray;
+              LTagsColorValues := LTagsColorValues + LListTags.Values.ToArray;
+
+              for I := Low(LListTags.Keys.ToArray) to High(LListTags.Keys.ToArray) do
+                LTagsColor := LTagsColor + [LColor];
+            end;
+          finally
+            LListTags.Free;
+          end;
+
+          for LColor := Low(TColor) to High(TColor) do
           begin
-            LTag := C_TAG;
-            if not(LLevel = TLoggerLevel.All) then
-              LTag := LTag + '_' + LLevel.ToString.ToLower;
+            LTag := C_TAG + '_' + LColor.ToString.ToLower;
 
-            LTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [LTag]);
+            LListTags := SerializeItem.LogItem(LItem).ToListTAG(LLog, [LTag]);
             try
-              if (LTags.Count = 0) then
+              if (LListTags.Count = 0) then
                 Continue;
 
-              LTagsKeys := LTagsKeys + LTags.Keys.ToArray;
-              LTagsValues := LTagsValues + LTags.Values.ToArray;
+              LTagsColorKeys := LTagsColorKeys + LListTags.Keys.ToArray;
+              LTagsColorValues := LTagsColorValues + LListTags.Values.ToArray;
 
-              for I := Low(LTags.Keys.ToArray) to High(LTags.Keys.ToArray) do
-              begin
-                if (LLevel = TLoggerLevel.All) then
-                  LTagsLevel := LTagsLevel + [LItem.Level]
-                else
-                  LTagsLevel := LTagsLevel + [LLevel];
-              end;
+              for I := Low(LListTags.Keys.ToArray) to High(LListTags.Keys.ToArray) do
+                LTagsColor := LTagsColor + [LColor];
             finally
-              LTags.Free;
+              LListTags.Free;
             end;
           end;
 
-          if (Length(LTagsKeys) = 0) then
+          if (Length(LTagsColorKeys) = 0) then
           begin
             if FUseColor then
               WriteColor(LItem.Level, LLog, False)
@@ -314,17 +332,36 @@ begin
             LLogMessage := LLog;
 
             repeat
-              for I := 0 to Pred(Length(LTagsKeys)) do
+              // Color
+              for I := 0 to Pred(Length(LTagsColorKeys)) do
               begin
                 if LLogMessage.Trim.IsEmpty then
                   Break;
 
-                if not LLogMessage.Contains(LTagsKeys[I]) then
+                if not LLogMessage.Contains(LTagsColorKeys[I]) then
                   Continue;
 
-                LTemplateBase := LLogMessage.Split(['${' + LTagsKeys[I] + '}']);
+                LTemplateBase := LLogMessage.Split(['${' + LTagsColorKeys[I] + '}']);
                 if (Length(LTemplateBase) > 1) then
-                  if LTemplateBase[0].Contains(C_TAG) then
+                  if
+                    (LTemplateBase[0].Contains(C_TAG + '_black}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkblue}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkgreen}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkcyan}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkred}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkmagenta}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkyellow}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_gray}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_darkgray}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_blue}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_green}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_cyan}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_red}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_magenta}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_yellow}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '_white}')) or
+                    (LTemplateBase[0].Contains(C_TAG + '}'))
+                  then
                     Continue;
 
                 LLogMessage := '';
@@ -334,7 +371,7 @@ begin
                     LLogMessage := LLogMessage + LTemplateBase[J];
 
                     if (J <> High(LTemplateBase)) then
-                      LLogMessage := LLogMessage + '${' + LTagsKeys[I] + '}';
+                      LLogMessage := LLogMessage + '${' + LTagsColorKeys[I] + '}';
                   end;
 
                 if FUseColor then
@@ -342,13 +379,30 @@ begin
                 else
                   Write(LTemplateBase[0]);
 
-                WriteColor(LTagsLevel[I], LTagsValues[I], False);
+                LColorLevel := ColorLevel(LItem.Level);
+                WriteColor(LColorLevel.Background, LTagsColor[I], LTagsColorValues[I], False);
               end;
-            until not LLogMessage.Contains(C_TAG);
+            until (not LLogMessage.Contains(C_TAG + '_black}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkblue}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkgreen}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkcyan}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkred}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkmagenta}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkyellow}')) and
+                  (not LLogMessage.Contains(C_TAG + '_gray}')) and
+                  (not LLogMessage.Contains(C_TAG + '_darkgray}')) and
+                  (not LLogMessage.Contains(C_TAG + '_blue}')) and
+                  (not LLogMessage.Contains(C_TAG + '_green}')) and
+                  (not LLogMessage.Contains(C_TAG + '_cyan}')) and
+                  (not LLogMessage.Contains(C_TAG + '_red}')) and
+                  (not LLogMessage.Contains(C_TAG + '_magenta}')) and
+                  (not LLogMessage.Contains(C_TAG + '_yellow}')) and
+                  (not LLogMessage.Contains(C_TAG + '_white}')) and
+                  (not LLogMessage.Contains(C_TAG + '}'))
           end;
 
           if LLogMessage.Trim.IsEmpty then
-            Writeln
+            Writeln('')
           else
             if FUseColor then
               WriteColor(LItem.Level, LLogMessage)
@@ -384,41 +438,10 @@ begin
 end;
 
 procedure TProviderConsole.WriteColor(const ALevel: TLoggerLevel; const ALog: string; const ASlinebreak: Boolean = True);
-  function _ColorLevel: TColorConsole;
-  begin
-    case ALevel of
-      TLoggerLevel.Trace:
-        Result := FColorTrace;
-
-      TLoggerLevel.Debug:
-        Result := FColorDebug;
-
-      TLoggerLevel.Info:
-        Result := FColorInfo;
-
-      TLoggerLevel.Success:
-        Result := FColorSuccess;
-
-      TLoggerLevel.Warn:
-        Result := FColorWarn;
-
-      TLoggerLevel.Error:
-        Result := FColorError;
-
-      TLoggerLevel.Fatal:
-        Result := FColorFatal;
-
-      TLoggerLevel.Custom:
-        Result := FColorCustom;
-    else
-      Result := FColorInfo;
-    end;
-  end;
-
 var
   LColorLevel: TColorConsole;
 begin
-  LColorLevel := _ColorLevel;
+  LColorLevel := ColorLevel(ALevel);
   WriteColor(LColorLevel.Background, LColorLevel.Foreground, ALog, ASlinebreak);
 end;
 
@@ -446,18 +469,17 @@ end;
 
 {$ELSEIF DEFINED(LINUX)}
 
-
 var
   LColorBackground: Integer;
   LColorForeground: Integer;
 begin
   LColorForeground := Integer(AColorForeground) + 30;
   if (LColorForeground > 37) then
-    LColorForeground := Integer(AColorForeground) + 90 - 8;
+    LColorForeground := Integer(AColorForeground) + 82;
 
   LColorBackground := Integer(AColorBackground) + 40;
   if (LColorBackground > 47) then
-    LColorBackground := Integer(AColorBackground) + 100 - 8;
+    LColorBackground := Integer(AColorBackground) + 92;
 
   Write(#27'[0;' + LColorForeground.ToString + ';' + LColorBackground.ToString + 'm');
 
@@ -471,13 +493,42 @@ end;
 
 {$ELSE}
 
-
 begin
   Writeln(ALog);
 end;
 
 {$ENDIF}
 
+function TProviderConsole.ColorLevel(const ALevel: TLoggerLevel): TColorConsole;
+begin
+  case ALevel of
+    TLoggerLevel.Trace:
+      Result := FColorTrace;
+
+    TLoggerLevel.Debug:
+      Result := FColorDebug;
+
+    TLoggerLevel.Info:
+      Result := FColorInfo;
+
+    TLoggerLevel.Success:
+      Result := FColorSuccess;
+
+    TLoggerLevel.Warn:
+      Result := FColorWarn;
+
+    TLoggerLevel.Error:
+      Result := FColorError;
+
+    TLoggerLevel.Fatal:
+      Result := FColorFatal;
+
+    TLoggerLevel.Custom:
+      Result := FColorCustom;
+  else
+    Result := FColorInfo;
+  end;
+end;
 
 procedure TProviderConsole.UndoLast;
 {$IF DEFINED(MSWINDOWS)}
@@ -502,8 +553,7 @@ begin
   SetConsoleCursorPosition(LHandleOutput, LCoord);
 end;
 
-{$ELSE}
-
+{$ELSEIF DEFINED(LINUX)}
 
 begin
   Write(#27'[1F'); // Move Line Prior
@@ -511,11 +561,23 @@ begin
   Write(#27'[2K'); // Clear Line
 end;
 
-{$ENDIF}
+{$ELSE}
 
+begin
+
+end;
+
+{$ENDIF}
 
 procedure ForceReferenceToClass(C: TClass);
 begin
+end;
+
+{ TColorHelper }
+
+function TColorHelper.ToString: string;
+begin
+  Result := GetEnumName(TypeInfo(TColor), Integer(Self)).ToLower;
 end;
 
 initialization
