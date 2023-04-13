@@ -12,20 +12,7 @@ uses
 
 
 begin
-  Logger.AddProvider(
-    TProviderConsole.Create
-    // .UseColorInConsole(True)
-    // .UseColorOnlyInLevels(True)
-
-    // .ChangeColor(TLoggerLevel.Trace, TColor.Black, TColor.Magenta)
-    // .ChangeColor(TLoggerLevel.Debug, TColor.Black, TColor.Cyan)
-    // .ChangeColor(TLoggerLevel.Info, TColor.Black, TColor.White)
-    // .ChangeColor(TLoggerLevel.Success, TColor.Black, TColor.Green)
-    // .ChangeColor(TLoggerLevel.Warn, TColor.Black, TColor.Yellow)
-    // .ChangeColor(TLoggerLevel.Error, TColor.Black, TColor.Red)
-    // .ChangeColor(TLoggerLevel.Fatal, TColor.Black, TColor.DarkRed)
-    // .ChangeColor(TLoggerLevel.Custom, TColor.Black, TColor.White)
-    );
+  Logger.AddProvider(TProviderConsole.Create);
 
   // Log Format
   Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - [' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);

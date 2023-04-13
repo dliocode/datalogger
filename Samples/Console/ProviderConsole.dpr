@@ -28,9 +28,6 @@ begin
   // Log Format
   Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - [' + TLoggerTemplate.LOG_LEVEL + ']: ' + TLoggerTemplate.LOG_MESSAGE);
 
-  // if (UseColorInConsole = False) and (UseColorInConsoleByLogFormat = True) - use this logformat
-  // Logger.SetTemplate('${timestamp_color} - [${level_color_warn}]: ${message_color}');
-
   Logger
     .Trace('My Trace')
     .Debug('My Debug')
