@@ -4,7 +4,7 @@ interface
 
 uses
   DataLogger.Types,
-  System.StrUtils, System.SysUtils, System.JSON, System.Classes, System.Generics.Collections;
+  System.SysUtils, System.JSON, System.Classes, System.Generics.Collections;
 
 type
   ILoggerSerializeItem = interface
