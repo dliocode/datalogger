@@ -46,7 +46,7 @@ uses
 {$ELSE}
   DataLogger.Provider.REST.HTTPClient,
 {$ENDIF}
-  System.SysUtils, System.Classes, System.JSON, System.RegularExpressions, System.NetEncoding, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON, System.DateUtils;
 
 type
   TProviderSupabase = class(TDataLoggerProvider<TProviderSupabase>)

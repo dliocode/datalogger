@@ -39,7 +39,7 @@ uses
 {$IF DEFINED(MSWINDOWS)}
   Winapi.Windows,
 {$ENDIF}
-  System.SysUtils, System.StrUtils, System.JSON, System.Generics.Collections, System.TypInfo;
+  System.SysUtils, System.JSON, System.Generics.Collections, System.TypInfo;
 
 type
 {$SCOPEDENUMS ON}
