@@ -428,6 +428,7 @@ begin
     LHTTP.AcceptCharSet := 'utf-8';
     LHTTP.AcceptEncoding := 'gzip, deflate';
     LHTTP.Accept := '*/*';
+    LHTTP.SecureProtocols := [THTTPSecureProtocol.TLS12, THTTPSecureProtocol.TLS13];
 
     if not FAuthorization.Trim.IsEmpty then
       LHTTP.CustomHeaders['Authorization'] := FAuthorization;
