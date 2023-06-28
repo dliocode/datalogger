@@ -428,14 +428,14 @@ begin
     LHTTP.ConnectionTimeout := 60000;
     LHTTP.ResponseTimeout := 60000;
     LHTTP.SendTimeout := 60000;
+    LHTTP.SecureProtocols := [THTTPSecureProtocol.TLS12, THTTPSecureProtocol.TLS13];
 {$ENDIF}
     LHTTP.HandleRedirects := True;
     LHTTP.UserAgent := 'DataLogger.Provider.REST.HTTPClient';
     LHTTP.ContentType := FContentType;
     LHTTP.AcceptCharSet := 'utf-8';
     LHTTP.AcceptEncoding := 'gzip, deflate';
-    LHTTP.Accept := '*/*';
-    LHTTP.SecureProtocols := [THTTPSecureProtocol.TLS12, THTTPSecureProtocol.TLS13];
+    LHTTP.Accept := '*/*';    
 
     if not FAuthorization.Trim.IsEmpty then
       LHTTP.CustomHeaders['Authorization'] := FAuthorization;
