@@ -246,8 +246,9 @@ var
   J: Integer;
   LColorLevel: TColorConsole;
 begin
-  if not IsConsole then
+  {$IF NOT DEFINED(CONSOLE)}
     Exit;
+  {$ENDIF}
 
   if (Length(ACache) = 0) then
     Exit;
