@@ -478,7 +478,9 @@ begin
   if FCompress then
   begin
     LZipFileName := System.SysUtils.FormatDateTime('yyyymmdd_hhnnsszzz', LNow);
-    ZipFile(LRenamedFileName, Format('%s_RT%s%s', [TPath.GetFileNameWithoutExtension(LFileName), LZipFileName, FExtension]));
+    LFileName := TPath.GetFileNameWithoutExtension(LFileName);
+
+    ZipFile(LRenamedFileName, Format('%s_RT%s%s', [LFileName, LZipFileName, FExtension]));
   end;
 
   CreateWriter;
@@ -524,8 +526,11 @@ begin
     if TFile.Exists(ADirFileName) then
       LZipFile.Add(ADirFileName, AFileName);
   finally
-    LZipFile.Close;
-    LZipFile.Free;
+    try
+      LZipFile.Close;
+    finally
+      LZipFile.Free;
+    end;
   end;
 end;
 

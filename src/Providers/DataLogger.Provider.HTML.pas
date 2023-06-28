@@ -590,8 +590,11 @@ begin
     if TFile.Exists(ADirFileName) then
       LZipFile.Add(ADirFileName, AFileName);
   finally
-    LZipFile.Close;
-    LZipFile.Free;
+    try
+      LZipFile.Close;
+    finally
+      LZipFile.Free;
+    end;
   end;
 end;
 
