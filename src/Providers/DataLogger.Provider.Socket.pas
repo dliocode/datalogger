@@ -37,7 +37,7 @@ interface
 uses
   DataLogger.Provider, DataLogger.Types,
   IdTCPServer, IdHashSHA, IdSSLOpenSSL, IdContext, IdSSL, IdIOHandler, IdGlobal, IdCoderMIME, IdComponent,
-  System.SysUtils, System.Generics.Collections, System.JSON, System.Threading, System.SyncObjs, System.Classes, System.Types;
+  System.SysUtils, System.Generics.Collections, System.JSON, System.SyncObjs, System.Classes, System.Types;
 
 type
   TProviderSocketCustomMessage = reference to function(const AItem: TLoggerItem): string;
@@ -53,10 +53,15 @@ type
     FAutoStart: Boolean;
     FCustomMessage: TProviderSocketCustomMessage;
 
+    FLogCacheSize: Integer;
+    FLogCache: TList<TLoggerItem>;
+
+    procedure SendMessages(const ACache: TArray<TLoggerItem>; const AContextID: string = '');
     procedure DoOnConnect(AContext: TIdContext);
     procedure DoOnExecute(AContext: TIdContext);
     procedure DoOnDisconnect(AContext: TIdContext);
     procedure CheckConnection(const AContext: TIdContext);
+    procedure AddLogCache(const ACache: TArray<TLoggerItem>);
   protected
     procedure Save(const ACache: TArray<TLoggerItem>); override;
   public
@@ -69,6 +74,8 @@ type
 
     function AutoStart(const AValue: Boolean): TProviderSocket;
     function CustomMessage(const AMessage: TProviderSocketCustomMessage): TProviderSocket;
+
+    function LogCacheSize(const ALogCacheSize: Integer): TProviderSocket;
 
     function Start: TProviderSocket;
     function Stop: TProviderSocket;
@@ -185,6 +192,9 @@ begin
   AutoStart(True);
   MaxConnection(0);
   CustomMessage(nil);
+  LogCacheSize(0);
+
+  FLogCache := TList<TLoggerItem>.Create;
 end;
 
 procedure TProviderSocket.AfterConstruction;
@@ -198,6 +208,7 @@ destructor TProviderSocket.Destroy;
 begin
   Stop;
 
+  FLogCache.Free;
   FListConnection.Free;
   FIdTCPServer.Free;
 
@@ -253,6 +264,12 @@ function TProviderSocket.CustomMessage(const AMessage: TProviderSocketCustomMess
 begin
   Result := Self;
   FCustomMessage := AMessage;
+end;
+
+function TProviderSocket.LogCacheSize(const ALogCacheSize: Integer): TProviderSocket;
+begin
+  Result := Self;
+  FLogCacheSize := ALogCacheSize;
 end;
 
 function TProviderSocket.Start: TProviderSocket;
@@ -363,10 +380,6 @@ begin
 end;
 
 procedure TProviderSocket.Save(const ACache: TArray<TLoggerItem>);
-var
-  LContexts: TArray<TDataLoggerSocketConnection>;
-  LItem: TLoggerItem;
-  LLog: string;
 begin
   if (Length(ACache) = 0) then
     Exit;
@@ -377,9 +390,23 @@ begin
     if not IsActive then
       Exit;
 
+  if (FLogCacheSize > 0) then
+    AddLogCache(ACache);
+
   if (TDataLoggerSocketListConnection(FListConnection).Count = 0) then
     Exit;
 
+  SendMessages(ACache, '');
+end;
+
+procedure TProviderSocket.SendMessages(const ACache: TArray<TLoggerItem>; const AContextID: string = '');
+var
+  LContexts: TArray<TDataLoggerSocketConnection>;
+  LItem: TLoggerItem;
+  LLog: string;
+  LContext: TDataLoggerSocketConnection;
+  LRetriesCount: Integer;
+begin
   LContexts := TDataLoggerSocketListConnection(FListConnection).ToArray;
 
   for LItem in ACache do
@@ -392,13 +419,11 @@ begin
     else
       LLog := SerializeItem.LogItem(LItem).ToJSON;
 
-    TParallel.For(Low(LContexts), High(LContexts),
-      procedure(I: Integer)
-      var
-        LContext: TDataLoggerSocketConnection;
-        LRetriesCount: Integer;
+      for LContext in LContexts do
       begin
-        LContext := LContexts[I];
+        if not AContextID.Trim.IsEmpty then
+          if (LContext.ID <> AContextID) then
+            Continue;
 
         LRetriesCount := 0;
 
@@ -426,7 +451,10 @@ begin
                 Break;
             end;
           end;
-      end);
+
+        if not AContextID.Trim.IsEmpty then
+          Break;
+      end;
   end;
 end;
 
@@ -446,6 +474,9 @@ begin
 
   if Assigned(FOnConnection) then
     FOnConnection(LConnection.ID);
+
+  if (FLogCacheSize > 0) and (FLogCache.Count > 0) then
+    SendMessages(FLogCache.ToArray, LConnection.ID);
 end;
 
 procedure TProviderSocket.DoOnExecute(AContext: TIdContext);
@@ -549,6 +580,23 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TProviderSocket.AddLogCache(const ACache: TArray<TLoggerItem>);
+var
+  I: Integer;
+  LCount: Integer;
+  LRemoveCount: Integer;
+begin
+  FLogCache.AddRange(ACache);
+
+  LCount := FLogCache.Count;
+  if (LCount < FLogCacheSize) then
+    Exit;
+
+  LRemoveCount := (LCount - FLogCacheSize);
+  for I := 0 to Pred(LRemoveCount) do
+    FLogCache.Delete(0);
 end;
 
 { TDataLoggerSocketConnection }

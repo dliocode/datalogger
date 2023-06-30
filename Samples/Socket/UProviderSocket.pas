@@ -121,8 +121,10 @@ begin
 
     .InitSSL(nil)
     .Port(8080)
-    .AutoStart(True)
     .MaxConnection(0) // 0 - unlimited
+    .AutoStart(True)
+    .CustomMessage(nil) // Send log custom
+    .LogCacheSize(0) // When connecting receive the latest logs
     ;
 
   Logger.AddProvider(FSocket);
