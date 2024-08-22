@@ -279,7 +279,7 @@ begin
     LJO.Free;
   end;
 
-  LAuthorization := CalculateSignature(LLog, FormatDateTime('yyyymmdd', Now));
+  LAuthorization := CalculateSignature(LLog, FormatDateTime('yyyymmdd', LNow));
 
   LLogItemREST.Stream := TStringStream.Create(LLog, TEncoding.UTF8);
   LLogItemREST.LogItem := LItem;
