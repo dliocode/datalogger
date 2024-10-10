@@ -537,7 +537,6 @@ var
   LListUndoLast: TList<string>;
   I: Integer;
   LItem: TLoggerItem;
-  LMessage: string;
   LTransaction: TDataLoggerTransaction;
   LListLoggerItem: TDataLoggerListItem;
 begin
