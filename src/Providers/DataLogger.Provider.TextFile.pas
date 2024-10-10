@@ -273,44 +273,104 @@ begin
 
           Break;
         except
-          Inc(LRetriesCount);
+          on E: Exception do
+          begin
+            Inc(LRetriesCount);
 
-          Sleep(50);
+            Sleep(50);
 
-          if (LRetriesCount <= 0) then
-            Break;
+            if Assigned(FLogException) then
+              FLogException(Self, ACache[0], E, LRetriesCount);
 
-          if (LRetriesCount >= FMaxRetries) then
-            raise;
+            if Self.Terminated then
+              Exit;
+
+            if (LRetriesCount <= 0) then
+              Break;
+
+            if (LRetriesCount >= FMaxRetries) then
+              Break;
+          end;
         end;
 
       FCleanOnRun := True;
     end;
 
-  CreateWriter;
-  try
-    for LItem in ACache do
-    begin
-      if LItem.InternalItem.IsUndoLast then
-      begin
-        UndoLast;
-        Continue;
+    LRetriesCount := 0;
+
+    while True do
+      try
+        CreateWriter;
+        Break;
+      except
+        on E: Exception do
+        begin
+          Inc(LRetriesCount);
+
+          Sleep(50);
+
+          if Assigned(FLogException) then
+            FLogException(Self, ACache[0], E, LRetriesCount);
+
+          if Self.Terminated then
+            Exit;
+
+          if (LRetriesCount <= 0) then
+            Break;
+
+          if (LRetriesCount >= FMaxRetries) then
+            Break;
+        end;
       end;
 
-      if LItem.InternalItem.IsSlinebreak then
-        LLog := ''
-      else
-        LLog := SerializeItem.LogItem(LItem).ToString;
+    try
+      for LItem in ACache do
+      begin
+        if LItem.InternalItem.IsUndoLast then
+        begin
+          UndoLast;
+          Continue;
+        end;
 
-      InternalWriteLog(LLog);
+        if LItem.InternalItem.IsSlinebreak then
+          LLog := ''
+        else
+          LLog := SerializeItem.LogItem(LItem).ToString;
 
-      if (FMaxFileSizeInKiloByte > 0) then
-        if (FWriter.BaseStream.Size > (FMaxFileSizeInKiloByte * 1024)) then
-          RotateLog;
+        LRetriesCount := 0;
+
+        while True do
+          try
+            InternalWriteLog(LLog);
+            Break;
+          except
+            on E: Exception do
+            begin
+              Inc(LRetriesCount);
+
+              Sleep(50);
+
+              if Assigned(FLogException) then
+                FLogException(Self, LItem, E, LRetriesCount);
+
+              if Self.Terminated then
+                Exit;
+
+              if (LRetriesCount <= 0) then
+                Break;
+
+              if (LRetriesCount >= FMaxRetries) then
+                Break;
+            end;
+          end;
+
+        if (FMaxFileSizeInKiloByte > 0) then
+          if (FWriter.BaseStream.Size > (FMaxFileSizeInKiloByte * 1024)) then
+            RotateLog;
+      end;
+    finally
+      FreeWriter;
     end;
-  finally
-    FreeWriter;
-  end;
 end;
 
 function TProviderTextFile.GetLogFileName(const AFileNumber: Int64): string;
@@ -495,16 +555,20 @@ begin
     var
       LRemoveLogFileName: Boolean;
     begin
-      LRemoveLogFileName := True;
+      try
+        LRemoveLogFileName := True;
 
-      if Assigned(FCompressCustom) then
-        FCompressCustom(ADirFileName, AFileName, LRemoveLogFileName)
-      else
-        CreateZipFile(ADirFileName, AFileName);
+        if Assigned(FCompressCustom) then
+          FCompressCustom(ADirFileName, AFileName, LRemoveLogFileName)
+        else
+          CreateZipFile(ADirFileName, AFileName);
 
-      if LRemoveLogFileName then
-        if TFile.Exists(ADirFileName) then
-          TFile.Delete(ADirFileName);
+        if LRemoveLogFileName then
+          if TFile.Exists(ADirFileName) then
+            TFile.Delete(ADirFileName);
+      except
+
+      end;
     end)
     .Start;
 end;
