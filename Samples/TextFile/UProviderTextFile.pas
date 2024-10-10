@@ -38,16 +38,22 @@ uses
 
 procedure TForm2.btnMakeLogClick(Sender: TObject);
 begin
-  Logger
-    .Trace('My Trace')
-    .Debug('My Debug')
-    .Info('My Info')
-    .Warn('My Warn')
-    .Error('My Error')
-    .Success('My Success')
-    .Fatal('My Fatal')
-    .Custom('Custom Level', 'My Custom')    
-    ;
+  TThread.CreateAnonymousThread(
+  procedure
+  begin
+    for var I := 0 to 100 do
+      Logger
+        .Trace('My Trace')
+        .Debug('My Debug')
+        .Info('My Info')
+        .Warn('My Warn')
+        .Error('My Error')
+        .Success('My Success')
+        .Fatal('My Fatal')
+        .Custom('Custom Level', 'My Custom')
+        ;
+  end
+  ).Start;
 end;
 
 procedure TForm2.btnShowExplorerClick(Sender: TObject);
@@ -67,15 +73,15 @@ begin
   Logger.AddProvider(
     TProviderTextFile.Create
     .LogDir(FLogDir)
-//    .PrefixFileName('my_log_')
-//    .Extension('.txt')
-//    .MaxFileSizeInKiloByte(10)
-//    .MaxBackupFileCount(5)
-//    .Compress(False) // Compress only with file name change or size change
-//    .CompressCustom(nil)
-//    .CleanOnStart(False)
-//    .FormatDateTime('yyyy-mm-dd hh-nn') // New file per minute
-//    .Encoding(TEncoding.UTF8)
+    .PrefixFileName('my_log_')
+    .Extension('.txt')
+    .MaxFileSizeInKiloByte(1024)
+    .MaxBackupFileCount(5)
+    .Compress(True) // Compress only with file name change or size change
+    .CompressCustom(nil)
+    .CleanOnStart(False)
+    .FormatDateTime('yyyy-mm-dd') // New file per minute
+    .Encoding(TEncoding.UTF8)
     );
 
   // Log Format

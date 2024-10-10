@@ -65,7 +65,7 @@ begin
     );
 
   // Log Format
-  Logger.SetLogFormat(TLoggerFormat.LOG_TIMESTAMP + ' - ' + TLoggerFOrmat.LOG_MESSAGE);
+  Logger.SetTemplate(TLoggerTemplate.LOG_TIMESTAMP + ' - ' + TLoggerTemplate.LOG_MESSAGE);
 end;
 
 procedure TForm2.Label1Click(Sender: TObject);

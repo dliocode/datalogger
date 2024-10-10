@@ -40,6 +40,7 @@ object Form2: TForm2
       Position.Y = 8.000000000000000000
       TabOrder = 0
       Text = 'Make Log'
+      TextSettings.Trimming = None
       OnClick = btnMakeLogClick
     end
   end
